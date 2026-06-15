@@ -7,7 +7,7 @@
       "resource_id": "ahs-guru-cancer-guidelines-index",
       "title": "Cancer Guidelines / Guideline Resource Unit public index",
       "source_owner": "Alberta Health Services / Cancer Care Alberta / GURU",
-      "source_url_or_access_path": "https://www.albertahealthservices.ca/info/cancerguidelines.aspx",
+      "source_url_or_access_path": "https://www.albertahealthservices.ca/cancer/page1731.aspx",
       "access_method": "public_url",
       "access_date": "2026-06-15",
       "resource_type": "guideline",
@@ -24,7 +24,7 @@
       "permission_status": "pending",
       "local_storage_decision": "metadata-only",
       "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "notes": "Public index for CCA/GURU guideline resources. Exa search on 2026-06-15 identified the page as the official Cancer Guidelines page with GURU contact and disease-site corpus. Public URL does not grant archival, embedding, summarization, graph extraction, redistribution, or commercial-use rights; explicit CCA/GURU permission remains required."
+      "notes": "Canonical public CCA/GURU Cancer Guidelines index from docs/gpt5.5pro_6_15.md and the user-provided link. Public URL does not grant archival, embedding, summarization, graph extraction, redistribution, or commercial-use rights; explicit CCA/GURU permission remains required."
     },
     {
       "resource_id": "ahs-guru-renal-cell-carcinoma-gu003",
