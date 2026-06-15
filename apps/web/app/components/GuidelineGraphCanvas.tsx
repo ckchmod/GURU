@@ -36,10 +36,164 @@ type EvidenceNodeData = {
   reviewerStatus: string;
 };
 
+type AtlasResource = {
+  resource_id: string;
+  title: string;
+  disease_site: string;
+  document_type: string;
+  url: string;
+  data_source: string;
+  status: string;
+};
+
+type SourceDocumentRecord = {
+  record_type: "source_document";
+  resource_id: string;
+  document_id: string;
+  title: string;
+  access_date: string;
+  access_path: string;
+  input_path: string;
+  source_checksum_sha256: string;
+  parser_version: string;
+  extraction_timestamp: string;
+  status: string;
+};
+
+type SourceSpanRecord = {
+  record_type: "source_span";
+  span_id: string;
+  resource_id: string;
+  document_id: string;
+  source_document_id: string;
+  access_date: string;
+  stable_locator: string;
+  quoted_text: string;
+  quoted_span: string;
+  excerpt_checksum: string;
+  checksum_sha256: string;
+  extraction_timestamp: string;
+  timestamp: string;
+  status: string;
+  output_status: string;
+};
+
+type GraphReadyRecord = {
+  record_type: "knowledgebase_record";
+  record_id: string;
+  resource_id: string;
+  source_document_id: string;
+  title: string;
+  summary: string;
+  source_span_ids: string[];
+  output_status: string;
+  model_version: string;
+};
+
+type KnowledgebaseFixture = {
+  resources: AtlasResource[];
+  sourceDocuments: Record<string, SourceDocumentRecord>;
+  sourceSpans: Record<string, SourceSpanRecord>;
+  graphRecords: Record<string, GraphReadyRecord>;
+};
+
 type SyntheticNodeDefinition = EvidenceNodeData & {
   id: string;
   position: { x: number; y: number };
 };
+
+const resourceFixture: AtlasResource[] = [
+  {
+    resource_id: "ahs-guru-breast-br005-adjuvant-rt-invasive-breast",
+    title: "Adjuvant Radiotherapy for Invasive Breast Cancer",
+    disease_site: "breast",
+    document_type: "guideline",
+    url: "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br005-adjuvant-rt-invasive-breast.pdf",
+    data_source: "local_pilot_registry_fixture",
+    status: "draft"
+  },
+  {
+    resource_id: "ahs-guru-central-nervous-system-cns014-management-of-brain-metastases",
+    title: "Brain Metastases",
+    disease_site: "central-nervous-system",
+    document_type: "guideline",
+    url: "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cns014-management-of-brain-metastases.pdf",
+    data_source: "local_pilot_registry_fixture",
+    status: "draft"
+  }
+];
+
+const safeSpanText = [
+  "This synthetic paragraph describes a document maintenance workflow. It contains no patient-specific facts or clinical advice.",
+  "Each derived record in this fixture keeps a stable locator, quoted text, and checksum so tests can verify provenance plumbing.",
+  "The fixture remains generic and non-clinical. It exists only to exercise parser boundaries for source documents and source spans."
+];
+
+function safeIdPart(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9_.:-]+/g, "-").replace(/-+/g, "-").replace(/^[-_.:]+|[-_.:]+$/g, "") || "record";
+}
+
+function buildKnowledgebaseFixture(resources: AtlasResource[]): KnowledgebaseFixture {
+  const sourceDocuments: KnowledgebaseFixture["sourceDocuments"] = {};
+  const sourceSpans: KnowledgebaseFixture["sourceSpans"] = {};
+  const graphRecords: KnowledgebaseFixture["graphRecords"] = {};
+
+  resources.forEach((resource) => {
+    const resourceIdPart = safeIdPart(resource.resource_id);
+    const document_id = `source-document.${resourceIdPart}.synthetic-guideline-note.abc123fixture`;
+    const source_span_ids = safeSpanText.map((_text, index) => `${document_id}.p${String(index + 1).padStart(4, "0")}`.replace("source-document.", "source-span.source-document."));
+
+    sourceDocuments[document_id] = {
+      record_type: "source_document",
+      resource_id: resource.resource_id,
+      document_id,
+      title: `Synthetic source-document fixture for ${resource.title}`,
+      access_date: "2026-06-15",
+      access_path: "tests/fixtures/source-documents/synthetic-guideline-note.txt",
+      input_path: "tests/fixtures/source-documents/synthetic-guideline-note.txt",
+      source_checksum_sha256: "sha256-local-synthetic-fixture",
+      parser_version: "source-document-parser-skeleton-v1",
+      extraction_timestamp: "2026-06-15T12:00:00Z",
+      status: "draft"
+    };
+
+    source_span_ids.forEach((span_id, index) => {
+      sourceSpans[span_id] = {
+        record_type: "source_span",
+        span_id,
+        resource_id: resource.resource_id,
+        document_id,
+        source_document_id: document_id,
+        access_date: "2026-06-15",
+        stable_locator: `section:${index === 0 ? "synthetic-workbench-note" : "provenance-checks"};paragraph:${index + 1}`,
+        quoted_text: safeSpanText[index],
+        quoted_span: safeSpanText[index],
+        excerpt_checksum: `sha256-span-${resourceIdPart}-${index + 1}`,
+        checksum_sha256: `sha256-span-${resourceIdPart}-${index + 1}`,
+        extraction_timestamp: "2026-06-15T12:00:00Z",
+        timestamp: "2026-06-15T12:00:00Z",
+        status: "draft",
+        output_status: "draft"
+      };
+    });
+
+    graphRecords[`knowledgebase-record.${resource.resource_id}`] = {
+      record_type: "knowledgebase_record",
+      record_id: `knowledgebase-record.${resource.resource_id}`,
+      resource_id: resource.resource_id,
+      source_document_id: document_id,
+      title: resource.title,
+      summary: "Local synthetic fixture record for testing provenance plumbing only.",
+      source_span_ids,
+      output_status: "draft",
+      model_version: "none-local-fixture-only"
+    };
+  });
+
+  return { resources, sourceDocuments, sourceSpans, graphRecords };
+}
+
+const knowledgebaseFixture = buildKnowledgebaseFixture(resourceFixture);
 
 const syntheticNodeDefinitions: SyntheticNodeDefinition[] = [
   {
@@ -305,14 +459,14 @@ const syntheticNodeDefinitions: SyntheticNodeDefinition[] = [
   {
     id: "registry-link",
     title: "Registry Link",
-    type: "Permission marker",
+    type: "Metadata marker",
     kind: "provenance",
     group: "provenance",
     priority: "normal",
     position: { x: -330, y: 205 },
-    summary: "Marks that future resources require registry permission rows.",
+    summary: "Marks that resources stay anchored to metadata registry rows.",
     sourcePlaceholder: "SYNTH-REGISTRY-022 · metadata-only placeholder",
-    provenanceStatus: "Permission pending placeholder",
+    provenanceStatus: "Metadata linked placeholder",
     reviewerStatus: "Governance placeholder"
   },
   {
@@ -623,13 +777,35 @@ export function GuidelineGraphCanvas() {
   const [edges, , onEdgesChange] = useEdgesState(syntheticEdges);
   const [hoveredNode, setHoveredNode] = useState<Node<EvidenceNodeData> | null>(null);
   const [selectedNode, setSelectedNode] = useState<Node<EvidenceNodeData> | null>(syntheticNodes[0]);
+  const [selectedResourceId, setSelectedResourceId] = useState(knowledgebaseFixture.resources[0].resource_id);
+  const [activeSpanId, setActiveSpanId] = useState(
+    knowledgebaseFixture.graphRecords[`knowledgebase-record.${knowledgebaseFixture.resources[0].resource_id}`].source_span_ids[0]
+  );
   const [zoomLevel, setZoomLevel] = useState(0.72);
 
   const nodeTypes = useMemo(() => ({ evidenceNode: EvidenceAtlasNode }), []);
   const detailMode = zoomLevel >= 1.05 ? "semantic" : "map";
+  const selectedResource = knowledgebaseFixture.resources.find((resource) => resource.resource_id === selectedResourceId) ?? knowledgebaseFixture.resources[0];
+  const graphRecord = knowledgebaseFixture.graphRecords[`knowledgebase-record.${selectedResource.resource_id}`];
+  const sourceDocument = knowledgebaseFixture.sourceDocuments[graphRecord.source_document_id];
+  const sourceSpans = graphRecord.source_span_ids.map((spanId) => knowledgebaseFixture.sourceSpans[spanId]);
+  const activeSpan = knowledgebaseFixture.sourceSpans[activeSpanId] ?? sourceSpans[0];
+  const topicCounts = useMemo(() => {
+    return knowledgebaseFixture.resources.reduce<Record<string, number>>((counts, resource) => {
+      counts[resource.disease_site] = (counts[resource.disease_site] ?? 0) + 1;
+      return counts;
+    }, {});
+  }, []);
 
   const handleNodeClick = useCallback((_event: React.MouseEvent, node: Node<EvidenceNodeData>) => {
     setSelectedNode(node);
+  }, []);
+
+  const handleResourceSelect = useCallback((resourceId: string) => {
+    const nextRecord = knowledgebaseFixture.graphRecords[`knowledgebase-record.${resourceId}`];
+    setSelectedResourceId(resourceId);
+    setActiveSpanId(nextRecord.source_span_ids[0]);
+    setSelectedNode(syntheticNodes.find((node) => node.id === "provenance") ?? syntheticNodes[0]);
   }, []);
 
   const handleKeyboardSelect = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -654,23 +830,37 @@ export function GuidelineGraphCanvas() {
   return (
     <section className="graph-workbench" aria-label="Synthetic guideline graph prototype">
       <div className="graph-layout">
-        <aside className="atlas-sidebar" aria-label="Atlas navigation layers">
+        <aside className="atlas-sidebar" aria-label="Atlas resource and topic navigation">
           <div className="sidebar-section">
             <p className="eyebrow">Vault</p>
             <h2>Evidence Atlas</h2>
-            <span className="sidebar-caption">Synthetic graph vault</span>
+            <span className="sidebar-caption">Graph-first knowledgebase IDE</span>
           </div>
-          <nav className="atlas-nav" aria-label="Synthetic graph layers">
-            <button type="button" data-active="true">Graph map</button>
-            <button type="button">Source spans</button>
-            <button type="button">Review queue</button>
-            <button type="button">Model traces</button>
+          <nav className="atlas-nav" aria-label="Knowledgebase resources">
+            {knowledgebaseFixture.resources.map((resource) => (
+              <button
+                key={resource.resource_id}
+                type="button"
+                data-active={resource.resource_id === selectedResource.resource_id}
+                aria-pressed={resource.resource_id === selectedResource.resource_id}
+                onClick={() => handleResourceSelect(resource.resource_id)}
+              >
+                <span>{resource.title}</span>
+                <small>{resource.disease_site} · {resource.document_type}</small>
+              </button>
+            ))}
+          </nav>
+          <nav className="atlas-topic-nav" aria-label="Knowledgebase topics">
+            <p className="eyebrow">Topics</p>
+            {Object.entries(topicCounts).map(([topic, count]) => (
+              <span key={topic}>{topic} · {count}</span>
+            ))}
           </nav>
           <div className="sidebar-section sidebar-section--compact">
             <p className="eyebrow">Layer status</p>
             <ul className="layer-list">
               <li><span className="layer-dot layer-dot--cyan" /> {syntheticNodes.length} synthetic nodes</li>
-              <li><span className="layer-dot layer-dot--gold" /> {syntheticEdges.length} provenance edges</li>
+              <li><span className="layer-dot layer-dot--gold" /> {graphRecord.source_span_ids.length} source spans</li>
               <li><span className="layer-dot layer-dot--red" /> No clinical advice</li>
             </ul>
           </div>
@@ -713,20 +903,32 @@ export function GuidelineGraphCanvas() {
 
           <div className="graph-view-title" aria-label="Graph view status">
             <span>Graph view</span>
-            <strong>synthetic-atlas.graph</strong>
-            <small>{detailMode === "semantic" ? "detail labels visible" : "map labels sparse"} · zoom {Math.round(zoomLevel * 100)}%</small>
+            <strong>{selectedResource.title}</strong>
+            <small>{detailMode === "semantic" ? "detail labels visible" : "map labels sparse"} · {graphRecord.record_type}</small>
           </div>
 
           <GraphSettingsPanel zoomLevel={zoomLevel} />
+          <SourceDocumentPanel
+            sourceDocument={sourceDocument}
+            sourceSpans={sourceSpans}
+            activeSpanId={activeSpan.span_id}
+            onSpanSelect={setActiveSpanId}
+          />
           {hoveredNode ? <NodeHoverCard node={hoveredNode} /> : null}
-          <NodeInspector node={selectedNode} />
         </div>
+        <ProvenanceInspector
+          node={selectedNode}
+          resource={selectedResource}
+          graphRecord={graphRecord}
+          sourceDocument={sourceDocument}
+          activeSpan={activeSpan}
+        />
       </div>
-      <footer className="evidence-console" aria-label="Evidence trace console">
-        <span>trace: synthetic-atlas.graph loaded</span>
-        <span>36-node dense map</span>
-        <span>zoom reveals semantic labels</span>
-        <span>source-span placeholders visible</span>
+      <footer className="evidence-console" aria-label="Evidence trace console" data-testid="atlas-workbench">
+        <span>workbench: queued extraction review placeholder</span>
+        <span>{selectedResource.resource_id}</span>
+        <span>{graphRecord.record_id}</span>
+        <span>{activeSpan.span_id}</span>
         <span>no patient data</span>
       </footer>
     </section>
@@ -741,14 +943,14 @@ function GraphSettingsPanel({ zoomLevel }: { zoomLevel: number }) {
         <strong>Filters</strong>
       </div>
       <label className="filter-field">
-        <span>Search files...</span>
-        <input type="search" value="synthetic group" readOnly aria-label="Filter synthetic graph nodes" />
+        <span>Search resources...</span>
+        <input type="search" value="source spans" readOnly aria-label="Filter synthetic graph nodes" />
       </label>
       <div className="toggle-list" aria-label="Graph filter toggles">
-        <label><input type="checkbox" checked readOnly /> Tags</label>
-        <label><input type="checkbox" checked readOnly /> Attachments</label>
-        <label><input type="checkbox" readOnly /> Existing files only</label>
-        <label><input type="checkbox" checked readOnly /> Orphans</label>
+        <label><input type="checkbox" checked readOnly /> Metadata</label>
+        <label><input type="checkbox" checked readOnly /> Source spans</label>
+        <label><input type="checkbox" readOnly /> Approved only</label>
+        <label><input type="checkbox" checked readOnly /> Draft nodes</label>
       </div>
       <details open>
         <summary>Groups</summary>
@@ -773,6 +975,50 @@ function GraphSettingsPanel({ zoomLevel }: { zoomLevel: number }) {
   );
 }
 
+function SourceDocumentPanel({
+  sourceDocument,
+  sourceSpans,
+  activeSpanId,
+  onSpanSelect
+}: {
+  sourceDocument: SourceDocumentRecord;
+  sourceSpans: SourceSpanRecord[];
+  activeSpanId: string;
+  onSpanSelect: (spanId: string) => void;
+}) {
+  return (
+    <aside className="source-document-panel" data-testid="source-document-panel" aria-label="Source document and span browser">
+      <div className="source-document-panel__header">
+        <span className="eyebrow">Source view</span>
+        <strong>{sourceDocument.record_type}</strong>
+      </div>
+      <dl className="source-document-meta">
+        <div>
+          <dt>Document ID</dt>
+          <dd>{sourceDocument.document_id}</dd>
+        </div>
+        <div>
+          <dt>Parser</dt>
+          <dd>{sourceDocument.parser_version}</dd>
+        </div>
+      </dl>
+      <div className="source-span-list" role="list" aria-label="Source spans for selected resource">
+        {sourceSpans.map((span) => (
+          <button
+            key={span.span_id}
+            type="button"
+            data-active={span.span_id === activeSpanId}
+            onClick={() => onSpanSelect(span.span_id)}
+          >
+            <span>{span.stable_locator}</span>
+            <strong>{span.span_id}</strong>
+          </button>
+        ))}
+      </div>
+    </aside>
+  );
+}
+
 function NodeHoverCard({ node }: { node: Node<EvidenceNodeData> }) {
   return (
     <aside className="node-hover-card" data-testid="node-hover-card" aria-live="polite">
@@ -784,45 +1030,83 @@ function NodeHoverCard({ node }: { node: Node<EvidenceNodeData> }) {
   );
 }
 
-function NodeInspector({ node }: { node: Node<EvidenceNodeData> | null }) {
-  if (!node) {
-    return (
-      <aside className="node-inspector node-inspector--empty" data-testid="node-inspector" aria-label="Node inspector">
-        <p className="eyebrow">Inspector</p>
-        <h2>No node selected</h2>
-        <p>Select any synthetic graph node to inspect provenance placeholder fields.</p>
-      </aside>
-    );
-  }
-
+function ProvenanceInspector({
+  node,
+  resource,
+  graphRecord,
+  sourceDocument,
+  activeSpan
+}: {
+  node: Node<EvidenceNodeData> | null;
+  resource: AtlasResource;
+  graphRecord: GraphReadyRecord;
+  sourceDocument: SourceDocumentRecord;
+  activeSpan: SourceSpanRecord;
+}) {
   return (
-    <aside className="node-inspector" data-testid="node-inspector" aria-label={`Inspector for ${node.data.title}`}>
-      <p className="eyebrow">Selected node</p>
-      <h2>{node.data.title}</h2>
+    <aside
+      className="node-inspector"
+      data-testid="node-inspector"
+      aria-label={node ? `Provenance inspector for ${node.data.title}` : "Provenance inspector"}
+    >
+      <p className="eyebrow">Provenance inspector</p>
+      <h2>{node ? node.data.title : "No graph node selected"}</h2>
       <dl>
         <div>
-          <dt>Type</dt>
-          <dd>{node.data.type}</dd>
+          <dt>Resource metadata</dt>
+          <dd>{resource.title} · {resource.disease_site} · {resource.status}</dd>
         </div>
         <div>
-          <dt>Summary</dt>
-          <dd>{node.data.summary}</dd>
+          <dt>Resource ID</dt>
+          <dd>{resource.resource_id}</dd>
         </div>
         <div>
-          <dt>Source placeholder</dt>
-          <dd>{node.data.sourcePlaceholder}</dd>
+          <dt>Graph-ready node</dt>
+          <dd>{graphRecord.record_id}</dd>
         </div>
         <div>
-          <dt>Provenance status</dt>
-          <dd>{node.data.provenanceStatus}</dd>
+          <dt>Model version</dt>
+          <dd>{graphRecord.model_version}</dd>
         </div>
         <div>
-          <dt>Reviewer status</dt>
-          <dd>{node.data.reviewerStatus}</dd>
+          <dt>Source document</dt>
+          <dd>{sourceDocument.document_id}</dd>
         </div>
+        <div>
+          <dt>Active source span ID</dt>
+          <dd>{activeSpan.span_id}</dd>
+        </div>
+        <div>
+          <dt>Stable locator</dt>
+          <dd>{activeSpan.stable_locator}</dd>
+        </div>
+        <div>
+          <dt>Quoted span</dt>
+          <dd>{activeSpan.quoted_text}</dd>
+        </div>
+        <div>
+          <dt>Graph source spans</dt>
+          <dd>{graphRecord.source_span_ids.join(" · ")}</dd>
+        </div>
+        {node ? (
+          <>
+            <div>
+              <dt>Selected graph type</dt>
+              <dd>{node.data.type}</dd>
+            </div>
+            <div>
+              <dt>Graph summary</dt>
+              <dd>{node.data.summary}</dd>
+            </div>
+            <div>
+              <dt>Node provenance status</dt>
+              <dd>{node.data.provenanceStatus}</dd>
+            </div>
+          </>
+        ) : null}
         <div>
           <dt>Synthetic warning</dt>
-          <dd>No patient data, no treatment advice, and no approved clinical claim.</dd>
+          <dd>No patient data, no clinical advice, and no approved clinical claim.</dd>
         </div>
       </dl>
     </aside>
