@@ -1,0 +1,369 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://guru.local/schemas/graph-provenance-schema.json",
+  "title": "CCA GURU Guideline Graph and Source-Span Provenance Seed Schema",
+  "description": "Seed schema for graph-first guideline objects. Every claim-like node (Recommendation, ReviewDecision, EvidenceItem, ModelTrace) MUST reference at least one SourceSpan. No source span means no claim.",
+  "type": "object",
+  "required": ["graph_version", "generated_at", "nodes", "edges"],
+  "additionalProperties": false,
+  "properties": {
+    "graph_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Semantic version of the graph schema contract."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when the graph document was generated."
+    },
+    "nodes": {
+      "type": "array",
+      "description": "All graph nodes. Each node carries provenance metadata and type-specific fields.",
+      "items": { "$ref": "#/definitions/node" },
+      "minItems": 1
+    },
+    "edges": {
+      "type": "array",
+      "description": "Typed relationships between nodes.",
+      "items": { "$ref": "#/definitions/edge" }
+    }
+  },
+  "definitions": {
+    "node": {
+      "type": "object",
+      "required": ["id", "node_type", "label", "status", "created_at", "updated_at", "provenance"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$",
+          "description": "Stable, URL-safe identifier for the node."
+        },
+        "node_type": {
+          "type": "string",
+          "enum": [
+            "Guideline",
+            "GuidelineVersion",
+            "Recommendation",
+            "PICOQuestion",
+            "SourceDocument",
+            "SourceSpan",
+            "Citation",
+            "EvidenceItem",
+            "FundingRule",
+            "WorkflowTask",
+            "ReviewDecision",
+            "ModelTrace"
+          ]
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable label for the node."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "under_review", "approved", "superseded", "deprecated"],
+          "description": "Lifecycle status of the node. Draft status is not approved status."
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "provenance": {
+          "$ref": "#/definitions/provenance"
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "node_type": { "const": "Guideline" } } },
+          "then": { "$ref": "#/definitions/guidelineFields" }
+        },
+        {
+          "if": { "properties": { "node_type": { "const": "GuidelineVersion" } } },
+          "then": { "$ref": "#/definitions/guidelineVersionFields" }
+        },
+        {
+          "if": { "properties": { "node_type": { "const": "Recommendation" } } },
+          "then": { "$ref": "#/definitions/recommendationFields" }
+        },
+        {
+          "if": { "properties": { "node_type": { "const": "PICOQuestion" } } },
+          "then": { "$ref": "#/definitions/picoQuestionFields" }
+        },
+        {
+          "if": { "properties": { "node_type": { "const": "SourceDocument" } } },
+          "then": { "$ref": "#/definitions/sourceDocumentFields" }
+        },
+        {
+          "if": { "properties": { "node_type": { "const": "SourceSpan" } } },
+          "then": { "$ref": "#/definitions/sourceSpanFields" }
+        },
+        {
+          "if": { "properties": { "node_type": { "const": "Citation" } } },
+          "then": { "$ref": "#/definitions/citationFields" }
+        },
+        {
+          "if": { "properties": { "node_type": { "const": "EvidenceItem" } } },
+          "then": { "$ref": "#/definitions/evidenceItemFields" }
+        },
+        {
+          "if": { "properties": { "node_type": { "const": "FundingRule" } } },
+          "then": { "$ref": "#/definitions/fundingRuleFields" }
+        },
+        {
+          "if": { "properties": { "node_type": { "const": "WorkflowTask" } } },
+          "then": { "$ref": "#/definitions/workflowTaskFields" }
+        },
+        {
+          "if": { "properties": { "node_type": { "const": "ReviewDecision" } } },
+          "then": { "$ref": "#/definitions/reviewDecisionFields" }
+        },
+        {
+          "if": { "properties": { "node_type": { "const": "ModelTrace" } } },
+          "then": { "$ref": "#/definitions/modelTraceFields" }
+        }
+      ]
+    },
+    "edge": {
+      "type": "object",
+      "required": ["id", "source", "target", "relation"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$"
+        },
+        "source": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$",
+          "description": "ID of the source node."
+        },
+        "target": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$",
+          "description": "ID of the target node."
+        },
+        "relation": {
+          "type": "string",
+          "enum": [
+            "has_version",
+            "has_recommendation",
+            "has_pico",
+            "has_evidence",
+            "has_citation",
+            "has_source_span",
+            "has_funding_rule",
+            "has_task",
+            "has_review_decision",
+            "has_model_trace",
+            "cites",
+            "supports",
+            "contradicts",
+            "updates",
+            "replaces",
+            "derived_from",
+            "reviewed_by",
+            "funded_by",
+            "depends_on"
+          ]
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["source_span_ids", "generated_by", "output_status", "timestamp"],
+      "additionalProperties": false,
+      "properties": {
+        "source_span_ids": {
+          "type": "array",
+          "description": "IDs of SourceSpan nodes that anchor this node. For claim-like nodes this array MUST NOT be empty.",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$"
+          }
+        },
+        "generated_by": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human reviewer, agent, model, or tool that produced the node."
+        },
+        "model_version": {
+          "type": "string",
+          "description": "Prompt or model version used for generation, if applicable."
+        },
+        "reviewer": {
+          "type": "string",
+          "description": "Named reviewer responsible for approving the node."
+        },
+        "review_status": {
+          "type": "string",
+          "enum": ["unreviewed", "under_review", "reviewer_approved", "rejected"]
+        },
+        "output_status": {
+          "type": "string",
+          "enum": ["draft", "under_review", "approved"]
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "guidelineFields": {
+      "properties": {
+        "title": { "type": "string", "minLength": 1 },
+        "jurisdiction": { "type": "string", "minLength": 1 },
+        "disease_site": { "type": "string" },
+        "topic": { "type": "string" }
+      }
+    },
+    "guidelineVersionFields": {
+      "required": ["version", "effective_date", "guideline_id"],
+      "properties": {
+        "version": { "type": "string", "minLength": 1 },
+        "effective_date": { "type": "string", "format": "date" },
+        "guideline_id": { "type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$" }
+      }
+    },
+    "recommendationFields": {
+      "required": ["recommendation_text", "strength", "source_span_ids"],
+      "properties": {
+        "recommendation_text": { "type": "string", "minLength": 1 },
+        "strength": { "type": "string", "enum": ["strong_for", "conditional_for", "strong_against", "conditional_against", "consensus", "no_recommendation"] },
+        "certainty": { "type": "string", "enum": ["high", "moderate", "low", "very_low"] },
+        "source_span_ids": {
+          "type": "array",
+          "minItems": 1,
+          "description": "MANDATORY. A Recommendation without source spans is not a valid claim."
+        },
+        "pico_ids": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$" }
+        }
+      }
+    },
+    "picoQuestionFields": {
+      "required": ["population", "intervention", "comparison", "outcome"],
+      "properties": {
+        "population": { "type": "string", "minLength": 1 },
+        "intervention": { "type": "string", "minLength": 1 },
+        "comparison": { "type": "string" },
+        "outcome": { "type": "string", "minLength": 1 }
+      }
+    },
+    "sourceDocumentFields": {
+      "required": ["title", "owner", "access_date", "access_path", "license_status"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1 },
+        "owner": { "type": "string", "minLength": 1 },
+        "access_date": { "type": "string", "format": "date" },
+        "access_path": { "type": "string", "minLength": 1 },
+        "license_status": { "type": "string", "enum": ["unknown", "public_domain", "cc_by", "cc_by_nc", "cc_by_sa", "proprietary", "subscription", "government_open", "restricted"] },
+        "checksum_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "version_or_date": { "type": "string" }
+      }
+    },
+    "sourceSpanFields": {
+      "required": ["span_id", "source_document_id", "access_date", "stable_locator", "quoted_span", "excerpt_checksum"],
+      "properties": {
+        "span_id": { "type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$" },
+        "source_document_id": { "type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$" },
+        "access_date": { "type": "string", "format": "date" },
+        "stable_locator": { "type": "string", "minLength": 1, "description": "Section, paragraph, or stable fragment locator within the source document." },
+        "quoted_span": { "type": "string", "minLength": 1, "description": "Exact quoted text from the source document." },
+        "excerpt_checksum": { "type": "string", "pattern": "^[a-f0-9]{64}$", "description": "SHA-256 checksum of the quoted excerpt bytes." },
+        "prompt_or_model_version": { "type": "string" },
+        "reviewer": { "type": "string" },
+        "review_status": { "type": "string", "enum": ["unreviewed", "under_review", "reviewer_approved", "rejected"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "output_status": { "type": "string", "enum": ["draft", "under_review", "approved"] }
+      }
+    },
+    "citationFields": {
+      "required": ["citation_text", "source_span_ids"],
+      "properties": {
+        "citation_text": { "type": "string", "minLength": 1 },
+        "source_span_ids": {
+          "type": "array",
+          "minItems": 1,
+          "description": "MANDATORY. A Citation without source spans is not anchored."
+        }
+      }
+    },
+    "evidenceItemFields": {
+      "required": ["evidence_text", "study_design", "source_span_ids"],
+      "properties": {
+        "evidence_text": { "type": "string", "minLength": 1 },
+        "study_design": { "type": "string", "enum": ["systematic_review", "rct", "observational", "expert_opinion", "modeling", "case_series", "unknown"] },
+        "source_span_ids": {
+          "type": "array",
+          "minItems": 1,
+          "description": "MANDATORY. Evidence without source spans is not a valid claim."
+        }
+      }
+    },
+    "fundingRuleFields": {
+      "required": ["rule_text", "source_span_ids"],
+      "properties": {
+        "rule_text": { "type": "string", "minLength": 1 },
+        "source_span_ids": {
+          "type": "array",
+          "minItems": 1,
+          "description": "MANDATORY. A FundingRule without source spans is not a valid claim."
+        }
+      }
+    },
+    "workflowTaskFields": {
+      "required": ["task_type", "description", "assignee"],
+      "properties": {
+        "task_type": { "type": "string", "enum": ["review", "extract", "update", "validate", "triage", "publish"] },
+        "description": { "type": "string", "minLength": 1 },
+        "assignee": { "type": "string", "minLength": 1 },
+        "due_date": { "type": "string", "format": "date" }
+      }
+    },
+    "reviewDecisionFields": {
+      "required": ["decision", "rationale", "source_span_ids"],
+      "properties": {
+        "decision": { "type": "string", "enum": ["accept", "revise", "reject", "defer"] },
+        "rationale": { "type": "string", "minLength": 1 },
+        "source_span_ids": {
+          "type": "array",
+          "minItems": 1,
+          "description": "MANDATORY. A ReviewDecision without source spans is not a valid claim."
+        }
+      }
+    },
+    "modelTraceFields": {
+      "required": ["model_name", "model_version", "input_digest", "output_text", "source_span_ids"],
+      "properties": {
+        "model_name": { "type": "string", "minLength": 1 },
+        "model_version": { "type": "string", "minLength": 1 },
+        "input_digest": { "type": "string", "minLength": 1, "description": "Checksum or stable hash of the model input." },
+        "output_text": { "type": "string", "minLength": 1 },
+        "source_span_ids": {
+          "type": "array",
+          "minItems": 1,
+          "description": "MANDATORY. A ModelTrace without source spans is not a valid claim."
+        },
+        "gpu_seconds": { "type": "number", "minimum": 0 },
+        "cost_ledger_id": { "type": "string" }
+      }
+    }
+  }
+}
