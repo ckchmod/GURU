@@ -2,8 +2,8 @@
 
 - Scope: public link metadata discoverable from `https://www.albertahealthservices.ca/cancer/page1731.aspx`.
 - Date accessed: 2026-06-15.
-- Governance status: metadata-only catalogue; no raw PDFs, HTML page bodies, guideline excerpts, clinical recommendations, summaries, embeddings, or graph derivatives were retained.
-- Permission default: every AHS/GURU link remains permission-pending with `allowed_use: ["link", "metadata"]` until written terms allow more.
+- Governance status at catalogue time: metadata-only catalogue; no raw PDFs, HTML page bodies, guideline excerpts, clinical recommendations, summaries, embeddings, or graph derivatives were retained during the catalogue pass.
+- Current buildout status: public AHS/GURU resources may be used for the public guideline knowledgebase prototype, including local raw downloads, manifests, parsing, source spans, graph-ready records, backend API responses, and Evidence Atlas browsing under the project safeguards.
 - Link checking used HTTP HEAD requests only; no response bodies were stored.
 
 ## Count Summary
@@ -191,10 +191,10 @@
 ### not-applicable (8)
 
 - `guideline`: [ThyroSPEC™ - Molecular Testing of Indeterminate FNA Cytologies: Test Properties, Mutation-specific Malignancy Risks, Management Options & Referral Possibilities](https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-molecular-fna-report.pdf) - `ahs-guru-not-applicable-molecular-fna-report`
-- `letter`: [Generic Patient Letter – End of Treatment](https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-generic-end-of-treatment-patient.pdf) - `ahs-guru-not-applicable-generic-end-of-treatment-patient`
-- `letter`: [Generic Patient Letter – Transfer of Care](https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-generic-transfer-of-care-patient.pdf) - `ahs-guru-not-applicable-generic-transfer-of-care-patient`
-- `letter`: [Generic Physician Letter – End of Treatment](https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-generic-end-of-treatment-physician.pdf) - `ahs-guru-not-applicable-generic-end-of-treatment-physician`
-- `letter`: [Generic Physician Letter – Transfer of Care](https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-generic-transfer-of-care-physician.pdf) - `ahs-guru-not-applicable-generic-transfer-of-care-physician`
+- `letter`: [Generic Patient Letter - End of Treatment](https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-generic-end-of-treatment-patient.pdf) - `ahs-guru-not-applicable-generic-end-of-treatment-patient`
+- `letter`: [Generic Patient Letter - Transfer of Care](https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-generic-transfer-of-care-patient.pdf) - `ahs-guru-not-applicable-generic-transfer-of-care-patient`
+- `letter`: [Generic Physician Letter - End of Treatment](https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-generic-end-of-treatment-physician.pdf) - `ahs-guru-not-applicable-generic-end-of-treatment-physician`
+- `letter`: [Generic Physician Letter - Transfer of Care](https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-generic-transfer-of-care-physician.pdf) - `ahs-guru-not-applicable-generic-transfer-of-care-physician`
 - `letter`: [Sample Patient Letter: DCIS Follow-up](https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-dcis-patient-letter.pdf) - `ahs-guru-not-applicable-dcis-patient-letter`
 - `letter`: [Sample Physician Letter: DCIS Follow-up](https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-dcis-physician-letter.pdf) - `ahs-guru-not-applicable-dcis-physician-letter`
 - `other`: [GURU@ahs.ca](mailto:GURU@ahs.ca) - `ahs-guru-not-applicable-guru-contact`
@@ -263,24 +263,24 @@
 
 ### thyroid (3)
 
-- `guideline`: [Endocrinology Services: Thyroid Nodule & Cancer Referrals – Southern Alberta Zone](https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-southern-alberta-providers-thyroid.pdf) - `ahs-guru-thyroid-southern-alberta-providers-thyroid`
+- `guideline`: [Endocrinology Services: Thyroid Nodule & Cancer Referrals - Southern Alberta Zone](https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-southern-alberta-providers-thyroid.pdf) - `ahs-guru-thyroid-southern-alberta-providers-thyroid`
 - `guideline`: [Lobectomy & Completion Thyroidectomy Criteria](https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-thy-lobectomy-criteria.pdf) - `ahs-guru-thyroid-thy-lobectomy-criteria`
-- `other`: [Surgery Services: Thyroid Nodule & Cancer Referrals – Southern Alberta Zone](https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-provider-list-surgery-services-and-cancer-referrals.pdf) - `ahs-guru-thyroid-surgery-services-and-cancer-referrals`
+- `other`: [Surgery Services: Thyroid Nodule & Cancer Referrals - Southern Alberta Zone](https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-provider-list-surgery-services-and-cancer-referrals.pdf) - `ahs-guru-thyroid-surgery-services-and-cancer-referrals`
 
 ### transplant-cell-therapy (2)
 
 - `letter`: [Sample Transfer of Care Physician Letter: CAR T-cell Therapy](https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-car-t-cell-transfer-of-care-physician.pdf) - `ahs-guru-transplant-cell-therapy-car-t-cell-transfer-of-care-physician`
 - `other`: [Standard Practice Manual](https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-bmt-manual.pdf) - `ahs-guru-transplant-cell-therapy-bmt-manual`
 
-## Manual And Permission Blockers
+## Catalogue Notes
 
-- Permission blocker: all 196 page-discovered AHS/GURU resources require human permission review before raw archival, extraction, summarization, embedding, graph derivation, redistribution, or commercial use.
-- License blocker: no explicit reuse terms granting the project more than link/metadata cataloguing were recorded in the repository during this pass.
-- Manual contact blocker: 1 mail link requires user/manual outreach rather than autonomous retrieval.
-- Link verification blocker: none observed from metadata-only HEAD checks; this does not grant reuse permission.
+- The catalogue pass recorded metadata and links only. It did not download or retain response bodies, raw PDFs, guideline excerpts, clinical recommendations, summaries, embeddings, or graph derivatives.
+- Public AHS/GURU prototype acquisition now follows [`docs/research/public-guideline-acquisition.md`](./public-guideline-acquisition.md), with raw downloads kept out of normal Git history and manifests/checksums used as audit records.
+- Manual contact note: 1 mail link requires user/manual outreach rather than autonomous retrieval.
+- Link verification note: none observed from metadata-only HEAD checks.
 
-## Next Governed Steps
+## Next Knowledgebase Steps
 
-- Ask AHS/Cancer Care Alberta/GURU for written permission covering exact raw-source archival, checksum retention, internal processing, source-span extraction, graph derivation, summarization, embedding, redistribution, and commercial deployment as applicable.
-- After permission, retrieve exact raw source material into the governed raw archive outside normal Git history, record checksums, and update storage decisions row by row.
-- Only after allowed-use review, run ingestion to create source spans and graph nodes; every derived clinical claim must retain source-span provenance and reviewer status.
+- Use a bounded pilot selector before expanding beyond the full 198-row public corpus.
+- Retrieve exact raw source material into `resources/raw/ahs-guru-public/` or another ignored local working path, record checksums in manifests, and keep raw downloads out of normal Git history.
+- Run ingestion to create source spans and graph-ready records only when every clinical claim-like record can retain source-span provenance, reviewer status, and the no-PHI, no patient-specific advice, and no default external LLM routing safeguards.

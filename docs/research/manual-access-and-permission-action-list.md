@@ -1,61 +1,55 @@
-# Manual Access and Permission Action List
+# Manual Access and Restricted Source Action List
 
 ## Purpose
 
-This action list names the human steps required before any real AHS/GURU guideline content, internal GURU material, historical update package, evidence table, search strategy, excluded-study reason, or licensed external source can be stored or processed by the workbench.
+This action list names the human steps needed for internal GURU material, historical update packages, evidence tables, search strategies, excluded-study reasons, and licensed external sources that are not part of the public AHS/GURU prototype corpus.
 
-The current public corpus is metadata-only. Do not download, archive, parse, summarize, embed, extract, create source spans from, derive graph nodes from, or populate the UI with real source content until the registry records permission for that exact use.
+The public AHS/GURU corpus from `https://www.albertahealthservices.ca/cancer/page1731.aspx` is covered by the current public guideline knowledgebase buildout. Public AHS/GURU resources may be used for prototype download manifests, parsing, source-document records, source spans, graph-ready records, backend API responses, and Evidence Atlas browsing. The safeguards still apply: no PHI, no patient-specific advice, source-span provenance for clinical claim-like records, and no default external LLM routing.
 
 ## Immediate User Actions
 
-1. **Confirm the canonical public AHS source page**
+1. **Keep the public AHS source page as the prototype anchor**
    - Use this canonical page for the public AHS/GURU Cancer Guidelines corpus: `https://www.albertahealthservices.ca/cancer/page1731.aspx`.
-   - Current status: catalogued as link and metadata only in `docs/research/ahs-guideline-corpus-catalogue.md` and `resources/registry/ahs-guru-public-corpus.json`.
-   - Needed from human reviewer: confirm whether this page and its linked documents may be archived, parsed, transformed into source spans, used to derive graph nodes, displayed in the workbench, and used in commercial deployment.
+   - Current status: catalogued in `docs/research/ahs-guideline-corpus-catalogue.md` and `resources/registry/ahs-guru-public-corpus.json`.
+   - Prototype storage and derived-record paths live in [`docs/research/public-guideline-acquisition.md`](./public-guideline-acquisition.md).
 
-2. **Contact GURU through the catalogue contact link**
+2. **Contact GURU for internal or non-public material**
    - The public catalogue includes `GURU@ahs.ca` as `mailto:GURU@ahs.ca`.
-   - Use that contact only for an authorized permission request or to identify the correct GURU steward. Do not treat the email link as permission.
+   - Use that contact only to identify the correct GURU steward for internal process packs, historical update materials, evidence tables, search strategies, or future deployment questions.
 
-3. **Request permission for the public corpus**
-    - Ask the authorized AHS/CCA/GURU contact for a written permission matrix covering the public corpus discovered from `page1731.aspx`.
-    - Use [`docs/research/ahs-guru-public-corpus-permission-request-template.md`](./ahs-guru-public-corpus-permission-request-template.md) as the sendable request draft.
-    - The request should name these proposed uses separately: raw archival, local or controlled object storage, parsing, normalized text and table storage, source-span creation, excerpt display, graph derivation, reviewer workflow use, UI population, redistribution limits, and commercial deployment.
-    - Record the answer in each affected registry row before any real data work starts.
-
-4. **Request the internal GURU process pack**
+3. **Request the internal GURU process pack**
    - Request the current GURU Guideline Methodology Handbook and templates.
    - Request the detailed literature-search process document.
    - Request the annual Provincial Tumour Team meeting and administration manual, including timelines, agendas, and task procedures.
    - Request conflict-of-interest process materials and templates.
    - Request consensus survey examples, Delphi outputs, voting records, and agreement records where available.
    - Request publication, versioning, archive, and update-communication procedures.
-   - Treat every internal item as restricted until a GURU steward or delegate records approval. Metadata-only cataloguing is the default.
+   - Treat every internal item as restricted until a GURU steward or delegate says how it may be handled. Metadata-only cataloguing is the default.
 
-5. **Request historical update materials**
+4. **Request historical update materials**
    - Ask for two historical guideline update projects with final approved versions, intermediate drafts, redlines, reviewer comments, decision memos, and related artifacts.
    - Ask GURU to choose projects that are safe for evaluation and do not contain PHI, patient identifiers, or patient-specific examples.
-   - Request permission for view, metadata catalogue, raw archive, parsing, source-span creation, graph derivation, evaluation use, and commercial deployment separately. If any category is denied, record the narrower allowed use.
+   - Ask for the handling terms for viewing, metadata cataloguing, raw archive, parsing, source-span creation, graph derivation, evaluation use, and deployment separately. If any category is denied, record the narrower allowed use.
 
-6. **Request evidence tables, search strategies, and excluded-study reasons**
+5. **Request evidence tables, search strategies, and excluded-study reasons**
    - Request evidence tables that support selected guidelines.
    - Request the search strategies that produced those evidence tables, including databases, dates, search strings, filters, and update cadence where GURU can share them.
    - Request excluded-study reasons and screening decisions where available.
-   - These materials are derivative and methods-sensitive. Store only metadata until written terms allow raw archival and derivative processing.
+   - These materials are derivative and methods-sensitive. Store only metadata until written terms describe how raw archival and derivative processing may happen.
 
-7. **Request one upcoming pilot topic**
+6. **Request one upcoming pilot topic**
    - Ask GURU to identify one upcoming guideline update topic suitable for a bounded prospective pilot.
    - Keep the pilot observational or assistive until a separate pilot agreement covers roles, review, storage, derivative artifacts, display, and publication boundaries.
-   - Do not start the pilot by ingesting documents. Start by updating registry rows and permissions.
+   - Do not start a non-public pilot by ingesting documents. Start by updating registry rows and handling notes.
 
-8. **Review licensed and subscription sources**
+7. **Review licensed and subscription sources**
    - Existing registry categories include licensed or subscription resources such as external guideline bodies, evidence APIs, databases, journals, abstract services, and computable standards.
-   - Human or institutional access is required before viewing or processing subscription sources. A personal login, public landing page, or citation does not grant raw archival, scraping, embedding, summarization, graph derivation, redistribution, or commercial rights.
+   - Human or institutional access is required before viewing or processing subscription sources. A personal login, public landing page, or citation does not settle raw archival, scraping, embedding, summarization, graph derivation, redistribution, or commercial use.
    - Record licence scope, expiration, permitted uses, and storage limits before any source is processed.
 
-## Permission Questions to Ask
+## Restricted Source Questions to Ask
 
-For each resource class, ask the owner to answer these questions in writing.
+For each non-public or licensed resource class, ask the owner to answer these questions in writing.
 
 - May Novara and the project team store an exact raw copy locally?
 - May the raw copy be stored in controlled object storage for approved users?
@@ -66,37 +60,36 @@ For each resource class, ask the owner to answer these questions in writing.
 - May the material be used for evaluation, benchmarking, extraction QA, or historical replay?
 - May any derivative artifact be used in commercial development, licensing, or deployment?
 - Are there restrictions on redistribution, public display, external services, model processing, retention period, user access, or deletion?
-- Who is the named reviewer or authority for the permission record?
+- Who is the named reviewer or authority for the handling record?
 
-## Registry Updates Required Before Data Work
+## Registry Updates Required Before Restricted Data Work
 
-No ingestion task may start until the relevant registry rows are updated with:
+No restricted-source ingestion task may start until the relevant registry rows are updated with:
 
 - `permission_status` set from written evidence, never by assumption.
 - `allowed_use` values that match the written permission.
 - `local_storage_decision` chosen from `link-only`, `metadata-only`, `local raw archive`, `Git LFS`, `object storage`, or `prohibited`.
 - `checksum_sha256` for any retained raw file, or the empty-string hash when nothing is retained.
-- Notes naming the reviewer, review date, permission basis, storage limits, derivative limits, and next step.
+- Notes naming the reviewer, review date, handling basis, storage limits, derivative limits, and next step.
 
-Rows that remain `metadata-only` or `link-only` cannot produce raw archives, normalized text, source spans, embeddings, summaries, extracted fields, graph nodes, model traces, or UI excerpts.
+Rows for restricted sources that remain `metadata-only` or `link-only` cannot produce raw archives, normalized text, source spans, embeddings, summaries, extracted fields, graph nodes, model traces, or UI excerpts.
 
 ## Safeguards That Stay in Force
 
 - No PHI, real patient identifiers, patient-specific examples, or PHI-like synthetic data may enter code, fixtures, logs, prompts, evaluations, raw archives, evidence files, graph data, or commit messages.
 - The workbench does not generate patient-specific treatment advice, dosing recommendations, diagnostic conclusions, or approved clinical recommendations.
 - No clinical statement, guideline summary, recommendation draft, extraction, evidence item, funding rule, review decision, or model trace may exist without a source span when the schema requires one.
-- No raw source storage happens before permission and storage gates pass.
-- No derivative artifacts are allowed for `metadata-only` or `link-only` rows.
+- No raw restricted-source storage happens before registry handling and storage checks pass.
+- No derivative artifacts are allowed for restricted-source rows marked `metadata-only` or `link-only`.
 - No external LLM API routing is allowed by default. Restricted or licensed content needs documented approval and a per-use gate before any external service sees it.
 
 ## First Recommended Manual Sequence
 
-1. Confirm the `page1731.aspx` public corpus owner and the right GURU permission contact.
-2. Send the permission matrix request for the public corpus, using `GURU@ahs.ca` only if it is the right intake route.
-   - Start from [`docs/research/ahs-guru-public-corpus-permission-request-template.md`](./ahs-guru-public-corpus-permission-request-template.md) and adjust recipient names before sending.
+1. Keep the public `page1731.aspx` corpus tied to the public guideline knowledgebase buildout and [`docs/research/public-guideline-acquisition.md`](./public-guideline-acquisition.md).
+2. Use `GURU@ahs.ca` only if it is the right intake route for internal GURU materials or future deployment questions.
 3. Request the internal GURU process pack from the proposal package.
-4. Ask GURU to nominate one small disease-site subset for a permissioned pilot.
-5. Update registry rows from the written response before any raw archive, checksum, parser, source-span, graph, review, or UI work begins.
+4. Ask GURU to nominate one small disease-site subset for a non-public pilot only if the public prototype does not answer the evaluation question.
+5. Update registry rows from the written response before any restricted raw archive, checksum, parser, source-span, graph, review, or UI work begins.
 
 ## References
 
