@@ -1,0 +1,27 @@
+{
+  "registry_version": "1.0.0",
+  "last_updated": "2026-06-15",
+  "category": "Alberta funding/trials/pathways",
+  "rows": [
+    {
+      "resource_id": "alberta-cancer-drug-benefit-master-list-placeholder",
+      "title": "Alberta Outpatient Cancer Drug Benefit Program Master List (placeholder)",
+      "source_owner": "Alberta Health Services",
+      "source_url_or_access_path": "https://www.ahs.ca/drugbenefit",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "summary",
+      "jurisdiction": "CA-AB",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "unknown",
+      "license_status": "unknown",
+      "allowed_use": ["link", "metadata"],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "link-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Public Alberta funding resource placeholder. Verify AHS reuse/redistribution terms before retaining any content or creating derivatives. Link-only until permission is confirmed."
+    }
+  ]
+}

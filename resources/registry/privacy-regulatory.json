@@ -1,0 +1,27 @@
+{
+  "registry_version": "1.0.0",
+  "last_updated": "2026-06-15",
+  "category": "privacy/regulatory",
+  "rows": [
+    {
+      "resource_id": "pipeda-placeholder",
+      "title": "PIPEDA (Personal Information Protection and Electronic Documents Act) (placeholder)",
+      "source_owner": "Government of Canada",
+      "source_url_or_access_path": "https://laws-lois.justice.gc.ca/eng/acts/p-8.6/",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "regulatory",
+      "jurisdiction": "CA",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "unknown",
+      "license_status": "government_open",
+      "allowed_use": ["link", "metadata", "view"],
+      "permission_required": false,
+      "permission_status": "not_applicable",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Canadian privacy legislation placeholder. Statutes are generally public, but redistribution or raw archival may still be subject to terms. Cite the authoritative source and archive raw text only when explicitly permitted."
+    }
+  ]
+}

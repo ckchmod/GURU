@@ -1,0 +1,27 @@
+{
+  "registry_version": "1.0.0",
+  "last_updated": "2026-06-15",
+  "category": "computable standards",
+  "rows": [
+    {
+      "resource_id": "snomed-ct-placeholder",
+      "title": "SNOMED CT International Edition (placeholder)",
+      "source_owner": "SNOMED International",
+      "source_url_or_access_path": "https://www.snomed.org/snomed-ct",
+      "access_method": "subscription_api",
+      "access_date": "2026-06-15",
+      "resource_type": "terminology",
+      "jurisdiction": "International",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "unknown",
+      "license_status": "subscription",
+      "allowed_use": ["link", "metadata"],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Computable terminology placeholder. SNOMED CT is distributed under affiliate/subscription terms. Do not store, redistribute, or embed code-system files without confirming the applicable license conditions."
+    }
+  ]
+}

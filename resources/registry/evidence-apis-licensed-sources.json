@@ -1,0 +1,27 @@
+{
+  "registry_version": "1.0.0",
+  "last_updated": "2026-06-15",
+  "category": "evidence APIs/licensed sources",
+  "rows": [
+    {
+      "resource_id": "pubmed-api-placeholder",
+      "title": "PubMed / Entrez API (placeholder)",
+      "source_owner": "National Center for Biotechnology Information",
+      "source_url_or_access_path": "https://api.ncbi.nlm.nih.gov/lit/ctxp/v1/pubmed/",
+      "access_method": "api",
+      "access_date": "2026-06-15",
+      "resource_type": "api",
+      "jurisdiction": "US",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "unknown",
+      "license_status": "unknown",
+      "allowed_use": ["link", "metadata"],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Licensed/usage-policy API placeholder. Bulk download, scraping, or redistribution may be restricted by NCBI E-utilities policy and publisher/subscription terms. Confirm allowed use before processing."
+    }
+  ]
+}
