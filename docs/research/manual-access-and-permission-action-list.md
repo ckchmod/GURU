@@ -18,9 +18,10 @@ The current public corpus is metadata-only. Do not download, archive, parse, sum
    - Use that contact only for an authorized permission request or to identify the correct GURU steward. Do not treat the email link as permission.
 
 3. **Request permission for the public corpus**
-   - Ask the authorized AHS/CCA/GURU contact for a written permission matrix covering the public corpus discovered from `page1731.aspx`.
-   - The request should name these proposed uses separately: raw archival, local or controlled object storage, parsing, normalized text and table storage, source-span creation, excerpt display, graph derivation, reviewer workflow use, UI population, redistribution limits, and commercial deployment.
-   - Record the answer in each affected registry row before any real data work starts.
+    - Ask the authorized AHS/CCA/GURU contact for a written permission matrix covering the public corpus discovered from `page1731.aspx`.
+    - Use [`docs/research/ahs-guru-public-corpus-permission-request-template.md`](./ahs-guru-public-corpus-permission-request-template.md) as the sendable request draft.
+    - The request should name these proposed uses separately: raw archival, local or controlled object storage, parsing, normalized text and table storage, source-span creation, excerpt display, graph derivation, reviewer workflow use, UI population, redistribution limits, and commercial deployment.
+    - Record the answer in each affected registry row before any real data work starts.
 
 4. **Request the internal GURU process pack**
    - Request the current GURU Guideline Methodology Handbook and templates.
@@ -92,6 +93,7 @@ Rows that remain `metadata-only` or `link-only` cannot produce raw archives, nor
 
 1. Confirm the `page1731.aspx` public corpus owner and the right GURU permission contact.
 2. Send the permission matrix request for the public corpus, using `GURU@ahs.ca` only if it is the right intake route.
+   - Start from [`docs/research/ahs-guru-public-corpus-permission-request-template.md`](./ahs-guru-public-corpus-permission-request-template.md) and adjust recipient names before sending.
 3. Request the internal GURU process pack from the proposal package.
 4. Ask GURU to nominate one small disease-site subset for a permissioned pilot.
 5. Update registry rows from the written response before any raw archive, checksum, parser, source-span, graph, review, or UI work begins.
@@ -99,6 +101,7 @@ Rows that remain `metadata-only` or `link-only` cannot produce raw archives, nor
 ## References
 
 - [`docs/research/ahs-guideline-corpus-catalogue.md`](./ahs-guideline-corpus-catalogue.md)
+- [`docs/research/ahs-guru-public-corpus-permission-request-template.md`](./ahs-guru-public-corpus-permission-request-template.md)
 - [`resources/registry/ahs-guru-public-corpus.json`](../../resources/registry/ahs-guru-public-corpus.json)
 - [`docs/proposal/resource-request-package.md`](../proposal/resource-request-package.md)
 - [`docs/resource-registry.md`](../resource-registry.md)
