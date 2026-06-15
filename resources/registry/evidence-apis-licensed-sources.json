@@ -4,24 +4,165 @@
   "category": "evidence APIs/licensed sources",
   "rows": [
     {
-      "resource_id": "pubmed-api-placeholder",
-      "title": "PubMed / Entrez API (placeholder)",
+      "resource_id": "ncbi-eutilities-pubmed",
+      "title": "NCBI E-utilities / PubMed API",
       "source_owner": "National Center for Biotechnology Information",
-      "source_url_or_access_path": "https://api.ncbi.nlm.nih.gov/lit/ctxp/v1/pubmed/",
+      "source_url_or_access_path": "https://www.ncbi.nlm.nih.gov/books/NBK25501/",
       "access_method": "api",
       "access_date": "2026-06-15",
       "resource_type": "api",
       "jurisdiction": "US",
       "disease_site": "not-applicable",
       "document_status": "approved",
-      "version_or_date": "unknown",
+      "version_or_date": "accessed 2026-06-15",
       "license_status": "unknown",
-      "allowed_use": ["link", "metadata"],
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
       "permission_required": true,
       "permission_status": "pending",
       "local_storage_decision": "metadata-only",
       "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "notes": "Licensed/usage-policy API placeholder. Bulk download, scraping, or redistribution may be restricted by NCBI E-utilities policy and publisher/subscription terms. Confirm allowed use before processing."
+      "notes": "Public API documentation locator. API usage, rate limits, publisher records, abstracts, and full-text rights require separate review before storage or derivative processing."
+    },
+    {
+      "resource_id": "clinicaltrials-gov-api",
+      "title": "ClinicalTrials.gov API",
+      "source_owner": "U.S. National Library of Medicine",
+      "source_url_or_access_path": "https://clinicaltrials.gov/data-api/api",
+      "access_method": "api",
+      "access_date": "2026-06-15",
+      "resource_type": "trial_registry",
+      "jurisdiction": "US",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "public_domain",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": false,
+      "permission_status": "not_applicable",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Public registry API metadata entry. This task does not query or archive trial records; future use must still respect API policy and provenance requirements."
+    },
+    {
+      "resource_id": "crossref-rest-api",
+      "title": "Crossref REST API",
+      "source_owner": "Crossref",
+      "source_url_or_access_path": "https://api.crossref.org/",
+      "access_method": "api",
+      "access_date": "2026-06-15",
+      "resource_type": "api",
+      "jurisdiction": "International",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "unknown",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Metadata API candidate for DOI lookup. No Crossref response payloads or abstracts are stored in this task; terms and rate-limit policy require review."
+    },
+    {
+      "resource_id": "openalex-api",
+      "title": "OpenAlex API",
+      "source_owner": "OurResearch / OpenAlex",
+      "source_url_or_access_path": "https://docs.openalex.org/",
+      "access_method": "api",
+      "access_date": "2026-06-15",
+      "resource_type": "api",
+      "jurisdiction": "International",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "unknown",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Scholarly metadata API candidate. Registry records only locator and ownership; no bulk snapshots, embeddings, or graph derivatives retained."
+    },
+    {
+      "resource_id": "cochrane-library-subscription",
+      "title": "Cochrane Library / Cochrane Database of Systematic Reviews",
+      "source_owner": "Cochrane / Wiley",
+      "source_url_or_access_path": "https://www.cochranelibrary.com/",
+      "access_method": "subscription_api",
+      "access_date": "2026-06-15",
+      "resource_type": "api",
+      "jurisdiction": "International",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "subscription",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Licensed/subscription evidence source. No full text, abstract, review content, or API payload retained; institutional license scope must be confirmed before any processing."
+    },
+    {
+      "resource_id": "embase-subscription",
+      "title": "Embase biomedical literature database",
+      "source_owner": "Elsevier",
+      "source_url_or_access_path": "https://www.elsevier.com/products/embase",
+      "access_method": "subscription_api",
+      "access_date": "2026-06-15",
+      "resource_type": "api",
+      "jurisdiction": "International",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "subscription",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Subscription bibliographic database. Raw archival, redistribution, and derivative processing are blocked pending institutional license review."
+    },
+    {
+      "resource_id": "nccn-permissions-process",
+      "title": "NCCN guideline content permissions process",
+      "source_owner": "National Comprehensive Cancer Network",
+      "source_url_or_access_path": "https://www.nccn.org/permissions",
+      "access_method": "manual_request",
+      "access_date": "2026-06-15",
+      "resource_type": "guideline",
+      "jurisdiction": "US",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "proprietary",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "link-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Proprietary guideline source represented only by permissions-process locator. Do not archive NCCN content, copy guideline text, or create derivatives without explicit NCCN permission."
     }
   ]
 }

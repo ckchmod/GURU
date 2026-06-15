@@ -4,24 +4,142 @@
   "category": "methodology standards",
   "rows": [
     {
-      "resource_id": "sign-methodology-handbook-placeholder",
-      "title": "SIGN Handbook for Guideline Development (placeholder)",
-      "source_owner": "Scottish Intercollegiate Guidelines Network",
-      "source_url_or_access_path": "https://www.sign.ac.uk/our-guidelines/sign-methodology/",
+      "resource_id": "grade-evidence-to-decision",
+      "title": "GRADE Evidence to Decision frameworks",
+      "source_owner": "GRADE Working Group / GRADEpro",
+      "source_url_or_access_path": "https://www.gradepro.org/",
       "access_method": "public_url",
       "access_date": "2026-06-15",
       "resource_type": "methodology",
       "jurisdiction": "International",
       "disease_site": "not-applicable",
       "document_status": "approved",
-      "version_or_date": "unknown",
+      "version_or_date": "accessed 2026-06-15",
       "license_status": "unknown",
-      "allowed_use": ["link", "metadata"],
-      "permission_required": false,
-      "permission_status": "not_applicable",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
       "local_storage_decision": "metadata-only",
       "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "notes": "External guideline methodology placeholder. Check SIGN publisher terms of use, copyright notices, and member-only restrictions before any reuse or derivative processing."
+      "notes": "Methodology standard candidate for quality-control checklists. Public metadata only; no handbook content, templates, or framework text copied."
+    },
+    {
+      "resource_id": "prisma-2020-statement",
+      "title": "PRISMA 2020 Statement",
+      "source_owner": "PRISMA Statement",
+      "source_url_or_access_path": "https://www.prisma-statement.org/prisma-2020",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "methodology",
+      "jurisdiction": "International",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "2020; accessed 2026-06-15",
+      "license_status": "unknown",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Reporting-methodology standard catalogued by locator and high-level metadata only. Terms must be checked before retaining checklists, diagrams, or derivative structures."
+    },
+    {
+      "resource_id": "cochrane-handbook-systematic-reviews",
+      "title": "Cochrane Handbook for Systematic Reviews of Interventions",
+      "source_owner": "Cochrane",
+      "source_url_or_access_path": "https://training.cochrane.org/handbook/current",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "methodology",
+      "jurisdiction": "International",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "unknown",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Core systematic-review methodology source identified by the plan. No handbook text archived or summarized; use remains link/metadata pending license review."
+    },
+    {
+      "resource_id": "agree-ii-instrument",
+      "title": "AGREE II Instrument",
+      "source_owner": "AGREE Enterprise",
+      "source_url_or_access_path": "https://www.agreetrust.org/resource-centre/agree-ii/",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "methodology",
+      "jurisdiction": "International",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "unknown",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Guideline appraisal methodology candidate. Catalogued conservatively; instrument content, scoring details, and derivative checks are not copied."
+    },
+    {
+      "resource_id": "right-statement",
+      "title": "RIGHT Statement for reporting practice guidelines",
+      "source_owner": "RIGHT Statement Working Group",
+      "source_url_or_access_path": "https://www.right-statement.org/",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "methodology",
+      "jurisdiction": "International",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "unknown",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Practice-guideline reporting standard candidate. Metadata-only until terms permit local retention or derivative implementation."
+    },
+    {
+      "resource_id": "nice-guidelines-manual",
+      "title": "NICE guidelines manual",
+      "source_owner": "National Institute for Health and Care Excellence",
+      "source_url_or_access_path": "https://www.nice.org.uk/process/pmg20",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "methodology",
+      "jurisdiction": "International",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "unknown",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "External guideline-development manual for benchmarking methods. No manual content stored; permissions must be reviewed before reuse beyond linking/metadata."
     }
   ]
 }

@@ -4,8 +4,8 @@
   "category": "computable standards",
   "rows": [
     {
-      "resource_id": "snomed-ct-placeholder",
-      "title": "SNOMED CT International Edition (placeholder)",
+      "resource_id": "snomed-ct-international",
+      "title": "SNOMED CT International Edition",
       "source_owner": "SNOMED International",
       "source_url_or_access_path": "https://www.snomed.org/snomed-ct",
       "access_method": "subscription_api",
@@ -14,14 +14,155 @@
       "jurisdiction": "International",
       "disease_site": "not-applicable",
       "document_status": "approved",
-      "version_or_date": "unknown",
+      "version_or_date": "accessed 2026-06-15",
       "license_status": "subscription",
-      "allowed_use": ["link", "metadata"],
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
       "permission_required": true,
       "permission_status": "pending",
       "local_storage_decision": "metadata-only",
       "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "notes": "Computable terminology placeholder. SNOMED CT is distributed under affiliate/subscription terms. Do not store, redistribute, or embed code-system files without confirming the applicable license conditions."
+      "notes": "Terminology standard under affiliate/subscription terms. No code-system files, concepts, value sets, or mappings stored or redistributed."
+    },
+    {
+      "resource_id": "loinc",
+      "title": "LOINC terminology",
+      "source_owner": "Regenstrief Institute",
+      "source_url_or_access_path": "https://loinc.org/",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "terminology",
+      "jurisdiction": "International",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "unknown",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Terminology candidate. Registry stores only locator and metadata; license review required before retaining tables, subsets, or mappings."
+    },
+    {
+      "resource_id": "hl7-fhir-cpg-ig",
+      "title": "HL7 FHIR Clinical Practice Guidelines Implementation Guide",
+      "source_owner": "HL7 International",
+      "source_url_or_access_path": "https://build.fhir.org/ig/HL7/cqf-recommendations/",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "standard",
+      "jurisdiction": "International",
+      "disease_site": "not-applicable",
+      "document_status": "under_review",
+      "version_or_date": "continuous build accessed 2026-06-15",
+      "license_status": "unknown",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Computable-guideline standard locator. Continuous-build status means version pinning and license review are required before implementation or derived artifacts."
+    },
+    {
+      "resource_id": "cds-hooks",
+      "title": "CDS Hooks specification",
+      "source_owner": "HL7 International / CDS Hooks project",
+      "source_url_or_access_path": "https://cds-hooks.hl7.org/",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "standard",
+      "jurisdiction": "International",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "unknown",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Clinical decision support integration standard locator. Metadata-only until terms and implementation scope are reviewed."
+    },
+    {
+      "resource_id": "smart-on-fhir",
+      "title": "SMART App Launch / SMART on FHIR",
+      "source_owner": "HL7 International / SMART Health IT",
+      "source_url_or_access_path": "https://hl7.org/fhir/smart-app-launch/",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "standard",
+      "jurisdiction": "International",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "unknown",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "FHIR app launch standard locator. No specification text copied; implementation choices are deferred to later architecture work."
+    },
+    {
+      "resource_id": "omop-cdm",
+      "title": "OMOP Common Data Model",
+      "source_owner": "OHDSI",
+      "source_url_or_access_path": "https://ohdsi.github.io/CommonDataModel/",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "standard",
+      "jurisdiction": "International",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "unknown",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Observational data model standard candidate. Metadata-only; no schema files or vocabulary assets retained in this task."
+    },
+    {
+      "resource_id": "nci-thesaurus",
+      "title": "NCI Thesaurus",
+      "source_owner": "National Cancer Institute",
+      "source_url_or_access_path": "https://ncithesaurus.nci.nih.gov/",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "terminology",
+      "jurisdiction": "US",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "unknown",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Oncology terminology source. No terminology payloads, subsets, or mappings stored until license and redistribution terms are reviewed."
     }
   ]
 }
