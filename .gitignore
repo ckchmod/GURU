@@ -25,6 +25,9 @@ coverage/
 .next/
 .turbo/
 .cache/
+*.tsbuildinfo
+test-results/
+playwright-report/
 
 # Local env and secrets
 .env

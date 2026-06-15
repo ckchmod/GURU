@@ -35,8 +35,23 @@ Maintain a full test baseline from the start. Every significant milestone must p
 Run the full baseline once scaffolds are in place:
 
 ```bash
-# Backend
-pytest services/api
+# Install frontend dependencies
+npm install
+
+# Install backend dependencies
+python -m pip install -r services/api/requirements.txt
+
+# Backend development server
+npm run dev:api
+
+# Backend tests
+npm run test:api
+
+# Backend health smoke, with the API server running on 127.0.0.1:8000
+npm run smoke:api
+
+# Frontend development server
+npm run dev:web
 
 # Frontend unit tests
 npm run test --workspace=apps/web
@@ -44,8 +59,16 @@ npm run test --workspace=apps/web
 # Frontend end-to-end tests
 npm run test:e2e --workspace=apps/web
 
+# Root aliases for frontend checks
+npm run test:web
+npm run test:e2e:web
+
 # Schema validation smoke tests
 python scripts/validate_schemas.py
+
+# Resource registry validation
+python scripts/validate-resource-registry.py
+python scripts/validate-resource-registry.py tests/fixtures/resource-registry
 
 # Lint and typecheck
 npm run lint --workspace=apps/web

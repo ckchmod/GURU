@@ -1,0 +1,17 @@
+{
+  "name": "guru-guideline-workbench",
+  "private": true,
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace=apps/web",
+    "test:web": "npm run test --workspace=apps/web",
+    "test:e2e:web": "npm run test:e2e --workspace=apps/web",
+    "lint:web": "npm run lint --workspace=apps/web",
+    "typecheck:web": "npm run typecheck --workspace=apps/web",
+    "dev:api": "uvicorn services.api.app.main:app --reload --host 127.0.0.1 --port 8000",
+    "test:api": "pytest services/api",
+    "smoke:api": "python -m services.api.scripts.smoke_health"
+  }
+}
