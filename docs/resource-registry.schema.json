@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cca-guru.example/schemas/resource-registry.schema.json",
+  "title": "CCA GURU Resource Registry File",
+  "description": "Schema for starter resource registry files used by the CCA GURU Guideline Graph Workbench. Each file describes one resource category and contains an array of registry rows. This schema does not perform executable acquisition or license validation; Task 10 will implement executable validation.",
+  "type": "object",
+  "required": ["registry_version", "last_updated", "category", "rows"],
+  "properties": {
+    "registry_version": {
+      "type": "string",
+      "description": "Registry file format version. Follow semantic versioning.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date",
+      "description": "Date this registry file was last updated."
+    },
+    "category": {
+      "type": "string",
+      "description": "Resource category represented by this registry file.",
+      "enum": [
+        "AHS/GURU public corpus",
+        "internal GURU process pack",
+        "Alberta funding/trials/pathways",
+        "methodology standards",
+        "evidence APIs/licensed sources",
+        "privacy/regulatory",
+        "computable standards"
+      ]
+    },
+    "rows": {
+      "type": "array",
+      "description": "Registry rows for resources in this category.",
+      "items": {
+        "$ref": "#/$defs/row"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "row": {
+      "type": "object",
+      "title": "Resource Registry Row",
+      "description": "A single governed resource. Every row must record provenance, license status, permission state, and a storage decision.",
+      "required": [
+        "resource_id",
+        "title",
+        "source_owner",
+        "source_url_or_access_path",
+        "access_method",
+        "access_date",
+        "resource_type",
+        "jurisdiction",
+        "disease_site",
+        "document_status",
+        "version_or_date",
+        "license_status",
+        "allowed_use",
+        "permission_required",
+        "permission_status",
+        "local_storage_decision",
+        "checksum_sha256",
+        "notes"
+      ],
+      "properties": {
+        "resource_id": {
+          "type": "string",
+          "description": "Stable, URL-safe identifier for the resource within the registry.",
+          "pattern": "^[a-z0-9][a-z0-9_.:-]*$",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "description": "Human-readable title of the resource.",
+          "minLength": 1
+        },
+        "source_owner": {
+          "type": "string",
+          "description": "Organization, publisher, or steward that owns or distributes the resource.",
+          "minLength": 1
+        },
+        "source_url_or_access_path": {
+          "type": "string",
+          "description": "Public URL, DOI, API endpoint, or internal access path. Use a stable locator when available.",
+          "minLength": 1
+        },
+        "access_method": {
+          "type": "string",
+          "description": "How the resource is obtained.",
+          "enum": [
+            "public_url",
+            "doi",
+            "internal_share",
+            "api",
+            "subscription_api",
+            "manual_request",
+            "email",
+            "unknown"
+          ]
+        },
+        "access_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date the resource was last accessed or verified."
+        },
+        "resource_type": {
+          "type": "string",
+          "description": "Kind of resource.",
+          "enum": [
+            "guideline",
+            "evidence_table",
+            "algorithm",
+            "summary",
+            "letter",
+            "methodology",
+            "standard",
+            "trial_registry",
+            "regulatory",
+            "terminology",
+            "api",
+            "other"
+          ]
+        },
+        "jurisdiction": {
+          "type": "string",
+          "description": "Primary jurisdiction or scope of the resource.",
+          "enum": [
+            "CA-AB",
+            "CA",
+            "US",
+            "EU",
+            "International",
+            "Organization"
+          ]
+        },
+        "disease_site": {
+          "type": "string",
+          "description": "Cancer disease site, tumour team, or 'not-applicable' for cross-cutting resources.",
+          "minLength": 1
+        },
+        "document_status": {
+          "type": "string",
+          "description": "Publication or lifecycle status of the resource.",
+          "enum": [
+            "draft",
+            "under_review",
+            "approved",
+            "archived",
+            "superseded",
+            "unknown"
+          ]
+        },
+        "version_or_date": {
+          "type": "string",
+          "description": "Version string, effective date, or last-reviewed date. Use 'unknown' if not available."
+        },
+        "license_status": {
+          "type": "string",
+          "description": "Known license or terms-of-use status. 'unknown' is the conservative default.",
+          "enum": [
+            "unknown",
+            "public_domain",
+            "cc_by",
+            "cc_by_nc",
+            "cc_by_sa",
+            "proprietary",
+            "subscription",
+            "government_open",
+            "restricted"
+          ]
+        },
+        "allowed_use": {
+          "type": "array",
+          "description": "Permitted uses based on the current license/permission review.",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "enum": [
+              "link",
+              "view",
+              "metadata",
+              "summarize",
+              "embed",
+              "redistribute",
+              "derive_graph",
+              "commercial"
+            ]
+          }
+        },
+        "permission_required": {
+          "type": "boolean",
+          "description": "Whether explicit permission is required before storing, processing, or redistributing the resource."
+        },
+        "permission_status": {
+          "type": "string",
+          "description": "Current state of any required permission. Placeholder rows must not use 'approved' unless evidence of approval exists.",
+          "enum": [
+            "pending",
+            "unknown",
+            "not_applicable",
+            "approved",
+            "denied"
+          ]
+        },
+        "local_storage_decision": {
+          "type": "string",
+          "description": "Storage decision for this resource, aligned with docs/resource-storage-policy.md.",
+          "enum": [
+            "link-only",
+            "metadata-only",
+            "local raw archive",
+            "Git LFS",
+            "object storage",
+            "prohibited"
+          ]
+        },
+        "checksum_sha256": {
+          "type": "string",
+          "description": "SHA-256 checksum of any locally retained raw file. Use the SHA-256 of the empty string (e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855) when no content is retained locally.",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Free-text provenance, review, escalation, and next-step notes."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
