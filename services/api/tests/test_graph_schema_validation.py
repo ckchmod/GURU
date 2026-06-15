@@ -7,8 +7,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
-
 ROOT = Path(__file__).resolve().parents[3]
 VALIDATOR = ROOT / "scripts" / "validate-graph-schemas.py"
 VALID_FIXTURE = ROOT / "tests" / "fixtures" / "graph-provenance" / "synthetic-graph.json"

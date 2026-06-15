@@ -1,0 +1,64 @@
+name: CI Baseline
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+
+jobs:
+  quality-gates:
+    name: Full baseline quality gates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: "services/api/requirements.txt"
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Install backend dependencies
+        run: python -m pip install -r services/api/requirements.txt
+
+      - name: Run backend pytest
+        run: npm run test:api
+
+      - name: Run frontend Vitest
+        run: npm run test:web
+
+      - name: Run frontend lint
+        run: npm run lint:web
+
+      - name: Run frontend typecheck
+        run: npm run typecheck:web
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright smoke tests
+        run: npm run test:e2e:web
+
+      - name: Validate graph/provenance schemas
+        run: |
+          npm run test:schemas
+          npm run test:schemas:invalid || true
+
+      - name: Validate resource registry
+        run: python scripts/validate-resource-registry.py
+
+      - name: Validate resource registry fixtures (informational)
+        run: python scripts/validate-resource-registry.py tests/fixtures/resource-registry || true
