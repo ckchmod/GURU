@@ -1,0 +1,9 @@
+# Synthetic Workbench Note
+
+This synthetic paragraph describes a document maintenance workflow. It contains no patient facts, clinical recommendations, diagnoses, or dosing details.
+
+## Provenance Checks
+
+Each derived record in this fixture is expected to keep a stable locator, quoted text, and checksum so tests can verify provenance plumbing.
+
+The fixture remains generic and non-clinical. It exists only to exercise parser boundaries for source documents and source spans.
