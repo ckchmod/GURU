@@ -126,7 +126,7 @@ This request is derived from the Phase 0 discovery list in [`docs/gpt5.5pro_6_15
 
 ## How resources will be governed
 
-Each delivered resource will receive a registry row in the format defined by [`docs/resource-registry.md`](../../docs/resource-registry.md). The row will include:
+Each delivered resource will receive a registry row in the format defined by [`docs/resource-registry.md`](../../docs/resource-registry.md). Extracted artifacts such as source spans, graph nodes, evidence items, and model traces will be validated against the graph/provenance schemas in [`packages/schemas/README.md`](../../packages/schemas/README.md) and routed through the local-first model gateway in [`docs/model-gateway.md`](../../docs/model-gateway.md). The row will include:
 
 - resource identifier, title, source owner, and access path;
 - licence status and allowed-use list;
@@ -154,5 +154,7 @@ CCA GURU's response to this package, including any items that cannot be shared a
 - [`docs/resource-registry.md`](../../docs/resource-registry.md)
 - [`docs/security-privacy-license.md`](../../docs/security-privacy-license.md)
 - [`docs/resource-storage-policy.md`](../../docs/resource-storage-policy.md)
+- [`docs/model-gateway.md`](../../docs/model-gateway.md)
+- [`packages/schemas/README.md`](../../packages/schemas/README.md)
 - [`AGENTS.md`](../../AGENTS.md)
 - [`docs/CONTEXT.md`](../../docs/CONTEXT.md)

@@ -34,7 +34,7 @@ The source assessment explicitly warns against positioning the product as a "nan
 5. **No PHI and no patient-specific advice.** The workbench supports guideline maintenance. It does not process real patient records or give treatment advice for individual patients.
 6. **Local-first model gateway.** External LLM APIs are off by default. The default path is local or customer-owned open-weight inference, with quota, cache, trace, and cost-ledger controls.
 
-These principles are encoded in [`AGENTS.md`](../../AGENTS.md), [`docs/CONTEXT.md`](../../docs/CONTEXT.md), [`docs/security-privacy-license.md`](../../docs/security-privacy-license.md), and [`docs/resource-storage-policy.md`](../../docs/resource-storage-policy.md).
+These principles are encoded in [`AGENTS.md`](../../AGENTS.md), [`docs/CONTEXT.md`](../../docs/CONTEXT.md), [`docs/security-privacy-license.md`](../../docs/security-privacy-license.md), [`docs/resource-storage-policy.md`](../../docs/resource-storage-policy.md), [`docs/model-gateway.md`](../../docs/model-gateway.md), and the graph/provenance schemas in [`packages/schemas/README.md`](../../packages/schemas/README.md).
 
 ## Why a lifecycle workbench instead of a chatbot
 
@@ -71,5 +71,7 @@ Engineering governance lives in `docs/`, `docs/adr/`, and `AGENTS.md`. This prop
 - [`docs/resource-registry.md`](../../docs/resource-registry.md)
 - [`docs/security-privacy-license.md`](../../docs/security-privacy-license.md)
 - [`docs/resource-storage-policy.md`](../../docs/resource-storage-policy.md)
+- [`docs/model-gateway.md`](../../docs/model-gateway.md)
+- [`packages/schemas/README.md`](../../packages/schemas/README.md)
 - [`AGENTS.md`](../../AGENTS.md)
 - [`docs/CONTEXT.md`](../../docs/CONTEXT.md)

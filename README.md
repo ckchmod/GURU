@@ -12,6 +12,18 @@ The workbench treats guidelines as structured graphs: recommendations, evidence,
 - Not a source of patient-specific treatment advice.
 - Not a repository for PHI, real patient records, or raw licensed content without explicit permission.
 - Not a default consumer of external LLM APIs.
+- Not a replacement for expert methodologists, working groups, or approval chains.
+
+## Current scaffold
+
+- **`apps/web`** — Next.js frontend with an Evidence Atlas IDE around a React Flow graph canvas, synthetic fixtures, and smoke-tested E2E coverage.
+- **`services/api`** — FastAPI backend with a `/health` endpoint and pytest tests.
+- **`packages/schemas`** — Seed graph/provenance JSON Schema and TypeScript types enforcing the "no source span, no claim" rule.
+- **`resources/registry/`** — Governed resource registry with 40 metadata/link-only placeholder rows across seven categories.
+- **`docs/model-gateway.md`** — Local-first model gateway and subsidy firewall policy; external LLM APIs are off by default.
+- **`docs/resource-registry.md`**, **`docs/security-privacy-license.md`**, **`docs/resource-storage-policy.md`** — Resource permission, licensing, and storage gates.
+- **`docs/milestone-protocol.md`** — Auditable milestone sequence: update docs/memory → run tests → inspect git status/diff → commit → push only if remote configured.
+- **`.github/workflows/ci.yml`** — Secret-free CI running the full baseline on every PR/push.
 
 ## Repository layout
 
@@ -28,7 +40,7 @@ docs/                        # Engineering documentation
   adr/                       # Architecture Decision Records
   proposal/                  # CCA/GURU-facing discovery and proposal artifacts
 scripts/                     # Validation, migration, and utility scripts
-.github/workflows/           # CI workflows (when added)
+.github/workflows/           # CI workflows
 ```
 
 ## Quick navigation
@@ -37,15 +49,32 @@ scripts/                     # Validation, migration, and utility scripts
 - **Why we made these choices**: [`docs/adr/ADR-0001-project-principles.md`](./docs/adr/ADR-0001-project-principles.md)
 - **Project context and constraints**: [`docs/CONTEXT.md`](./docs/CONTEXT.md)
 - **Coding standards**: [`docs/coding-standards.md`](./docs/coding-standards.md)
-- **Testing strategy**: [`docs/testing-strategy.md`](./docs/testing-strategy.md)
+- **Testing strategy and baseline commands**: [`docs/testing-strategy.md`](./docs/testing-strategy.md)
+- **Milestone protocol**: [`docs/milestone-protocol.md`](./docs/milestone-protocol.md)
+- **Resource registry**: [`docs/resource-registry.md`](./docs/resource-registry.md)
+- **Security, privacy, and licensing gates**: [`docs/security-privacy-license.md`](./docs/security-privacy-license.md)
+- **Resource storage policy**: [`docs/resource-storage-policy.md`](./docs/resource-storage-policy.md)
+- **Local-first model gateway**: [`docs/model-gateway.md`](./docs/model-gateway.md)
+- **Graph and provenance schemas**: [`packages/schemas/README.md`](./packages/schemas/README.md)
+- **Graph canvas UX direction**: [`docs/graph-canvas-ux.md`](./docs/graph-canvas-ux.md)
+- **CCA/GURU discovery brief**: [`docs/proposal/cca-guru-discovery-brief.md`](./docs/proposal/cca-guru-discovery-brief.md)
+- **Resource request package**: [`docs/proposal/resource-request-package.md`](./docs/proposal/resource-request-package.md)
+
+## Quick baseline
+
+```bash
+npm run test:baseline
+```
+
+See [`docs/testing-strategy.md`](./docs/testing-strategy.md) for the full command sequence, including expected-failure fixture diagnostics.
 
 ## Milestone protocol
 
 After every significant milestone, follow this exact sequence:
 
-**update docs/memory → run tests → commit → push only if remote configured**
+**update docs/memory → run tests → inspect git status/diff → commit → push only if remote configured**
 
-See [`AGENTS.md`](./AGENTS.md) for the full protocol.
+See [`AGENTS.md`](./AGENTS.md) and [`docs/milestone-protocol.md`](./docs/milestone-protocol.md) for the full protocol.
 
 ## Safety boundaries
 
