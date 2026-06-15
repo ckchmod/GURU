@@ -1,29 +1,31 @@
 # CCA GURU Guideline Graph Workbench
 
-A local-first, graph-centered workbench for maintaining, exploring, and updating cancer care guideline documents. The project starts from the CCA GURU initiative and emphasizes source-span provenance, resource governance, and bounded agent assistance over generic chat or unbounded LLM usage.
+A local-first, graph-centered workbench for maintaining, exploring, and updating cancer care guideline documents. The project starts from the CCA GURU initiative and emphasizes source-span provenance, a public guideline knowledgebase buildout, and bounded agent assistance over generic chat or unbounded LLM usage.
 
 ## What this is
 
-The workbench treats guidelines as structured graphs: recommendations, evidence, citations, and update triage are nodes and edges with provenance, not loose text. The MVP focuses on a premium interactive graph canvas, a resource registry, and clear governance before any broad guideline-answering surface.
+The workbench treats guidelines as structured graphs: recommendations, evidence, citations, source spans, and update triage are nodes and edges with provenance, not loose text. The current buildout moves the preserved public AHS/GURU metadata catalogue into a prototype knowledgebase with manifests, parser records, source spans, graph-ready records, backend routes, and Evidence Atlas browsing.
 
 ## What this is not
 
 - Not a generic RAG chatbot.
 - Not a source of patient-specific treatment advice.
-- Not a repository for PHI, real patient records, or raw licensed content without explicit permission.
+- Not a repository for PHI, real patient records, or raw public guideline downloads in normal Git history.
 - Not a default consumer of external LLM APIs.
 - Not a replacement for expert methodologists, working groups, or approval chains.
 
 ## Current scaffold
 
-- **`apps/web`** — Next.js frontend with an Evidence Atlas IDE around a React Flow graph canvas, synthetic fixtures, and smoke-tested E2E coverage.
-- **`services/api`** — FastAPI backend with a `/health` endpoint and pytest tests.
-- **`packages/schemas`** — Seed graph/provenance JSON Schema and TypeScript types enforcing the "no source span, no claim" rule.
-- **`resources/registry/`** — Governed resource registry with 40 metadata/link-only placeholder rows across seven categories.
-- **`docs/model-gateway.md`** — Local-first model gateway and subsidy firewall policy; external LLM APIs are off by default.
-- **`docs/resource-registry.md`**, **`docs/security-privacy-license.md`**, **`docs/resource-storage-policy.md`** — Resource permission, licensing, and storage gates.
-- **`docs/milestone-protocol.md`** — Auditable milestone sequence: update docs/memory → run tests → inspect git status/diff → commit → push only if remote configured.
-- **`.github/workflows/ci.yml`** — Secret-free CI running the full baseline on every PR/push.
+- **`apps/web`**: Next.js frontend with an Evidence Atlas IDE around a React Flow graph canvas, synthetic fixtures, and smoke-tested E2E coverage.
+- **`services/api`**: FastAPI backend with `/health`, knowledgebase fixture routes, and pytest tests.
+- **`packages/schemas`**: Seed graph/provenance JSON Schema and TypeScript types enforcing the "no source span, no claim" rule.
+- **`resources/registry/`**: Preserved registry metadata, including the public AHS/GURU corpus catalogue and bounded pilot selector.
+- **`resources/manifests/ahs-guru-public/`**: Trackable manifest and checksum location for public prototype acquisition runs.
+- **`resources/derived/`**: Safe, bounded derived source-document, source-span, and graph-ready records when they pass project safeguards.
+- **`docs/model-gateway.md`**: Local-first model gateway and subsidy firewall policy; external LLM APIs are off by default.
+- **`docs/research/public-guideline-acquisition.md`**: Concrete layout for public AHS/GURU prototype downloads, manifests, source spans, and graph-ready records.
+- **`docs/milestone-protocol.md`**: Auditable milestone sequence: update docs/memory, run tests, inspect git status/diff, commit, push only if remote configured.
+- **`.github/workflows/ci.yml`**: Secret-free CI running the full baseline on every PR/push.
 
 ## Repository layout
 
@@ -33,9 +35,11 @@ README.md                    # This file
 apps/                        # Next.js frontend
 services/                    # FastAPI backend
 packages/                    # Shared schemas, types, validation
-resources/                   # Resource registry and governed raw archives
-  registry/                  # Metadata and permission records
-  raw/                       # Large or restricted files governed by storage policy
+resources/                   # Resource registry, manifests, derived records, and ignored raw downloads
+  registry/                  # Metadata records and pilot selectors
+  manifests/                 # Public acquisition manifests and checksums
+  derived/                   # Safe bounded source-document, source-span, and graph-ready records
+  raw/                       # Ignored local working downloads governed by storage policy
 docs/                        # Engineering documentation
   adr/                       # Architecture Decision Records
   proposal/                  # CCA/GURU-facing discovery and proposal artifacts
@@ -52,13 +56,29 @@ scripts/                     # Validation, migration, and utility scripts
 - **Testing strategy and baseline commands**: [`docs/testing-strategy.md`](./docs/testing-strategy.md)
 - **Milestone protocol**: [`docs/milestone-protocol.md`](./docs/milestone-protocol.md)
 - **Resource registry**: [`docs/resource-registry.md`](./docs/resource-registry.md)
-- **Security, privacy, and licensing gates**: [`docs/security-privacy-license.md`](./docs/security-privacy-license.md)
+- **Public guideline acquisition layout**: [`docs/research/public-guideline-acquisition.md`](./docs/research/public-guideline-acquisition.md)
+- **Security, privacy, and licensing notes**: [`docs/security-privacy-license.md`](./docs/security-privacy-license.md)
 - **Resource storage policy**: [`docs/resource-storage-policy.md`](./docs/resource-storage-policy.md)
 - **Local-first model gateway**: [`docs/model-gateway.md`](./docs/model-gateway.md)
 - **Graph and provenance schemas**: [`packages/schemas/README.md`](./packages/schemas/README.md)
 - **Graph canvas UX direction**: [`docs/graph-canvas-ux.md`](./docs/graph-canvas-ux.md)
 - **CCA/GURU discovery brief**: [`docs/proposal/cca-guru-discovery-brief.md`](./docs/proposal/cca-guru-discovery-brief.md)
 - **Resource request package**: [`docs/proposal/resource-request-package.md`](./docs/proposal/resource-request-package.md)
+
+## Current buildout and roadmap
+
+Public AHS/GURU resources may be used for the prototype knowledgebase buildout: download manifests, checksums, parsing, source-document records, source spans, graph-ready records, backend API responses, and Evidence Atlas browsing. Raw downloads stay out of normal Git history by default.
+
+The remaining safeguards are no PHI, no patient-specific advice, source-span provenance for clinical claim-like records, and no default external LLM routing.
+
+Roadmap families after the knowledgebase foundation:
+
+- Surveillance.
+- PICO/evidence workflows.
+- Recommendation-impact diff.
+- Consensus workflow.
+- Alberta-local overlays.
+- Computable guideline compiler.
 
 ## Quick baseline
 

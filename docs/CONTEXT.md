@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The CCA GURU Guideline Graph Workbench is a local-first tool for maintaining and exploring cancer care guideline documents as structured, provenance-backed graphs. It supports guideline authors, methodologists, and reviewers by surfacing recommendations, evidence links, update triage, and source spans in a designed interactive canvas.
+The CCA GURU Guideline Graph Workbench is a local-first tool for maintaining and exploring cancer care guideline documents as structured, provenance-backed graphs. It supports guideline authors, methodologists, and reviewers by surfacing recommendations, evidence links, update triage, source spans, and public guideline knowledgebase records in a designed interactive canvas.
 
 ## Product principle
 
@@ -10,23 +10,24 @@ Graph-first, retrieval-backed, bounded-agent-assisted guideline lifecycle platfo
 
 ## Scope boundaries
 
-This MVP covers:
+The current buildout covers:
 
 - Project governance, resource registry, storage policy, and security/privacy gates.
-- Next.js frontend (`apps/web`) with a compact Evidence Atlas IDE and React Flow graph canvas.
-- FastAPI backend (`services/api`) with health checks and pytest coverage.
+- Next.js frontend (`apps/web`) with an Evidence Atlas IDE and React Flow graph canvas.
+- FastAPI backend (`services/api`) with health checks, knowledgebase routes, and pytest coverage.
 - Seed graph and provenance schemas (`packages/schemas/`) with validation scripts.
-- A governed resource registry (`resources/registry/`) with 40 metadata/link-only placeholder rows across seven categories.
+- A preserved resource registry (`resources/registry/`) with 235 rows, including 198 public AHS/GURU corpus metadata rows.
+- A public guideline knowledgebase buildout that may use public AHS/GURU resources for prototype download manifests, parsing, source-document records, source spans, graph-ready records, backend API responses, and Evidence Atlas browsing.
 - A local-first model gateway policy (`docs/model-gateway.md`).
 - A secret-free CI baseline (`.github/workflows/ci.yml`).
 
-This MVP does not cover:
+This buildout does not cover:
 
 - Production guideline authoring workflows.
-- Bulk ingestion or embedding of restricted resources without permission.
+- Raw guideline downloads in normal Git history.
+- External LLM API usage by default.
 - Patient-facing advice or clinical decision support for individual patients.
 - Neo4j or enterprise graph platform dependencies unless later justified.
-- External LLM API usage by default.
 
 ## Clinical safety boundaries
 
@@ -57,13 +58,24 @@ The graph schema enforces `source_span_ids` on claim-like node types: `Recommend
 
 Evaluation harnesses include retrospective benchmarks, gold-labeled screening sets, expert-adjudicated extraction sets, a guideline QA test bank, clinical vignettes, and red-team hallucination tests.
 
-## Resource governance and restricted-resource gates
+## Public guideline knowledgebase buildout
 
-Every resource that is stored, referenced, or processed must have a registry row. Unknown or restrictive license status defaults to `metadata-only` or `link-only` storage until explicit permission is recorded. A public URL does not grant embedding, summarization, redistribution, or commercial use rights. Derivative artifacts — embeddings, summaries, source spans, graph nodes, extracted fields — require the same allowed-use review as the underlying resource.
+The active milestone moves from the preserved metadata catalogue to a public guideline knowledgebase prototype. Public AHS/GURU resources from the AHS cancer guideline page may be used for prototype acquisition, local raw downloads, manifests, checksums, parser outputs, source-document records, source spans, graph-ready records, backend routes, and Evidence Atlas views.
 
-Agents cannot approve restricted-source use. When a resource's status is unclear, stop and escalate to a human reviewer, then record the decision, reviewer, date, and basis in the resource registry.
+Remaining safeguards are not optional: no PHI, no patient-specific advice, source-span provenance for every clinical claim-like record, and no default external LLM routing. Raw public guideline downloads stay out of normal Git history by default; committed artifacts should be manifests, checksums, schemas, safe fixtures, and bounded derived records.
 
-See [`docs/resource-registry.md`](./resource-registry.md), [`docs/security-privacy-license.md`](./security-privacy-license.md), and [`docs/resource-storage-policy.md`](./resource-storage-policy.md).
+See [`docs/research/public-guideline-acquisition.md`](./research/public-guideline-acquisition.md), [`docs/research/accuracy-first-acquisition-ingestion-plan.md`](./research/accuracy-first-acquisition-ingestion-plan.md), [`docs/resource-registry.md`](./resource-registry.md), and [`docs/resource-storage-policy.md`](./resource-storage-policy.md).
+
+## Roadmap families after the knowledgebase foundation
+
+The next product families build on the public guideline knowledgebase foundation:
+
+- Surveillance for guideline updates and practice-changing evidence.
+- PICO/evidence workflows for scoping, screening, extraction, and evidence tables.
+- Recommendation-impact diff for mapping new evidence to affected recommendations.
+- Consensus workflow for review packets, votes, conflicts, and decision status.
+- Alberta-local overlays for funding, trials, referral pathways, testing access, and implementation context.
+- Computable guideline compiler for structured guideline outputs once source spans, review state, and governance are mature.
 
 ## Model usage policy
 
@@ -78,13 +90,13 @@ Agents operate inside deterministic workflows, not open-ended autonomy. The loop
 1. Receive an explicit plan approved by the human or by a prior task definition.
 2. Call only approved tools.
 3. Write structured intermediate state at each step.
-4. Validate schema, citations, and source permissions.
+4. Validate schema, citations, and source-span provenance.
 5. Run a verifier before marking work complete.
 6. Ask a human when uncertain or when the impact is high.
 7. Commit only approved outputs.
 8. Log everything, including tool calls, decisions, and failures.
 
-Agents cannot publish recommendations, approve restricted-source use, commit without passing tests, or push without an explicit remote gate check.
+Agents cannot publish recommendations, commit without passing tests, or push without an explicit remote gate check.
 
 ## Milestone protocol
 
