@@ -1,0 +1,27 @@
+{
+  "registry_version": "1.0.0",
+  "last_updated": "2026-06-15",
+  "category": "internal GURU process pack",
+  "rows": [
+    {
+      "resource_id": "guru-methodology-handbook-placeholder",
+      "title": "GURU Guideline Methodology Handbook (placeholder)",
+      "source_owner": "GURU",
+      "source_url_or_access_path": "internal://guru/methodology-handbook",
+      "access_method": "internal_share",
+      "access_date": "2026-06-15",
+      "resource_type": "methodology",
+      "jurisdiction": "CA-AB",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "unknown",
+      "license_status": "restricted",
+      "allowed_use": ["metadata"],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Internal GURU process document placeholder. Treat as restricted by default. Raw archival, embedding, summarization, or any derivative processing requires documented approval from the GURU steward or delegate."
+    }
+  ]
+}

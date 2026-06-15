@@ -1,0 +1,27 @@
+{
+  "registry_version": "1.0.0",
+  "last_updated": "2026-06-15",
+  "category": "methodology standards",
+  "rows": [
+    {
+      "resource_id": "sign-methodology-handbook-placeholder",
+      "title": "SIGN Handbook for Guideline Development (placeholder)",
+      "source_owner": "Scottish Intercollegiate Guidelines Network",
+      "source_url_or_access_path": "https://www.sign.ac.uk/our-guidelines/sign-methodology/",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "methodology",
+      "jurisdiction": "International",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "unknown",
+      "license_status": "unknown",
+      "allowed_use": ["link", "metadata"],
+      "permission_required": false,
+      "permission_status": "not_applicable",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "External guideline methodology placeholder. Check SIGN publisher terms of use, copyright notices, and member-only restrictions before any reuse or derivative processing."
+    }
+  ]
+}
