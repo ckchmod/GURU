@@ -1,0 +1,60 @@
+# Dependency folders
+node_modules/
+vendor/
+.pnpm-store/
+.npm/
+.yarn/
+
+# Python caches and virtualenvs
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.venv/
+venv/
+env/
+
+# Node and build outputs
+dist/
+build/
+out/
+coverage/
+.next/
+.turbo/
+.cache/
+
+# Local env and secrets
+.env
+.env.*
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Model weights and large artifacts
+*.pt
+*.pth
+*.bin
+*.onnx
+*.safetensors
+*.ckpt
+weights/
+model-weights/
+
+# Raw restricted data and PHI-like dumps
+resources/raw/*
+*.dcm
+*.dicom
+
+# OMO runtime and evidence
+.omo/plans/
+.omo/evidence/
+.omo/notepads/
+.omo/run-continuation/
+.omo/boulder.json
+.omo/state/
+.omo/logs/
