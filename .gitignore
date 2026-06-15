@@ -53,11 +53,11 @@ resources/raw/*
 *.dcm
 *.dicom
 
-# OMO runtime and evidence
-.omo/plans/
-.omo/evidence/
-.omo/notepads/
-.omo/run-continuation/
-.omo/boulder.json
-.omo/state/
-.omo/logs/
+# Local agent artifacts and evidence
+.agent-artifacts/plans/
+.agent-artifacts/evidence/
+.agent-artifacts/notepads/
+.agent-artifacts/run-continuation/
+.agent-artifacts/boulder.json
+.agent-artifacts/state/
+.agent-artifacts/logs/

@@ -27,7 +27,7 @@ REQUIRED_PHRASES = (
     "update docs/memory → run tests → inspect git status/diff → commit → push only if remote configured",
     "git remote get-url origin",
     "REMOTE_URL_REQUIRED",
-    "Never commit secrets, PHI, raw restricted resources, model weights, caches, `.omo/evidence`, or unrelated files.",
+    "Never commit secrets, PHI, raw restricted resources, model weights, caches, `.agent-artifacts/evidence`, or unrelated files.",
 )
 
 
