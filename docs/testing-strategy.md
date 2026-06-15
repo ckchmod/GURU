@@ -10,12 +10,13 @@ Maintain a full test baseline from the start. Every significant milestone must p
 
 - Backend: pytest for Python services in `services/api/`.
 - Frontend: Vitest for TypeScript utilities and React components in `apps/web/`.
-- Shared schemas: pytest or Vitest for validation logic in `packages/schemas/`.
+- Shared schemas: pytest or Vitest for validation logic in `packages/schemas/` and `services/api/tests/test_graph_schema_validation.py`.
 
 ### 2. Integration tests
 
 - FastAPI endpoint tests with an in-memory or test database.
-- Schema validation tests against sample registry rows and graph nodes.
+- Graph/provenance schema validation tests against synthetic graph fixtures.
+- Resource registry validation tests against sample registry rows.
 - Model gateway tests that confirm no external routing without an explicit gate.
 
 ### 3. End-to-end tests
@@ -63,8 +64,14 @@ npm run test:e2e --workspace=apps/web
 npm run test:web
 npm run test:e2e:web
 
-# Schema validation smoke tests
-python scripts/validate_schemas.py
+# Graph/provenance schema validation (valid synthetic graph)
+python scripts/validate-graph-schemas.py tests/fixtures/graph-provenance/synthetic-graph.json
+
+# Graph/provenance schema validation (expected failure: missing source spans)
+python scripts/validate-graph-schemas.py tests/fixtures/graph-provenance/recommendation-missing-source-span.json
+
+# Graph/provenance schema validation via pytest
+pytest services/api/tests/test_graph_schema_validation.py -v
 
 # Resource registry validation
 python scripts/validate-resource-registry.py
