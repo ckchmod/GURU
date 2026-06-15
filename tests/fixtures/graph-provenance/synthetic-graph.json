@@ -1,0 +1,241 @@
+{
+  "graph_version": "0.1.0",
+  "generated_at": "2026-06-15T14:00:00Z",
+  "nodes": [
+    {
+      "id": "guideline.demo.001",
+      "node_type": "Guideline",
+      "label": "Synthetic Demo Guideline",
+      "status": "draft",
+      "created_at": "2026-06-15T14:00:00Z",
+      "updated_at": "2026-06-15T14:00:00Z",
+      "provenance": {
+        "source_span_ids": ["span.demo.001"],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-15T14:00:00Z"
+      },
+      "title": "Demo Guideline for Graph Workbench Validation",
+      "jurisdiction": "Syntheticland",
+      "disease_site": "none",
+      "topic": "workbench demo"
+    },
+    {
+      "id": "version.demo.001.v1",
+      "node_type": "GuidelineVersion",
+      "label": "Demo Guideline v1.0",
+      "status": "draft",
+      "created_at": "2026-06-15T14:00:00Z",
+      "updated_at": "2026-06-15T14:00:00Z",
+      "provenance": {
+        "source_span_ids": ["span.demo.001"],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-15T14:00:00Z"
+      },
+      "version": "1.0.0",
+      "effective_date": "2026-06-15",
+      "guideline_id": "guideline.demo.001"
+    },
+    {
+      "id": "source.demo.001",
+      "node_type": "SourceDocument",
+      "label": "Demo Source Document",
+      "status": "draft",
+      "created_at": "2026-06-15T14:00:00Z",
+      "updated_at": "2026-06-15T14:00:00Z",
+      "provenance": {
+        "source_span_ids": [],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-15T14:00:00Z"
+      },
+      "title": "Synthetic Source Document for Demo Purposes",
+      "owner": "Synthetic Owner",
+      "access_date": "2026-06-15",
+      "access_path": "synthetic://demo/source-001",
+      "license_status": "public_domain",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "span.demo.001",
+      "node_type": "SourceSpan",
+      "label": "Demo source span",
+      "status": "draft",
+      "created_at": "2026-06-15T14:00:00Z",
+      "updated_at": "2026-06-15T14:00:00Z",
+      "provenance": {
+        "source_span_ids": [],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-15T14:00:00Z"
+      },
+      "span_id": "span.demo.001",
+      "source_document_id": "source.demo.001",
+      "access_date": "2026-06-15",
+      "stable_locator": "Section 1, Paragraph 1",
+      "quoted_span": "This is a synthetic quoted span used only for schema validation.",
+      "excerpt_checksum": "0000000000000000000000000000000000000000000000000000000000000000",
+      "prompt_or_model_version": "fixture-v0",
+      "reviewer": "synthetic-reviewer",
+      "review_status": "unreviewed",
+      "timestamp": "2026-06-15T14:00:00Z",
+      "output_status": "draft"
+    },
+    {
+      "id": "pico.demo.001",
+      "node_type": "PICOQuestion",
+      "label": "Demo PICO",
+      "status": "draft",
+      "created_at": "2026-06-15T14:00:00Z",
+      "updated_at": "2026-06-15T14:00:00Z",
+      "provenance": {
+        "source_span_ids": ["span.demo.001"],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-15T14:00:00Z"
+      },
+      "population": "Synthetic demo population",
+      "intervention": "Synthetic demo intervention",
+      "comparison": "Synthetic demo comparison",
+      "outcome": "Synthetic demo outcome"
+    },
+    {
+      "id": "rec.demo.001",
+      "node_type": "Recommendation",
+      "label": "Demo recommendation",
+      "status": "draft",
+      "created_at": "2026-06-15T14:00:00Z",
+      "updated_at": "2026-06-15T14:00:00Z",
+      "provenance": {
+        "source_span_ids": ["span.demo.001"],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-15T14:00:00Z"
+      },
+      "recommendation_text": "In synthetic demo settings, use explicit source spans for every claim.",
+      "strength": "consensus",
+      "certainty": "low",
+      "source_span_ids": ["span.demo.001"],
+      "pico_ids": ["pico.demo.001"]
+    },
+    {
+      "id": "evidence.demo.001",
+      "node_type": "EvidenceItem",
+      "label": "Demo evidence item",
+      "status": "draft",
+      "created_at": "2026-06-15T14:00:00Z",
+      "updated_at": "2026-06-15T14:00:00Z",
+      "provenance": {
+        "source_span_ids": ["span.demo.001"],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-15T14:00:00Z"
+      },
+      "evidence_text": "Synthetic evidence supports the use of source-span provenance.",
+      "study_design": "expert_opinion",
+      "source_span_ids": ["span.demo.001"]
+    },
+    {
+      "id": "citation.demo.001",
+      "node_type": "Citation",
+      "label": "Demo citation",
+      "status": "draft",
+      "created_at": "2026-06-15T14:00:00Z",
+      "updated_at": "2026-06-15T14:00:00Z",
+      "provenance": {
+        "source_span_ids": ["span.demo.001"],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-15T14:00:00Z"
+      },
+      "citation_text": "Synthetic Source Document for Demo Purposes, Section 1, Paragraph 1.",
+      "source_span_ids": ["span.demo.001"]
+    },
+    {
+      "id": "funding.demo.001",
+      "node_type": "FundingRule",
+      "label": "Demo funding rule",
+      "status": "draft",
+      "created_at": "2026-06-15T14:00:00Z",
+      "updated_at": "2026-06-15T14:00:00Z",
+      "provenance": {
+        "source_span_ids": ["span.demo.001"],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-15T14:00:00Z"
+      },
+      "rule_text": "Synthetic funding rule: no real reimbursement or clinical decisions are modeled here.",
+      "source_span_ids": ["span.demo.001"]
+    },
+    {
+      "id": "task.demo.001",
+      "node_type": "WorkflowTask",
+      "label": "Demo review task",
+      "status": "draft",
+      "created_at": "2026-06-15T14:00:00Z",
+      "updated_at": "2026-06-15T14:00:00Z",
+      "provenance": {
+        "source_span_ids": ["span.demo.001"],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-15T14:00:00Z"
+      },
+      "task_type": "review",
+      "description": "Review the synthetic demo recommendation and its source spans.",
+      "assignee": "synthetic-reviewer",
+      "due_date": "2026-07-15"
+    },
+    {
+      "id": "decision.demo.001",
+      "node_type": "ReviewDecision",
+      "label": "Demo review decision",
+      "status": "draft",
+      "created_at": "2026-06-15T14:00:00Z",
+      "updated_at": "2026-06-15T14:00:00Z",
+      "provenance": {
+        "source_span_ids": ["span.demo.001"],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-15T14:00:00Z"
+      },
+      "decision": "accept",
+      "rationale": "Synthetic decision: source spans are present and well-formed.",
+      "source_span_ids": ["span.demo.001"]
+    },
+    {
+      "id": "trace.demo.001",
+      "node_type": "ModelTrace",
+      "label": "Demo model trace",
+      "status": "draft",
+      "created_at": "2026-06-15T14:00:00Z",
+      "updated_at": "2026-06-15T14:00:00Z",
+      "provenance": {
+        "source_span_ids": ["span.demo.001"],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-15T14:00:00Z"
+      },
+      "model_name": "synthetic-model",
+      "model_version": "0.0.0",
+      "input_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "output_text": "Synthetic model output referencing the demo source span.",
+      "source_span_ids": ["span.demo.001"],
+      "gpu_seconds": 0.0,
+      "cost_ledger_id": "ledger.demo.001"
+    }
+  ],
+  "edges": [
+    { "id": "edge.demo.001", "source": "guideline.demo.001", "target": "version.demo.001.v1", "relation": "has_version" },
+    { "id": "edge.demo.002", "source": "guideline.demo.001", "target": "rec.demo.001", "relation": "has_recommendation" },
+    { "id": "edge.demo.003", "source": "rec.demo.001", "target": "pico.demo.001", "relation": "has_pico" },
+    { "id": "edge.demo.004", "source": "rec.demo.001", "target": "evidence.demo.001", "relation": "has_evidence" },
+    { "id": "edge.demo.005", "source": "rec.demo.001", "target": "citation.demo.001", "relation": "has_citation" },
+    { "id": "edge.demo.006", "source": "source.demo.001", "target": "span.demo.001", "relation": "has_source_span" },
+    { "id": "edge.demo.007", "source": "rec.demo.001", "target": "span.demo.001", "relation": "derived_from" },
+    { "id": "edge.demo.008", "source": "guideline.demo.001", "target": "funding.demo.001", "relation": "has_funding_rule" },
+    { "id": "edge.demo.009", "source": "guideline.demo.001", "target": "task.demo.001", "relation": "has_task" },
+    { "id": "edge.demo.010", "source": "task.demo.001", "target": "decision.demo.001", "relation": "has_review_decision" },
+    { "id": "edge.demo.011", "source": "rec.demo.001", "target": "trace.demo.001", "relation": "has_model_trace" }
+  ]
+}

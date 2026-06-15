@@ -1,0 +1,44 @@
+{
+  "graph_version": "0.1.0",
+  "generated_at": "2026-06-15T14:00:00Z",
+  "nodes": [
+    {
+      "id": "guideline.bad.001",
+      "node_type": "Guideline",
+      "label": "Bad Demo Guideline",
+      "status": "draft",
+      "created_at": "2026-06-15T14:00:00Z",
+      "updated_at": "2026-06-15T14:00:00Z",
+      "provenance": {
+        "source_span_ids": [],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-15T14:00:00Z"
+      },
+      "title": "Bad Demo Guideline",
+      "jurisdiction": "Syntheticland",
+      "disease_site": "none",
+      "topic": "invalid fixture"
+    },
+    {
+      "id": "rec.bad.001",
+      "node_type": "Recommendation",
+      "label": "Bad recommendation without source spans",
+      "status": "draft",
+      "created_at": "2026-06-15T14:00:00Z",
+      "updated_at": "2026-06-15T14:00:00Z",
+      "provenance": {
+        "source_span_ids": [],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-15T14:00:00Z"
+      },
+      "recommendation_text": "This recommendation claims something without any source spans.",
+      "strength": "consensus",
+      "certainty": "low",
+      "source_span_ids": [],
+      "pico_ids": []
+    }
+  ],
+  "edges": []
+}
