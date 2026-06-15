@@ -38,16 +38,18 @@
       "disease_site": "breast",
       "document_status": "unknown",
       "version_or_date": "accessed 2026-06-15",
-      "license_status": "unknown",
+      "license_status": "government_open",
       "allowed_use": [
         "link",
-        "metadata"
+        "view",
+        "metadata",
+        "derive_graph"
       ],
-      "permission_required": true,
-      "permission_status": "pending",
-      "local_storage_decision": "metadata-only",
+      "permission_required": false,
+      "permission_status": "not_applicable",
+      "local_storage_decision": "local raw archive",
       "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "notes": "Discovered from the public AHS Cancer Guidelines index using link label and URL metadata only. Link check: 200. No PDF, page body, guideline text, excerpt, recommendation, summary, embedding, or graph derivative was downloaded, archived, copied, or retained; raw archival and derivative processing require written permission."
+      "notes": "Discovered from the public AHS Cancer Guidelines index using link label and URL metadata only. Link check: 200. Selected for the bounded public AHS/GURU prototype path: local raw downloads stay under ignored resources/raw/ahs-guru-public/, manifests/checksums are trackable, and bounded source spans plus graph-ready records remain draft. No PDF, page body, guideline text, excerpt, recommendation, summary, embedding, approved clinical recommendation, PHI, dosing advice, diagnostic conclusion, or patient-specific advice is stored in this registry file."
     },
     {
       "resource_id": "ahs-guru-breast-br016-breast-reconstruction",
@@ -314,16 +316,18 @@
       "disease_site": "central-nervous-system",
       "document_status": "unknown",
       "version_or_date": "accessed 2026-06-15",
-      "license_status": "unknown",
+      "license_status": "government_open",
       "allowed_use": [
         "link",
-        "metadata"
+        "view",
+        "metadata",
+        "derive_graph"
       ],
-      "permission_required": true,
-      "permission_status": "pending",
-      "local_storage_decision": "metadata-only",
+      "permission_required": false,
+      "permission_status": "not_applicable",
+      "local_storage_decision": "local raw archive",
       "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "notes": "Discovered from the public AHS Cancer Guidelines index using link label and URL metadata only. Link check: 200. No PDF, page body, guideline text, excerpt, recommendation, summary, embedding, or graph derivative was downloaded, archived, copied, or retained; raw archival and derivative processing require written permission."
+      "notes": "Discovered from the public AHS Cancer Guidelines index using link label and URL metadata only. Link check: 200. Selected for the bounded public AHS/GURU prototype path: local raw downloads stay under ignored resources/raw/ahs-guru-public/, manifests/checksums are trackable, and bounded source spans plus graph-ready records remain draft. No PDF, page body, guideline text, excerpt, recommendation, summary, embedding, approved clinical recommendation, PHI, dosing advice, diagnostic conclusion, or patient-specific advice is stored in this registry file."
     },
     {
       "resource_id": "ahs-guru-central-nervous-system-cns015-idh-mutant-gliomas",

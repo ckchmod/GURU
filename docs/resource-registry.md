@@ -104,6 +104,10 @@ Starter files live under `resources/registry/` and contain at least one placehol
 - No starter row marks `permission_status` as `approved` unless direct evidence of approval exists.
 - `checksum_sha256` uses the SHA-256 of the empty string (`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`) when no raw content is retained.
 
+### Current public AHS/GURU prototype exception
+
+The active public guideline knowledgebase prototype may use the bounded AHS/GURU pilot rows selected from `https://www.albertahealthservices.ca/cancer/page1731.aspx` for local raw downloads, manifests/checksums, bounded parsing, source-span extraction, and draft graph-ready prototype records. This exception is limited to the current public AHS/GURU prototype path documented in [`docs/research/public-guideline-acquisition.md`](./research/public-guideline-acquisition.md). It does not grant redistribution, commercial use, approved clinical recommendations, patient-specific advice, default external LLM routing, or any permission for internal, restricted, licensed, subscription, or non-public sources.
+
 ## Acquisition checklist
 
 Before adding or promoting any resource, complete this checklist and record the outcome in the row notes:
@@ -124,13 +128,13 @@ Before adding or promoting any resource, complete this checklist and record the 
 
 ## Validation scope
 
-This task delivers the schema, documentation, and conservative starter rows. Task 10 adds executable validation scripts that check every registry file against `docs/resource-registry.schema.json`, verify checksums, and confirm permission status before any ingestion, embedding, summarization, or graph extraction.
+This task delivers the schema, documentation, and conservative starter rows. Task 10 adds executable validation scripts that check every registry file against `docs/resource-registry.schema.json`, verify checksums, and confirm permission status before ingestion, embedding, summarization, or graph extraction except for the bounded public AHS/GURU prototype rows explicitly marked for the current local raw archive and `derive_graph` path.
 
 ## Safety and privacy
 
 - Do not include PHI, real patient identifiers, licensed content excerpts, credentials, or raw PDFs in registry files.
-- Keep evidence and audit artifacts under `.omo/evidence/` and out of public releases.
-- Derivative processing (embeddings, summaries, source spans, graph nodes, extracted fields) requires the same allowed-use review as the underlying resource.
+- Keep evidence and audit artifacts under `.agent-artifacts/evidence/` and out of public releases.
+- Derivative processing (embeddings, summaries, source spans, graph nodes, extracted fields) requires the same allowed-use review as the underlying resource. For the current public AHS/GURU prototype exception, allowed derivative work is bounded to draft source spans and draft graph-ready records with source-span provenance; all internal, restricted, licensed, subscription, non-public, redistribution, commercial, and production clinical uses still require the stricter review path.
 
 ## References
 

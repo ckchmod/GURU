@@ -1,0 +1,57 @@
+{
+  "registry_version": "1.0.0",
+  "last_updated": "2026-06-15",
+  "category": "AHS/GURU public corpus",
+  "rows": [
+    {
+      "resource_id": "ahs-guru-breast-br005-adjuvant-rt-invasive-breast",
+      "title": "Adjuvant Radiotherapy for Invasive Breast Cancer",
+      "source_owner": "Alberta Health Services / Cancer Care Alberta / GURU",
+      "source_url_or_access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br005-adjuvant-rt-invasive-breast.pdf",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "guideline",
+      "jurisdiction": "CA-AB",
+      "disease_site": "breast",
+      "document_status": "unknown",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "government_open",
+      "allowed_use": [
+        "link",
+        "view",
+        "metadata",
+        "derive_graph"
+      ],
+      "permission_required": false,
+      "permission_status": "not_applicable",
+      "local_storage_decision": "local raw archive",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Bounded public AHS/GURU prototype selector row for downloader, manifest, parser, source-span, and graph-ready smoke tests. Public URL use is limited to local raw downloads under ignored resources/raw/ahs-guru-public/, manifests/checksums, bounded draft source spans, and draft graph-ready prototype records. No PDF, page body, guideline text, excerpt, recommendation, summary, embedding, approved clinical recommendation, PHI, dosing advice, diagnostic conclusion, or patient-specific advice is stored in this registry file. Selected because it has a clear public PDF URL and stable breast guideline metadata row."
+    },
+    {
+      "resource_id": "ahs-guru-central-nervous-system-cns014-management-of-brain-metastases",
+      "title": "Brain Metastases",
+      "source_owner": "Alberta Health Services / Cancer Care Alberta / GURU",
+      "source_url_or_access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cns014-management-of-brain-metastases.pdf",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "guideline",
+      "jurisdiction": "CA-AB",
+      "disease_site": "central-nervous-system",
+      "document_status": "unknown",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "government_open",
+      "allowed_use": [
+        "link",
+        "view",
+        "metadata",
+        "derive_graph"
+      ],
+      "permission_required": false,
+      "permission_status": "not_applicable",
+      "local_storage_decision": "local raw archive",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Bounded public AHS/GURU prototype selector row for downloader, manifest, parser, source-span, and graph-ready smoke tests. Public URL use is limited to local raw downloads under ignored resources/raw/ahs-guru-public/, manifests/checksums, bounded draft source spans, and draft graph-ready prototype records. No PDF, page body, guideline text, excerpt, recommendation, summary, embedding, approved clinical recommendation, PHI, dosing advice, diagnostic conclusion, or patient-specific advice is stored in this registry file. Selected because it provides a second disease-site category for manifest and parser handling."
+    }
+  ]
+}

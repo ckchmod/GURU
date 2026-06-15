@@ -26,6 +26,7 @@ Every resource is assigned exactly one storage decision in the registry. The dec
 - Use only when the license and privacy review explicitly permit local retention.
 - Access is controlled by the host environment. The registry records the local path, checksum, and permission record.
 - This decision does not authorize redistribution, embedding, or summarization unless those uses are separately approved.
+- For the current bounded public AHS/GURU prototype, selected public pilot files may use `local raw archive` only under ignored `resources/raw/ahs-guru-public/`, with manifests/checksums trackable and derived records kept draft with source-span provenance.
 
 ### Git LFS
 
@@ -54,6 +55,7 @@ Every resource is assigned exactly one storage decision in the registry. The dec
 | Unknown license or terms | metadata-only or link-only | Escalate for allowed-use review |
 | Restrictive license that forbids archival/derivatives | prohibited | Request explicit permission |
 | Public with clear non-commercial/internal-use terms | metadata-only or link-only | Request explicit permission for more |
+| Selected public AHS/GURU prototype pilot row | local raw archive | Keep raw files out of Git; allow bounded draft source spans and graph-ready records only |
 | Explicitly approved for local retention | local raw archive | Record permission in registry |
 | Explicitly approved for repository storage, large file | Git LFS | Record permission and LFS pointer |
 | Explicitly approved for shared/cloud storage | object storage | Record permission and bucket policy |
@@ -68,6 +70,7 @@ Embeddings, summaries, source spans, graph nodes, extracted fields, and similar 
 - If the raw resource is link-only or metadata-only, no derivative artifact may be stored without separate allowed-use review.
 - If the raw resource is prohibited, all derivative processing is prohibited.
 - If the raw resource is approved for local raw archive, Git LFS, or object storage, derivative artifacts may be stored only when the approval explicitly covers that processing.
+- For the current selected public AHS/GURU prototype pilot rows, `derive_graph` covers bounded draft source spans and draft graph-ready records only. It does not authorize approved clinical recommendations, patient-specific advice, redistribution, commercial use, external LLM routing, or derivative processing for internal, restricted, licensed, subscription, or non-public sources.
 
 ## Registry requirements
 
@@ -95,7 +98,7 @@ Moving from a less restrictive decision to a more restrictive one may happen imm
 
 - Do not store raw resources in the Git-tracked source tree unless they are small, explicitly licensed, and approved.
 - Do not store PHI, credentials, or model artifacts in any storage tier.
-- Keep evidence and audit logs under `.omo/evidence/` and out of any public release.
+- Keep evidence and audit logs under `.agent-artifacts/evidence/` and out of any public release.
 - Periodically review local raw archives and object storage against current registry permissions.
 
 ## References
