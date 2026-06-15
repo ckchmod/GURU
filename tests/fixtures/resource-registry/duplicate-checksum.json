@@ -1,0 +1,47 @@
+{
+  "registry_version": "1.0.0",
+  "last_updated": "2026-06-15",
+  "category": "methodology standards",
+  "rows": [
+    {
+      "resource_id": "synthetic-duplicate-checksum-placeholder",
+      "title": "Synthetic Duplicate Checksum Example",
+      "source_owner": "Synthetic Governance Lab",
+      "source_url_or_access_path": "https://example.invalid/duplicate-checksum-placeholder",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "methodology",
+      "jurisdiction": "International",
+      "disease_site": "not-applicable",
+      "document_status": "draft",
+      "version_or_date": "unknown",
+      "license_status": "unknown",
+      "allowed_use": ["link", "metadata"],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "notes": "Synthetic duplicate example, first revision."
+    },
+    {
+      "resource_id": "synthetic-duplicate-checksum-placeholder",
+      "title": "Synthetic Duplicate Checksum Example",
+      "source_owner": "Synthetic Governance Lab",
+      "source_url_or_access_path": "https://example.invalid/duplicate-checksum-placeholder",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "methodology",
+      "jurisdiction": "International",
+      "disease_site": "not-applicable",
+      "document_status": "draft",
+      "version_or_date": "unknown",
+      "license_status": "unknown",
+      "allowed_use": ["link", "metadata"],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "notes": "Synthetic duplicate example, revised checksum to confirm the validator warns on checksum drift."
+    }
+  ]
+}

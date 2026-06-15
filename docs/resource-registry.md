@@ -18,7 +18,7 @@ Every resource that the workbench stores, references, or processes must have a r
 - How it may be stored locally or in the repository.
 - A checksum for any retained raw file.
 
-This task creates the schema and placeholder starter rows only. It does **not** download, crawl, archive, embed, summarize, or transform resources. Executable validation of registry rows will be implemented in Task 10.
+This task creates the schema and placeholder starter rows only. It does **not** download, crawl, archive, embed, summarize, or transform resources. Task 10 adds executable validation of registry rows.
 
 ## Schema
 
@@ -124,7 +124,7 @@ Before adding or promoting any resource, complete this checklist and record the 
 
 ## Validation scope
 
-This task delivers the schema, documentation, and conservative starter rows. Task 10 will add executable validation scripts that check every registry file against `docs/resource-registry.schema.json`, verify checksums, and confirm permission status before any ingestion, embedding, summarization, or graph extraction.
+This task delivers the schema, documentation, and conservative starter rows. Task 10 adds executable validation scripts that check every registry file against `docs/resource-registry.schema.json`, verify checksums, and confirm permission status before any ingestion, embedding, summarization, or graph extraction.
 
 ## Safety and privacy
 

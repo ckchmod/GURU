@@ -1,0 +1,26 @@
+{
+  "registry_version": "1.0.0",
+  "last_updated": "2026-06-15",
+  "category": "evidence APIs/licensed sources",
+  "rows": [
+    {
+      "resource_id": "synthetic-missing-license-status-placeholder",
+      "title": "Synthetic Missing License Status Example",
+      "source_owner": "Synthetic Governance Lab",
+      "source_url_or_access_path": "https://example.invalid/missing-license-status",
+      "access_method": "api",
+      "access_date": "2026-06-15",
+      "resource_type": "api",
+      "jurisdiction": "US",
+      "disease_site": "not-applicable",
+      "document_status": "draft",
+      "version_or_date": "unknown",
+      "allowed_use": ["link", "metadata"],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Synthetic invalid fixture missing license_status. Validator should fail with a clear non-zero exit."
+    }
+  ]
+}

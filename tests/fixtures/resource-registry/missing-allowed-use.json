@@ -1,0 +1,26 @@
+{
+  "registry_version": "1.0.0",
+  "last_updated": "2026-06-15",
+  "category": "methodology standards",
+  "rows": [
+    {
+      "resource_id": "synthetic-missing-allowed-use-placeholder",
+      "title": "Synthetic Missing Allowed-Use Example",
+      "source_owner": "Synthetic Governance Lab",
+      "source_url_or_access_path": "https://example.invalid/missing-allowed-use",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "standard",
+      "jurisdiction": "International",
+      "disease_site": "not-applicable",
+      "document_status": "draft",
+      "version_or_date": "unknown",
+      "license_status": "unknown",
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Synthetic invalid fixture missing allowed_use. Validator should fail with a clear non-zero exit."
+    }
+  ]
+}

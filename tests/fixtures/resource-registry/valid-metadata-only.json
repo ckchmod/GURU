@@ -1,0 +1,27 @@
+{
+  "registry_version": "1.0.0",
+  "last_updated": "2026-06-15",
+  "category": "methodology standards",
+  "rows": [
+    {
+      "resource_id": "synthetic-metadata-only-placeholder",
+      "title": "Synthetic Methodology Note (placeholder)",
+      "source_owner": "Synthetic Governance Lab",
+      "source_url_or_access_path": "https://example.invalid/synthetic-metadata-only-placeholder",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "methodology",
+      "jurisdiction": "International",
+      "disease_site": "not-applicable",
+      "document_status": "under_review",
+      "version_or_date": "unknown",
+      "license_status": "unknown",
+      "allowed_use": ["link", "metadata"],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Synthetic metadata-only placeholder. No raw content is retained; review remains pending until explicit reuse terms are recorded."
+    }
+  ]
+}

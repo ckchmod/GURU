@@ -1,0 +1,27 @@
+{
+  "registry_version": "1.0.0",
+  "last_updated": "2026-06-15",
+  "category": "privacy/regulatory",
+  "rows": [
+    {
+      "resource_id": "synthetic-prohibited-storage-placeholder",
+      "title": "Synthetic Prohibited Storage Example (placeholder)",
+      "source_owner": "Synthetic Governance Lab",
+      "source_url_or_access_path": "internal://synthetic/prohibited-storage-example",
+      "access_method": "internal_share",
+      "access_date": "2026-06-15",
+      "resource_type": "regulatory",
+      "jurisdiction": "CA",
+      "disease_site": "not-applicable",
+      "document_status": "unknown",
+      "version_or_date": "unknown",
+      "license_status": "restricted",
+      "allowed_use": ["metadata"],
+      "permission_required": true,
+      "permission_status": "denied",
+      "local_storage_decision": "prohibited",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Synthetic prohibited-storage placeholder. It exists only to confirm the validator accepts prohibited rows without storing any raw content."
+    }
+  ]
+}
