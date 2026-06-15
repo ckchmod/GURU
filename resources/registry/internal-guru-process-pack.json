@@ -4,24 +4,158 @@
   "category": "internal GURU process pack",
   "rows": [
     {
-      "resource_id": "guru-methodology-handbook-placeholder",
-      "title": "GURU Guideline Methodology Handbook (placeholder)",
-      "source_owner": "GURU",
-      "source_url_or_access_path": "internal://guru/methodology-handbook",
-      "access_method": "internal_share",
+      "resource_id": "guru-methodology-handbook-requested",
+      "title": "GURU Guideline Methodology Handbook",
+      "source_owner": "GURU / Cancer Care Alberta",
+      "source_url_or_access_path": "internal://guru/requested/methodology-handbook",
+      "access_method": "manual_request",
       "access_date": "2026-06-15",
       "resource_type": "methodology",
       "jurisdiction": "CA-AB",
       "disease_site": "not-applicable",
-      "document_status": "approved",
-      "version_or_date": "unknown",
+      "document_status": "unknown",
+      "version_or_date": "requested 2026-06-15",
       "license_status": "restricted",
-      "allowed_use": ["metadata"],
+      "allowed_use": [
+        "metadata"
+      ],
       "permission_required": true,
       "permission_status": "pending",
       "local_storage_decision": "metadata-only",
       "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "notes": "Internal GURU process document placeholder. Treat as restricted by default. Raw archival, embedding, summarization, or any derivative processing requires documented approval from the GURU steward or delegate."
+      "notes": "Requested internal/source-of-truth process resource from docs/proposal/resource-request-package.md. No raw file, excerpt, summary, or derivative retained until an authorized GURU steward grants written permission."
+    },
+    {
+      "resource_id": "guru-literature-search-process-requested",
+      "title": "Detailed GURU literature-search process document",
+      "source_owner": "GURU / Cancer Care Alberta",
+      "source_url_or_access_path": "internal://guru/requested/literature-search-process",
+      "access_method": "manual_request",
+      "access_date": "2026-06-15",
+      "resource_type": "methodology",
+      "jurisdiction": "CA-AB",
+      "disease_site": "not-applicable",
+      "document_status": "unknown",
+      "version_or_date": "requested 2026-06-15",
+      "license_status": "restricted",
+      "allowed_use": [
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Requested process document noted in the discovery package. Access and ingestion are pending; record exists only to track the request and required permission gate."
+    },
+    {
+      "resource_id": "guru-ptt-meeting-admin-manual-requested",
+      "title": "Annual Provincial Tumour Team meeting and administration manual",
+      "source_owner": "GURU / Cancer Care Alberta",
+      "source_url_or_access_path": "internal://guru/requested/ptt-meeting-admin-manual",
+      "access_method": "manual_request",
+      "access_date": "2026-06-15",
+      "resource_type": "methodology",
+      "jurisdiction": "CA-AB",
+      "disease_site": "not-applicable",
+      "document_status": "unknown",
+      "version_or_date": "requested 2026-06-15",
+      "license_status": "restricted",
+      "allowed_use": [
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Internal annual PTT meeting/admin manual class requested for future workflow modelling. No meeting minutes, decisions, personal details, or raw internal content are stored."
+    },
+    {
+      "resource_id": "guru-current-archived-guideline-exports-requested",
+      "title": "Current and archived CCA GURU guideline document exports",
+      "source_owner": "GURU / Cancer Care Alberta",
+      "source_url_or_access_path": "internal://guru/requested/current-archived-guideline-exports",
+      "access_method": "manual_request",
+      "access_date": "2026-06-15",
+      "resource_type": "guideline",
+      "jurisdiction": "CA-AB",
+      "disease_site": "not-applicable",
+      "document_status": "unknown",
+      "version_or_date": "requested 2026-06-15",
+      "license_status": "restricted",
+      "allowed_use": [
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Request row for current and archived guideline exports, including associated implementation assets if provided later. Archival, embedding, summarization, adaptation, and graph extraction are blocked pending explicit permission."
+    },
+    {
+      "resource_id": "guru-evidence-tables-search-strategies-requested",
+      "title": "Evidence tables, search strategies, and excluded-study reasons",
+      "source_owner": "GURU / Cancer Care Alberta",
+      "source_url_or_access_path": "internal://guru/requested/evidence-tables-search-strategies-exclusions",
+      "access_method": "manual_request",
+      "access_date": "2026-06-15",
+      "resource_type": "evidence_table",
+      "jurisdiction": "CA-AB",
+      "disease_site": "not-applicable",
+      "document_status": "unknown",
+      "version_or_date": "requested 2026-06-15",
+      "license_status": "restricted",
+      "allowed_use": [
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Request row for provenance and evidence-review artifacts. No evidence tables, search strings, exclusion rationales, or derived fields are retained in the repository."
+    },
+    {
+      "resource_id": "guru-historical-update-projects-requested",
+      "title": "Two historical guideline update projects with intermediate artifacts",
+      "source_owner": "GURU / Cancer Care Alberta",
+      "source_url_or_access_path": "internal://guru/requested/historical-update-projects",
+      "access_method": "manual_request",
+      "access_date": "2026-06-15",
+      "resource_type": "other",
+      "jurisdiction": "CA-AB",
+      "disease_site": "not-applicable",
+      "document_status": "unknown",
+      "version_or_date": "requested 2026-06-15",
+      "license_status": "restricted",
+      "allowed_use": [
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Request row for two historical update project packages. Working comments, redlines, review records, and intermediate artifacts are treated as restricted and not stored without written approval."
+    },
+    {
+      "resource_id": "guru-coi-consensus-publication-process-requested",
+      "title": "COI templates, consensus survey examples, and publication/versioning process",
+      "source_owner": "GURU / Cancer Care Alberta",
+      "source_url_or_access_path": "internal://guru/requested/coi-consensus-publication-process",
+      "access_method": "manual_request",
+      "access_date": "2026-06-15",
+      "resource_type": "other",
+      "jurisdiction": "CA-AB",
+      "disease_site": "not-applicable",
+      "document_status": "unknown",
+      "version_or_date": "requested 2026-06-15",
+      "license_status": "restricted",
+      "allowed_use": [
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Combined request row for governance/process artifacts listed in Task 7. Metadata-only until access terms and any personal-information handling requirements are reviewed by a human authority."
     }
   ]
 }

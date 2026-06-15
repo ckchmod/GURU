@@ -4,8 +4,8 @@
   "category": "privacy/regulatory",
   "rows": [
     {
-      "resource_id": "pipeda-placeholder",
-      "title": "PIPEDA (Personal Information Protection and Electronic Documents Act) (placeholder)",
+      "resource_id": "pipeda-act",
+      "title": "Personal Information Protection and Electronic Documents Act (PIPEDA)",
       "source_owner": "Government of Canada",
       "source_url_or_access_path": "https://laws-lois.justice.gc.ca/eng/acts/p-8.6/",
       "access_method": "public_url",
@@ -14,14 +14,114 @@
       "jurisdiction": "CA",
       "disease_site": "not-applicable",
       "document_status": "approved",
-      "version_or_date": "unknown",
+      "version_or_date": "accessed 2026-06-15",
       "license_status": "government_open",
-      "allowed_use": ["link", "metadata", "view"],
+      "allowed_use": [
+        "link",
+        "metadata",
+        "view"
+      ],
       "permission_required": false,
       "permission_status": "not_applicable",
       "local_storage_decision": "metadata-only",
       "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "notes": "Canadian privacy legislation placeholder. Statutes are generally public, but redistribution or raw archival may still be subject to terms. Cite the authoritative source and archive raw text only when explicitly permitted."
+      "notes": "Authoritative Canadian federal privacy statute locator. Metadata-only; cite official source for analysis and do not archive raw statute text unless redistribution terms are confirmed."
+    },
+    {
+      "resource_id": "alberta-health-information-act",
+      "title": "Alberta Health Information Act",
+      "source_owner": "Government of Alberta",
+      "source_url_or_access_path": "https://www.alberta.ca/health-information-act",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "regulatory",
+      "jurisdiction": "CA-AB",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "government_open",
+      "allowed_use": [
+        "link",
+        "metadata",
+        "view"
+      ],
+      "permission_required": false,
+      "permission_status": "not_applicable",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Authoritative Alberta health privacy law page. Stored as metadata-only; no legal text or interpretive analysis copied."
+    },
+    {
+      "resource_id": "health-canada-samd-guidance",
+      "title": "Health Canada software as a medical device guidance",
+      "source_owner": "Health Canada",
+      "source_url_or_access_path": "https://www.canada.ca/en/health-canada/services/drugs-health-products/medical-devices/activities/announcements/software-medical-device-guidance-document.html",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "regulatory",
+      "jurisdiction": "CA",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "government_open",
+      "allowed_use": [
+        "link",
+        "metadata",
+        "view"
+      ],
+      "permission_required": false,
+      "permission_status": "not_applicable",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Canadian SaMD guidance locator for regulatory scoping. No guidance text retained; future regulatory analysis must cite source spans."
+    },
+    {
+      "resource_id": "health-canada-ml-enabled-medical-devices-guidance",
+      "title": "Health Canada machine-learning-enabled medical device guidance",
+      "source_owner": "Health Canada",
+      "source_url_or_access_path": "https://www.canada.ca/en/health-canada/services/drugs-health-products/medical-devices/application-information/guidance-documents/machine-learning-enabled-medical-devices.html",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "regulatory",
+      "jurisdiction": "CA",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "government_open",
+      "allowed_use": [
+        "link",
+        "metadata",
+        "view"
+      ],
+      "permission_required": false,
+      "permission_status": "not_applicable",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "ML-enabled medical device guidance locator. Metadata-only; no regulatory claims or derived summaries stored."
+    },
+    {
+      "resource_id": "fda-cds-software-guidance",
+      "title": "FDA Clinical Decision Support Software guidance",
+      "source_owner": "U.S. Food and Drug Administration",
+      "source_url_or_access_path": "https://www.fda.gov/regulatory-information/search-fda-guidance-documents/clinical-decision-support-software",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "regulatory",
+      "jurisdiction": "US",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "government_open",
+      "allowed_use": [
+        "link",
+        "metadata",
+        "view"
+      ],
+      "permission_required": false,
+      "permission_status": "not_applicable",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "U.S. CDS software guidance locator for comparative regulatory awareness. Stored only as metadata; no guidance text transformed."
     }
   ]
 }
