@@ -33,7 +33,7 @@ Stop the milestone flow when any of the following are true:
 
 ## Safety rules
 
-- Never commit secrets, PHI, raw restricted resources, model weights, caches, `.omo/evidence`, or unrelated files.
+- Never commit secrets, PHI, raw restricted resources, model weights, caches, `.agent-artifacts/evidence`, or unrelated files.
 - Do not auto-commit or auto-push from helper scripts.
 - Keep helper scripts read-only except for reporting.
 

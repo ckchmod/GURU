@@ -63,7 +63,7 @@ Keep directories purposeful and do not create overlapping responsibilities:
 - Match existing patterns for naming, imports, error handling, and indentation.
 - Add or update tests for every behavioral change.
 - Run the affected test suite before declaring a change complete.
-- Update `docs/` and `.omo/notepads/guru-guideline-workbench-init-mvp/learnings.md` after significant milestones.
+- Update `docs/` and project memory after significant milestones.
 
 ## Provenance in code
 

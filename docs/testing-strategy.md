@@ -136,4 +136,4 @@ to `main`/`master`. The workflow:
 
 ## Evidence
 
-Every task must produce evidence in `.omo/evidence/task-{N}-{slug}.{ext}`. Evidence files are not a replacement for tests; they document the verification steps that were run.
+Every task must produce evidence in `.agent-artifacts/evidence/task-{N}-{slug}.{ext}`. Evidence files are not a replacement for tests; they document the verification steps that were run.
