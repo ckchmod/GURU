@@ -4,24 +4,73 @@
   "category": "AHS/GURU public corpus",
   "rows": [
     {
-      "resource_id": "ahs-guru-breast-guideline-placeholder",
-      "title": "AHS GURU Breast Cancer Guideline (placeholder)",
-      "source_owner": "Cancer Care Alberta / GURU",
-      "source_url_or_access_path": "https://www.ahs.ca/cca-guru",
+      "resource_id": "ahs-guru-cancer-guidelines-index",
+      "title": "Cancer Guidelines / Guideline Resource Unit public index",
+      "source_owner": "Alberta Health Services / Cancer Care Alberta / GURU",
+      "source_url_or_access_path": "https://www.albertahealthservices.ca/info/cancerguidelines.aspx",
       "access_method": "public_url",
       "access_date": "2026-06-15",
       "resource_type": "guideline",
       "jurisdiction": "CA-AB",
-      "disease_site": "breast",
+      "disease_site": "not-applicable",
       "document_status": "approved",
-      "version_or_date": "unknown",
+      "version_or_date": "accessed 2026-06-15",
       "license_status": "unknown",
-      "allowed_use": ["link", "metadata"],
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
       "permission_required": true,
       "permission_status": "pending",
       "local_storage_decision": "metadata-only",
       "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "notes": "Public URL placeholder for an AHS/GURU guideline. License and reuse terms must be confirmed before embedding, summarization, redistribution, or derivative processing. The GURU methodology handbook notes that CCA materials may be shared under non-commercial terms; commercial use requires explicit collaboration/permission terms from CCA/GURU."
+      "notes": "Public index for CCA/GURU guideline resources. Exa search on 2026-06-15 identified the page as the official Cancer Guidelines page with GURU contact and disease-site corpus. Public URL does not grant archival, embedding, summarization, graph extraction, redistribution, or commercial-use rights; explicit CCA/GURU permission remains required."
+    },
+    {
+      "resource_id": "ahs-guru-renal-cell-carcinoma-gu003",
+      "title": "Renal Cell Carcinoma Clinical Practice Guideline GU-003",
+      "source_owner": "Alberta Health Services / Cancer Care Alberta / GURU",
+      "source_url_or_access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu003-renal-cell.pdf",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "guideline",
+      "jurisdiction": "CA-AB",
+      "disease_site": "genitourinary",
+      "document_status": "approved",
+      "version_or_date": "Version 12; effective February 2025",
+      "license_status": "unknown",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Concrete public PDF locator discovered from official AHS search result. No PDF was downloaded or archived. Registry records title/date metadata only; derivative use and raw retention require written permission because the public locator alone does not authorize reuse."
+    },
+    {
+      "resource_id": "ahs-guru-generic-cancer-surveillance-page",
+      "title": "Generic Cancer Surveillance public resource page",
+      "source_owner": "Alberta Health Services / Cancer Care Alberta",
+      "source_url_or_access_path": "https://www.albertahealthservices.ca/cancer/Page18324.aspx",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "summary",
+      "jurisdiction": "CA-AB",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "unknown",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Official AHS public page identified as a related GURU implementation/surveillance resource. Catalogued as metadata only; no page text, patient-facing material, or derived summary retained."
     }
   ]
 }

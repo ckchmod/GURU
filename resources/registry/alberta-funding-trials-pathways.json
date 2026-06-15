@@ -4,24 +4,118 @@
   "category": "Alberta funding/trials/pathways",
   "rows": [
     {
-      "resource_id": "alberta-cancer-drug-benefit-master-list-placeholder",
-      "title": "Alberta Outpatient Cancer Drug Benefit Program Master List (placeholder)",
+      "resource_id": "ahs-ocdbp-master-list",
+      "title": "Outpatient Cancer Drug Benefit Program Master List",
       "source_owner": "Alberta Health Services",
-      "source_url_or_access_path": "https://www.ahs.ca/drugbenefit",
+      "source_url_or_access_path": "https://www.albertahealthservices.ca/assets/programs/ps-1025651-drug-benefit-list.pdf",
       "access_method": "public_url",
       "access_date": "2026-06-15",
       "resource_type": "summary",
       "jurisdiction": "CA-AB",
       "disease_site": "not-applicable",
       "document_status": "approved",
-      "version_or_date": "unknown",
+      "version_or_date": "revised 2026-05-15; accessed 2026-06-15",
       "license_status": "unknown",
-      "allowed_use": ["link", "metadata"],
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Official AHS PDF locator discovered by web search. No PDF was downloaded or archived. Treat as metadata-only pending confirmation of reuse, archival, and derivative-processing permissions."
+    },
+    {
+      "resource_id": "ahs-outpatient-cancer-drug-benefit-program-page",
+      "title": "Outpatient Cancer Drug Benefit Program public service page",
+      "source_owner": "Alberta Health Services",
+      "source_url_or_access_path": "https://www.albertahealthservices.ca/services/Page2328.aspx",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "summary",
+      "jurisdiction": "CA-AB",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "unknown",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Official AHS program page linked to the master list. Stored only as a locator and descriptive registry row; no operational content ingested."
+    },
+    {
+      "resource_id": "acct-find-a-clinical-trial",
+      "title": "Alberta Cancer Clinical Trials Find a Clinical Trial",
+      "source_owner": "Alberta Cancer Clinical Trials / Alberta Health Services cancer research operations",
+      "source_url_or_access_path": "https://albertacancerclinicaltrials.ca/patients/find-a-clinical-trial/",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "trial_registry",
+      "jurisdiction": "CA-AB",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "updated monthly per public page; accessed 2026-06-15",
+      "license_status": "unknown",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
       "permission_required": true,
       "permission_status": "pending",
       "local_storage_decision": "link-only",
       "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "notes": "Public Alberta funding resource placeholder. Verify AHS reuse/redistribution terms before retaining any content or creating derivatives. Link-only until permission is confirmed."
+      "notes": "Public trial finder page discovered by web search. No trial list was scraped or copied; bulk capture, redistribution, or derivative processing requires terms review."
+    },
+    {
+      "resource_id": "ahs-cancer-diagnostic-workup-referral",
+      "title": "Cancer Diagnostic Work-up and Referral public pathway page",
+      "source_owner": "Alberta Health Services / Cancer Care Alberta",
+      "source_url_or_access_path": "https://www.albertahealthservices.ca/cancer/Page18298.aspx",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "algorithm",
+      "jurisdiction": "CA-AB",
+      "disease_site": "not-applicable",
+      "document_status": "approved",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "unknown",
+      "allowed_use": [
+        "link",
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Official AHS diagnostic work-up/referral landing page. Catalogued as metadata only; no referral pathway details, instructions, or patient resources are copied into the repository."
+    },
+    {
+      "resource_id": "alberta-local-funding-implementation-sources-requested",
+      "title": "Local funding and implementation data sources request package item",
+      "source_owner": "GURU / Cancer Care Alberta / Alberta-local source owners",
+      "source_url_or_access_path": "internal://guru/requested/local-funding-implementation-data-sources",
+      "access_method": "manual_request",
+      "access_date": "2026-06-15",
+      "resource_type": "other",
+      "jurisdiction": "CA-AB",
+      "disease_site": "not-applicable",
+      "document_status": "unknown",
+      "version_or_date": "requested 2026-06-15",
+      "license_status": "restricted",
+      "allowed_use": [
+        "metadata"
+      ],
+      "permission_required": true,
+      "permission_status": "pending",
+      "local_storage_decision": "metadata-only",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Task 7 request row for local molecular/pathology testing availability, formulary, exceptional access, shortages, local protocols, registry/outcomes, EMR exports, and QI audit sources. No restricted local data, PHI, or operational exports are stored."
     }
   ]
 }
