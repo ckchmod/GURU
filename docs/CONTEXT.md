@@ -8,6 +8,8 @@ GURU is a local-first tool for maintaining and exploring cancer care guideline d
 
 Graph-first, source-backed, bounded-agent-assisted guideline lifecycle platform. The center of the product is the guideline graph, not a chat interface, generated-answer RAG system, or generic PDF question-answering bot. GURU strengthens expert judgment and workflow; it does not replace expert reviewers, working groups, or approval chains.
 
+The Graph-RAG foundation means graph-first traceability before generation. Workbench commands retrieve graph resources, source-span identifiers, path/context nodes, provenance fields, warnings, abstention status, and evidence IDs. They do not emit answer text, approved guidance, patient-specific advice, generated clinical summaries, or full RAG answers. Generated answers remain disabled.
+
 ## Scope boundaries
 
 The current buildout covers:
@@ -19,6 +21,8 @@ The current buildout covers:
 - A preserved resource registry (`resources/registry/`) with 235 rows, including 198 public AHS/GURU corpus metadata rows.
 - A real public corpus atlas milestone using the 198 public AHS/GURU metadata rows for graph, API, search, and archive-status metadata scope, accounted for through manifests rather than claimed as guaranteed parsed coverage.
 - A bounded parse path with an exact-five `--registry` gate plus a separate manifest-driven parse mode for local source-document and source-span extraction when approved raw files exist.
+- A bounded workbench trace contract for command, eval, retrieval, source-selection, gateway decision, model-class, citation-verifier, abstention, warning, and evidence-ID metadata. It is trace evidence only, not answer generation.
+- A local, mockable, and skippable `local_open_weight_7b` dry-run path for ModelTrace coverage when validated source-span context exists. It records metadata and abstention status without answer text.
 - A local-first model gateway policy (`docs/model-gateway.md`).
 - A secret-free CI baseline (`.github/workflows/ci.yml`).
 
@@ -31,6 +35,7 @@ This buildout does not cover:
 - Generated answers, generated clinical summaries, or full RAG answers. Generated answers remain disabled.
 - Live surveillance, crawling, clinical inference, or recommendation-impact diff.
 - Approved recommendations from draft review metadata.
+- Treating `docs/gpt5.5pro_6_15.md` as an authoritative implementation spec. That document is intent and strategy guidance only; engineering contracts live in `docs/`, `AGENTS.md`, schemas, tests, and bounded implementation tasks.
 - Neo4j or enterprise graph platform dependencies unless later justified.
 
 ## Clinical safety boundaries
@@ -64,13 +69,15 @@ Evaluation harnesses include retrospective benchmarks, gold-labeled screening se
 
 ## Real public corpus atlas milestone
 
-The active milestone moves from the preserved metadata catalogue to GURU's graph-linked Evidence Atlas. Its graph, API, and metadata/source-span retrieval scope uses the 198 public AHS/GURU metadata rows from `resources/registry/ahs-guru-public-corpus.json`. Registry metadata may create resource, disease-site, document-type, and archive/status navigation records. It does not create clinical recommendations, generated summaries, embeddings, model answers, or full RAG behavior. Generated answers remain disabled.
+The active milestone moves from the preserved metadata catalogue to GURU's graph-linked Evidence Atlas and workbench trace foundation. Its graph, API, and metadata/source-span retrieval scope uses the 198 public AHS/GURU metadata rows from `resources/registry/ahs-guru-public-corpus.json`. Registry metadata may create resource, disease-site, document-type, and archive/status navigation records. It does not create clinical recommendations, generated summaries, embeddings, model answers, or full RAG behavior. Generated answers remain disabled.
 
 Raw PDFs from public AHS/GURU URLs are local ignored source archive artifacts under `resources/raw/ahs-guru-public/`. They are not committed to Git and must not be copied into prompts, logs, evidence files, or external model calls. The committed audit path is the manifest and checksum record under `resources/manifests/ahs-guru-public/`: every planned row keeps status fields, checksum data when available, and failure reasons when acquisition fails. The all-public manifest `resources/manifests/ahs-guru-public/manifest-20260616T053200Z.json` accounts for 198 rows with 197 downloaded and 1 failed row, so acquisition is best-effort and manifest-accounted.
 
 Parsing keeps the deterministic 5-document subset selected in `resources/registry/ahs-guru-parse-subset.json` behind the exact-five `--registry` gate. Manifest-driven parse mode is separate and status-accounted; recent derived outputs reported `download_missing=1`, `parse_failed=2`, `parsed=144`, and `partial_text=51`. Source-document and source-span records are shown only when deterministic local parser outputs produce them and safety filters allow exposure. The atlas must not fabricate excerpts, infer clinical claims from metadata, or imply all 198 PDFs have been parsed into usable claims.
 
 The Evidence Atlas UI now uses Sigma.js with Graphology as the default graph model. Its deterministic ForceAtlas and noverlap layout is an implementation detail of the current graph surface. The interface includes a compact inspector, bottom metadata/source-span retrieval terminal, source provenance drawer, offline/local manifest status chips, and a non-mutating evidence-review queue shell. Query results can focus and highlight graph resources, source spans, path/context nodes, and provenance fields. When the graph does not contain source-span nodes, source-span retrieval hits fall back to the parent resource while keeping source-span IDs, stable locators, checksum/status fields, and reviewer metadata visible where available. The interface remains an atlas and provenance browser for guideline exploration, not a patient-facing answer engine.
+
+The workbench trace API is a bounded trace endpoint, not a chatbot endpoint. Advice-like prompts and no-source or no-match traces abstain before gateway execution. Validated source-span traces may invoke only the local dry-run gateway path, and the response remains `abstained_no_answer_text` with command, eval, retrieval, source-selection, gateway, model-class, citation-verifier, warning, and evidence-ID metadata. The current dry-run path is mockable and skippable in CI; a real local runner requires explicit environment configuration and may return unavailable.
 
 Surveillance in this milestone is offline and local only. It compares existing manifest JSON files, reports local archive status changes, and does not crawl live sites, check live reachability, infer practice impact, or run recommendation-impact diff. Evidence-review cards are draft workflow metadata unless backed by validated `source_span_ids`; invalid or unbacked cards are blocked and contain no claim text.
 
@@ -91,7 +98,7 @@ The next product families build on the public guideline knowledgebase foundation
 
 ## Model usage policy
 
-Do not route prompts, documents, or embeddings to external large language model APIs by default. Local, open-weight, or explicitly approved private deployments are the default. Any external routing requires documented approval and a per-use gate. The base policy object sets `external_api_allowed` to `false`; changing it to `true` is a per-use approval, not a default.
+Do not route prompts, documents, or embeddings to external large language model APIs by default. Local, open-weight, or explicitly approved private deployments are the default. Any external routing requires documented approval and a per-use gate. The base policy object sets `external_api_allowed` to `false`; changing it to `true` is a per-use approval, not a default. Current Graph-RAG foundation traces use `local_open_weight_7b` as a model class and dry-run path, not as a hard-coded production model.
 
 See [`docs/model-gateway.md`](./model-gateway.md).
 
@@ -130,7 +137,7 @@ The full local baseline is:
 npm run test:baseline
 ```
 
-This runs backend pytest, frontend Vitest, lint, typecheck, Playwright E2E, graph/provenance schema validation, resource registry validation, real-corpus safety gates, parser/search external-LLM scans, raw PDF ignore checks, and performance smoke coverage. See [`docs/testing-strategy.md`](./testing-strategy.md) for the complete command sequence, including expected-failure fixture diagnostics.
+This runs backend pytest, frontend Vitest, lint, typecheck, Playwright E2E, graph/provenance schema validation, `npm run test:safety`, resource registry validation, real-corpus safety gates, parser/search external-LLM scans, raw PDF ignore checks, and performance smoke coverage. See [`docs/testing-strategy.md`](./testing-strategy.md) for the complete command sequence, including expected-failure fixture diagnostics.
 
 ## Document separation
 

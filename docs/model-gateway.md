@@ -2,6 +2,8 @@
 
 This document defines the model gateway policy for the CCA GURU Guideline Graph Workbench. It is an engineering policy, not a model-selection decision or a vendor recommendation. The gateway exists to make every model call explicit, bounded, traceable, and accountable before any token is consumed.
 
+The current Graph-RAG foundation uses the gateway for trace semantics only. Workbench traces may record a command, eval result, retrieval context, source-span IDs, gateway decision, model-class status, citation-verifier status, warnings, abstention status, and evidence IDs. They do not return generated answer text, approved guidance, patient-specific advice, generated clinical summaries, or full RAG answers.
+
 ## Default direction: local, open-weight, customer-owned, or private deployment
 
 The workbench does not route prompts, documents, or embeddings to external large language model APIs by default. The default direction is:
@@ -16,6 +18,8 @@ Any deviation from this direction requires a documented business or technical ju
 ## No external LLM API by default
 
 No external LLM API is allowed by default. The base policy object sets `external_api_allowed` to `false`. Changing it to `true` is a per-use gate, not a configuration default.
+
+The current runtime rejects external providers when `external_api_allowed` is `false`. That rejection is expected behavior, not a recoverable production fallback.
 
 ## Subsidy firewall
 
@@ -73,6 +77,8 @@ Every model call must carry a policy envelope. The gateway evaluates it before r
 
 This object is a starting template. Each field is tightened or loosened by task type, tenant budget, data sensitivity, and source-permission status. The default value of `external_api_allowed` never changes.
 
+For the current dry-run trace path, `local_open_weight_7b` is a model class and testable policy label. It is not a hard-coded production model, a downloaded weight, or a vendor choice.
+
 ## Gateway decision flow
 
 When a component requests a model call, the gateway performs these checks in order:
@@ -129,6 +135,21 @@ The workbench treats model selection as a benchmark decision, not a permanent ar
 
 A real implementation will run a bake-off against gold-labeled extraction sets, update-triage cases, and red-team hallucination tests before promoting any candidate class to a supported default. The gateway policy remains the same regardless of which model class wins the benchmark.
 
+## Current dry-run trace path
+
+The current `local_open_weight_7b` path is local, mockable, and skippable. It exists to test the gateway and ModelTrace contract without calling an external provider or emitting answer text.
+
+The dry-run path:
+
+- Accepts only validated source-span identifiers and digest metadata as context.
+- Records gateway policy decisions, model-class status, citation-verifier status, token/GPU placeholders, warning labels, abstention status, and evidence IDs.
+- Returns abstention-style trace metadata such as `abstained_no_answer_text`, not generated answer text.
+- Blocks advice-like, no-source, and no-match workbench commands before model execution.
+- Uses mock local behavior by default for tests and CI.
+- Requires explicit environment configuration for any real local runner and may return unavailable when no runner is configured.
+
+This path supports trace evaluation for the Graph-RAG foundation. It is not a delivered chatbot, a full RAG answer product, clinical decision support, or an approved recommendation system.
+
 ## Trace logging
 
 Trace logging records:
@@ -142,6 +163,8 @@ Trace logging records:
 - timestamps and outcome status.
 
 Traces support audit, debugging, and evaluation. They are governed by the same PHI and sensitivity rules as all other project artifacts.
+
+`docs/gpt5.5pro_6_15.md` may guide product intent and strategy, but it is not an authoritative implementation spec for trace logging, model routing, or answer behavior. The enforceable contracts are this gateway policy, `docs/CONTEXT.md`, schemas, tests, and the bounded implementation code.
 
 ## Approval gates
 
@@ -162,6 +185,9 @@ This policy does not:
 - download model weights;
 - call external APIs;
 - hard-code a named model as the permanent default;
+- treat `local_open_weight_7b` as a production model commitment;
+- promote GPT 5.5 Pro strategy notes to implementation authority;
+- return generated answer text from the current dry-run trace path;
 - generate patient-specific advice or clinical recommendations;
 - route prompts, documents, or embeddings to external LLM APIs by default.
 

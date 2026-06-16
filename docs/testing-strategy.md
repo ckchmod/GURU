@@ -30,7 +30,7 @@ Maintain a full test baseline from the start. Every significant milestone must p
 - Grep assertions for PHI, secrets, and restricted file patterns.
 - Provenance metadata checks on generated graph nodes.
 - Git status checks to confirm no raw large files or credentials are staged.
-- Documentation grep checks for generated answers disabled, source-backed graph-linked retrieval, best-effort manifest-accounted acquisition, offline/local surveillance, source-span parent fallback, and draft/non-claim evidence-review wording.
+- Documentation grep checks for generated answers disabled, graph-first trace semantics, source-backed graph-linked retrieval, local/mockable/skippable dry-run ModelTrace behavior, best-effort manifest-accounted acquisition, offline/local surveillance, source-span parent fallback, and draft/non-claim evidence-review wording.
 - Documentation grep checks that overclaiming phrases are absent or explicitly scoped as disabled, excluded, blocked, local-only, or future-roadmap work.
 
 ## Commands
@@ -97,7 +97,7 @@ npm run test:e2e:web      # Playwright tests in apps/web
 npm run lint:web          # eslint in apps/web
 npm run typecheck:web     # tsc --noEmit in apps/web
 npm run test:schemas      # valid graph fixture
-npm run test:safety       # real corpus safety gates, parser/search LLM scans, raw PDF ignore checks, performance smoke coverage
+npm run test:safety       # explicit CI safety gate for real corpus safety checks, parser/search LLM scans, raw PDF ignore checks, performance smoke coverage
 npm run test:schemas:invalid  # invalid graph fixture (expected to fail)
 ```
 
@@ -120,6 +120,10 @@ For docs-only tasks that synchronize GURU identity and current Evidence Atlas la
 
 - Generated answers remain disabled.
 - Graph-linked retrieval is retrieval, provenance, and trace evidence only, source-backed where validated source spans exist.
+- Workbench command/eval/trace responses carry graph resources, source-span identifiers, path/context nodes, gateway/model-class status, citation-verifier status, warnings, abstention status, and evidence IDs, not generated answer text.
+- `local_open_weight_7b` is documented as a local, mockable, and skippable model class or dry-run path, not a hard-coded production model.
+- External API routing is denied by default through `external_api_allowed: false`.
+- `docs/gpt5.5pro_6_15.md` is intent and strategy guidance only, not an authoritative implementation spec.
 - All-public acquisition is best-effort and manifest-accounted, not guaranteed all-198 parsed coverage.
 - Surveillance is an offline/local manifest scaffold only.
 - Retrieval query results can focus and highlight graph resources, source spans, path/context nodes, and provenance fields.
@@ -150,7 +154,8 @@ to `main`/`master`. The workflow:
   `services/api/requirements.txt`.
 - Installs Playwright Chromium browsers with `npx playwright install --with-deps chromium`.
 - Runs backend pytest, frontend Vitest, lint, typecheck, Playwright smoke tests,
-  graph/provenance schema validation, and resource registry validation.
+  graph/provenance schema validation, `npm run test:safety`, and resource registry validation.
+- Runs `npm run test:safety` as an explicit CI step after schema validation and before resource registry validation, matching the root `test:baseline` order.
 - Requires no secrets, no external model APIs, no databases, and no real
   clinical resource access. All fixtures are synthetic.
 
