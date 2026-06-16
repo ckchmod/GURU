@@ -57,6 +57,9 @@ jobs:
           npm run test:schemas
           npm run test:schemas:invalid || true
 
+      - name: Run safety boundary checks
+        run: npm run test:safety
+
       - name: Validate resource registry
         run: python scripts/validate-resource-registry.py
 
