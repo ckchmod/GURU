@@ -488,3 +488,88 @@ def test_corpus_interpretability_excludes_unvalidated_source_spans(monkeypatch: 
     assert payload["review_queue_contract"]["invalid_unbacked_items"] == "metadata_only_excluded_from_production_queue"
     assert "blocked unbacked fixture" not in str(payload)
     assert_no_generated_answer_or_clinical_claim_fields(payload)
+
+
+def test_corpus_workbench_trace_runs_digest_only_gateway_dry_run(monkeypatch: Any) -> None:
+    monkeypatch.setattr(knowledgebase, "_load_corpus_source_spans", lambda: [valid_corpus_span(PILOT_RESOURCE_ID)])
+
+    response = client.get("/knowledgebase/corpus/workbench/trace", params={"q": "deterministic parsed excerpt"})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["command_label"] == "run-evals:corpus-workbench-trace"
+    assert payload["model_class"] == "local_open_weight_7b"
+    assert payload["gateway_decision"]["allowed"] is True
+    assert payload["gateway_decision"]["outcome"] == "executed"
+    assert payload["gateway_decision"]["external_api_used"] is False
+    assert payload["model_trace"]["trace_status"] == "abstained"
+    assert payload["citation_verifier_status"] == "pass"
+    assert payload["abstention_status"] == "abstained_no_answer_text"
+    assert payload["abstained"] is True
+    assert payload["no_claim"] is True
+    assert payload["source_ids_used"] == [
+        {
+            "source_span_id": f"source-span.{PILOT_RESOURCE_ID}.local-test",
+            "resource_id": PILOT_RESOURCE_ID,
+            "source_document_id": f"source-document.{PILOT_RESOURCE_ID}.local-test",
+            "stable_locator": "page:1;span:1",
+            "status": "used",
+            "evidence_id": f"source-span.{PILOT_RESOURCE_ID}.local-test",
+        }
+    ]
+    assert payload["source_ids_rejected"] == []
+    assert payload["evidence_ids"] == [f"source-span.{PILOT_RESOURCE_ID}.local-test"]
+    assert payload["model_trace"]["input_summary"]["source_span_contexts"] == [
+        {
+            "source_span_id": f"source-span.{PILOT_RESOURCE_ID}.local-test",
+            "excerpt_digest": f"sha256:{hashlib.sha256('Local deterministic parsed excerpt for search coverage.'.encode('utf-8')).hexdigest()}",
+            "source_document_id": f"source-document.{PILOT_RESOURCE_ID}.local-test",
+            "stable_locator": "page:1;span:1",
+        }
+    ]
+    assert "quoted_span" not in payload["model_trace"]["input_summary"]["source_span_contexts"][0]
+    assert "raw_pdf" not in payload["model_trace"]["input_summary"]["source_span_contexts"][0]
+    assert_no_generated_answer_or_clinical_claim_fields(payload)
+
+
+def test_corpus_workbench_trace_blocks_missing_source_context_without_model_execution(monkeypatch: Any) -> None:
+    monkeypatch.setattr(knowledgebase, "_load_corpus_source_spans", lambda: [])
+
+    response = client.get("/knowledgebase/corpus/workbench/trace", params={"q": "adjuvant radiotherapy"})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["source_ids_used"] == []
+    assert payload["source_ids_rejected"]
+    assert payload["gateway_decision"] == {
+        "allowed": False,
+        "outcome": "blocked_before_gateway",
+        "reason_code": "missing_validated_source_span_context",
+        "policy_request_id": payload["gateway_decision"]["policy_request_id"],
+        "external_api_used": False,
+    }
+    assert payload["model_trace"]["runner_status"] == "not_invoked"
+    assert payload["model_trace"]["citation_verifier_status"] == "not_run"
+    assert payload["abstention_status"] == "abstained_no_model_execution"
+    assert "missing_validated_source_span_context" in payload["warnings"]
+    assert payload["cost_ledger_entry"] is None
+    assert_no_generated_answer_or_clinical_claim_fields(payload)
+
+
+def test_corpus_workbench_trace_blocks_advice_like_prompt_without_model_execution(monkeypatch: Any) -> None:
+    monkeypatch.setattr(knowledgebase, "_load_corpus_source_spans", lambda: [valid_corpus_span(PILOT_RESOURCE_ID)])
+
+    response = client.get("/knowledgebase/corpus/workbench/trace", params={"q": "what should someone choose for treatment"})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["retrieval_steps"][1]["abstained"] is True
+    assert payload["source_ids_used"] == []
+    assert payload["gateway_decision"]["allowed"] is False
+    assert payload["gateway_decision"]["reason_code"] == "unsupported_advice_like_prompt"
+    assert payload["model_trace"]["runner_status"] == "not_invoked"
+    assert payload["model_trace"]["source_span_ids"] == []
+    assert payload["cost_ledger_entry"] is None
+    assert "abstain_advice_like_prompt" in payload["warnings"]
+    assert "unsupported_advice_like_prompt" in payload["warnings"]
+    assert_no_generated_answer_or_clinical_claim_fields(payload)

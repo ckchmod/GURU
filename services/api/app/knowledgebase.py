@@ -3,12 +3,14 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import uuid
 from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
 from services.api.app.corpus_graph import build_public_corpus_graph
+from services.api.app.model_gateway import LOCAL_OPEN_WEIGHT_7B_MODEL_CLASS, run_local_open_weight_7b_dry_run
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -17,6 +19,7 @@ PARSE_SUBSET_PATH = ROOT / "resources" / "registry" / "ahs-guru-parse-subset.jso
 PREVIOUS_PUBLIC_MANIFEST_PATH = ROOT / "resources" / "manifests" / "ahs-guru-public" / "manifest-20260615T000000Z-no-network-status.json"
 CURRENT_PUBLIC_MANIFEST_PATH = ROOT / "resources" / "manifests" / "ahs-guru-public" / "manifest-20260616T053200Z.json"
 DERIVED_SOURCE_SPAN_DIR = ROOT / "resources" / "derived" / "source-spans"
+RETRIEVAL_GOLD_PATH = ROOT / "resources" / "derived" / "retrieval-gold" / "graph-linked-source-span-gold.json"
 SYNTHETIC_SOURCE_PATH = ROOT / "tests" / "fixtures" / "source-documents" / "synthetic-guideline-note.txt"
 ACCESS_DATE = "2026-06-15"
 EXTRACTION_TIMESTAMP = "2026-06-15T12:00:00Z"
@@ -25,6 +28,8 @@ SOURCE_SPAN_COVERAGE_COUNT = 5
 MODEL_ROUTING = "none-local-deterministic-search-only"
 DETERMINISTIC_PARSER_VERSION = "none-local-deterministic-parser"
 MAX_SOURCE_SPAN_SEARCH_RESULTS = 12
+WORKBENCH_TRACE_COMMAND_LABEL = "run-evals:corpus-workbench-trace"
+WORKBENCH_TRACE_TASK_ID = "66666666-6666-4666-8666-666666666666"
 REVIEW_QUEUE_ALLOWED_ACTIONS = ("inspect_source", "mark_needs_review_local", "link_source_local")
 SURVEILLANCE_REVIEW_STATES = {"changed", "checksum_mismatch", "missing", "resource_added", "resource_removed"}
 COVERAGE_STATUS_VOCABULARY = {
@@ -42,6 +47,18 @@ PATIENT_ADVICE_LANGUAGE_PATTERNS = (
     re.compile(r"\brecommended regimen\b", re.IGNORECASE),
     re.compile(r"\bpatient-specific\b", re.IGNORECASE),
 )
+ADVICE_LIKE_QUERY_PATTERNS = (
+    re.compile(r"\bshould\b", re.IGNORECASE),
+    re.compile(r"\bwhat\s+should\b", re.IGNORECASE),
+    re.compile(r"\bmy\s+patient\b", re.IGNORECASE),
+    re.compile(r"\byour\s+patient\b", re.IGNORECASE),
+    re.compile(r"\bsomeone\s+choose\b", re.IGNORECASE),
+    re.compile(r"\brecommend(?:ed|ation|ations)?\b", re.IGNORECASE),
+    re.compile(r"\btreatment\s+(?:advice|choice|recommendation)\b", re.IGNORECASE),
+    re.compile(r"\bdosing\b", re.IGNORECASE),
+    re.compile(r"\bdiagnosis\b", re.IGNORECASE),
+    re.compile(r"\bpatient-specific\b", re.IGNORECASE),
+)
 RESPONSE_STATE_VOCABULARY = {
     "metadata_only": "Registry metadata exists, but no local parsed artifact is exposed.",
     "downloaded_unparsed": "A local raw archive state is recorded, but parser output is not available.",
@@ -55,6 +72,10 @@ router = APIRouter(prefix="/knowledgebase", tags=["knowledgebase"])
 
 def _sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _uuid_from_text(text: str) -> str:
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, f"guru-workbench-trace:{text}"))
 
 
 def _safe_id_part(value: str) -> str:
@@ -220,6 +241,10 @@ def _load_corpus_source_spans() -> list[dict[str, Any]]:
     return _load_json_records(DERIVED_SOURCE_SPAN_DIR, "source_spans")
 
 
+def _load_retrieval_gold_fixture() -> dict[str, Any]:
+    return json.loads(RETRIEVAL_GOLD_PATH.read_text(encoding="utf-8"))
+
+
 def _status_token(value: Any) -> str:
     if not isinstance(value, str):
         return "unknown"
@@ -323,20 +348,62 @@ def _contains_query(value: Any, query: str) -> bool:
     return isinstance(value, str) and query in value.lower()
 
 
+def _query_tokens(query: str) -> list[str]:
+    return [token for token in re.findall(r"[a-z0-9]+", query.lower()) if len(token) >= 2]
+
+
+def _token_score(values: list[Any], tokens: list[str]) -> int:
+    haystack = " ".join(value.lower() for value in values if isinstance(value, str))
+    return sum(1 for token in tokens if token in haystack)
+
+
+def _full_token_match_score(values: list[Any], tokens: list[str]) -> int:
+    if not tokens:
+        return 0
+    score = _token_score(values, tokens)
+    return score if score == len(tokens) else 0
+
+
+def _is_advice_like_query(query: str) -> bool:
+    return any(pattern.search(query) for pattern in ADVICE_LIKE_QUERY_PATTERNS)
+
+
 def _metadata_search_match(resource: dict[str, Any], query: str) -> bool:
-    return any(
-        _contains_query(resource.get(field), query)
-        for field in ("title", "resource_id", "disease_site", "document_type", "resource_type")
-    )
+    tokens = _query_tokens(query)
+    if not tokens:
+        return False
+    return _metadata_search_score(resource, query, tokens) > 0
 
 
-def _source_span_search_results(query: str, allowed_resource_ids: set[str]) -> list[dict[str, Any]]:
+def _metadata_search_score(resource: dict[str, Any], query: str, tokens: list[str]) -> int:
+    fields = [resource.get(field) for field in ("title", "resource_id", "disease_site", "document_type", "resource_type")]
+    exact_bonus = 8 if any(_contains_query(value, query) for value in fields) else 0
+    return exact_bonus + _full_token_match_score(fields, tokens)
+
+
+def _validated_source_spans_from_records(records: list[dict[str, Any]], allowed_resource_ids: set[str]) -> list[dict[str, Any]]:
+    return [span for span in records if _is_validated_source_span(span, allowed_resource_ids)]
+
+
+def _source_span_search_results(
+    query: str,
+    allowed_resource_ids: set[str],
+    source_spans: list[dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
     results: list[dict[str, Any]] = []
+    tokens = _query_tokens(query)
     resource_lookup = {resource["resource_id"]: resource for resource in _corpus_resources()}
-    for span in _validated_corpus_source_spans(allowed_resource_ids):
+    spans = _validated_source_spans_from_records(source_spans, allowed_resource_ids) if source_spans is not None else _validated_corpus_source_spans(allowed_resource_ids)
+    scored_spans: list[tuple[int, dict[str, Any]]] = []
+    for span in spans:
         resource_id = span.get("resource_id")
         excerpt = span.get("bounded_excerpt", span.get("quoted_text", span.get("quoted_span", "")))
-        if resource_id in allowed_resource_ids and _contains_query(excerpt, query):
+        score = _full_token_match_score([excerpt], tokens)
+        if resource_id in allowed_resource_ids and score > 0:
+            scored_spans.append((score, span))
+    for _, span in sorted(scored_spans, key=lambda item: (-item[0], item[1].get("span_id", ""))):
+        resource_id = span.get("resource_id")
+        if resource_id in allowed_resource_ids:
             resource = resource_lookup.get(resource_id)
             if resource is not None:
                 results.append(_source_span_hit(span, resource))
@@ -382,7 +449,7 @@ def _is_validated_source_span(span: dict[str, Any], allowed_resource_ids: set[st
 
 def _validated_corpus_source_spans(allowed_resource_ids: set[str] | None = None) -> list[dict[str, Any]]:
     allowed_ids = allowed_resource_ids if allowed_resource_ids is not None else _load_parse_subset_ids()
-    return [span for span in _load_corpus_source_spans() if _is_validated_source_span(span, allowed_ids)]
+    return _validated_source_spans_from_records(_load_corpus_source_spans(), allowed_ids)
 
 
 def _resource_graph_context(resource: dict[str, Any]) -> dict[str, Any]:
@@ -475,6 +542,16 @@ def _metadata_hit(resource: dict[str, Any], source_spans: list[dict[str, Any]] |
     return {**resource, **_resource_interpretability_fields(resource, source_spans)}
 
 
+def _metadata_hit_for_search(
+    resource: dict[str, Any],
+    source_spans: list[dict[str, Any]] | None,
+    use_explicit_source_spans: bool,
+) -> dict[str, Any]:
+    if use_explicit_source_spans:
+        return _metadata_hit(resource, source_spans or [])
+    return _metadata_hit(resource)
+
+
 def _safe_source_span(span: dict[str, Any]) -> dict[str, Any]:
     return {
         "span_id": span.get("span_id"),
@@ -504,6 +581,360 @@ def _source_span_hit(span: dict[str, Any], resource: dict[str, Any]) -> dict[str
         "focus_node_id": resource["node_id"],
         "source_span_ids": [span["span_id"]],
         "focus_resource": _metadata_hit(resource, [span]),
+    }
+
+
+def _warning_labels(
+    query: str,
+    metadata_results: list[dict[str, Any]],
+    source_span_results: list[dict[str, Any]],
+    advice_abstained: bool,
+) -> list[str]:
+    warnings: list[str] = []
+    if advice_abstained:
+        warnings.extend(["abstain_advice_like_prompt", "no_generated_claim"])
+    if query and not metadata_results and not source_span_results:
+        warnings.append("no_matching_resource")
+    if any(result.get("coverage_status") == "metadata_only" for result in metadata_results) and not source_span_results:
+        warnings.append("metadata_only_expected")
+        warnings.append("source_span_coverage_unavailable")
+    return sorted(set(warnings), key=warnings.index)
+
+
+def _search_corpus_payload(
+    *,
+    q: str,
+    disease_site: str | None = None,
+    resource_type: str | None = None,
+    document_status: str | None = None,
+    archive_status: str | None = None,
+    parse_status: str | None = None,
+    source_spans: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    query = q.strip().lower()
+    filtered_resources = _filtered_corpus_resources(
+        disease_site=disease_site,
+        resource_type=resource_type,
+        document_status=document_status,
+        archive_status=archive_status,
+        parse_status=parse_status,
+    )
+    advice_abstained = bool(query and _is_advice_like_query(query))
+    source_span_resource_ids = {resource["resource_id"] for resource in filtered_resources}
+    validated_spans = (
+        _validated_source_spans_from_records(source_spans, source_span_resource_ids)
+        if source_spans is not None
+        else _validated_corpus_source_spans(source_span_resource_ids)
+    )
+    source_span_coverage_ids = {
+        span["resource_id"] for span in validated_spans if isinstance(span.get("resource_id"), str)
+    }
+    spans_by_resource: dict[str, list[dict[str, Any]]] = {}
+    for span in validated_spans:
+        resource_id = span.get("resource_id")
+        if isinstance(resource_id, str):
+            spans_by_resource.setdefault(resource_id, []).append(span)
+    if advice_abstained or not query:
+        metadata_results: list[dict[str, Any]] = []
+        source_span_results: list[dict[str, Any]] = []
+    else:
+        tokens = _query_tokens(query)
+        scored_resources = [
+            (_metadata_search_score(resource, query, tokens), resource)
+            for resource in filtered_resources
+        ]
+        metadata_results = [
+            _metadata_hit_for_search(resource, spans_by_resource.get(resource["resource_id"]), source_spans is not None)
+            for score, resource in sorted(scored_resources, key=lambda item: (-item[0], item[1]["resource_id"]))
+            if score > 0
+        ]
+        source_span_results = _source_span_search_results(query, source_span_resource_ids, source_spans)
+    no_results_abstained = bool(query and not metadata_results and not source_span_results)
+    abstained = advice_abstained or no_results_abstained
+    warning_labels = _warning_labels(query, metadata_results, source_span_results, advice_abstained)
+    return {
+        "query": q,
+        "metadata_results": metadata_results,
+        "source_span_results": source_span_results,
+        "metadata_result_count": len(metadata_results),
+        "source_span_result_count": len(source_span_results),
+        "source_span_coverage_count": len(source_span_coverage_ids),
+        "source_span_coverage_note": "Search checks metadata for all 198 resources and canonical validated source-span excerpts for filtered resources; spans containing safety-blocked advice language are excluded.",
+        "total_resource_count": len(_corpus_resources()),
+        "model_routing": MODEL_ROUTING,
+        "warning_labels": warning_labels,
+        "abstained": abstained,
+        "no_claim": True,
+    }
+
+
+def _case_filter_value(filters: dict[str, Any], key: str) -> str | None:
+    value = filters.get(key)
+    return value if isinstance(value, str) else None
+
+
+def _source_id_records(results: list[dict[str, Any]], status: str) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for result in results:
+        span_id = result.get("span_id")
+        if not isinstance(span_id, str) or not span_id:
+            continue
+        records.append(
+            {
+                "source_span_id": span_id,
+                "resource_id": result.get("resource_id"),
+                "source_document_id": result.get("source_document_id", result.get("document_id")),
+                "stable_locator": result.get("stable_locator"),
+                "status": status,
+                "evidence_id": span_id,
+            }
+        )
+    return records
+
+
+def _metadata_rejection_records(results: list[dict[str, Any]], reason: str) -> list[dict[str, Any]]:
+    return [
+        {
+            "resource_id": result["resource_id"],
+            "status": "rejected",
+            "reason": reason,
+            "evidence_id": result["resource_id"],
+        }
+        for result in results
+        if isinstance(result.get("resource_id"), str)
+    ]
+
+
+def _gateway_policy_envelope(command_label: str, query: str) -> dict[str, Any]:
+    request_id = _uuid_from_text(f"{command_label}:{query.strip().lower()}")
+    return {
+        "tenant_id": "local-workbench",
+        "user_id": "workbench-trace-api",
+        "task_type": "evidence_trace_dry_run",
+        "task_id": WORKBENCH_TRACE_TASK_ID,
+        "request_id": request_id,
+        "allowed_model_classes": [LOCAL_OPEN_WEIGHT_7B_MODEL_CLASS],
+        "context_token_limit": MAX_SOURCE_SPAN_SEARCH_RESULTS,
+        "output_token_limit": 0,
+        "max_gpu_seconds": 0.0,
+        "max_budget": 0.0,
+        "cache_lookup_enabled": False,
+        "trace_logging_enabled": True,
+        "cost_ledger_enabled": True,
+        "approval_gate_required": False,
+        "data_sensitivity": "public",
+        "source_permission_check": True,
+        "external_api_allowed": False,
+    }
+
+
+def _source_span_contexts_for_gateway(source_span_results: list[dict[str, Any]]) -> list[dict[str, str]]:
+    contexts: list[dict[str, str]] = []
+    for result in source_span_results[:MAX_SOURCE_SPAN_SEARCH_RESULTS]:
+        span_id = result.get("span_id")
+        checksum = result.get("excerpt_checksum", result.get("checksum_sha256"))
+        if not isinstance(span_id, str) or not isinstance(checksum, str) or not checksum:
+            continue
+        context = {
+            "source_span_id": span_id,
+            "excerpt_digest": checksum if checksum.startswith("sha256:") else f"sha256:{checksum}",
+        }
+        source_document_id = result.get("source_document_id", result.get("document_id"))
+        if isinstance(source_document_id, str) and source_document_id:
+            context["source_document_id"] = source_document_id
+        stable_locator = result.get("stable_locator")
+        if isinstance(stable_locator, str) and stable_locator:
+            context["stable_locator"] = stable_locator
+        contexts.append(context)
+    return contexts
+
+
+def _blocked_gateway_decision(reason: str, request_id: str) -> dict[str, Any]:
+    return {
+        "allowed": False,
+        "outcome": "blocked_before_gateway",
+        "reason_code": reason,
+        "policy_request_id": request_id,
+        "external_api_used": False,
+    }
+
+
+def _blocked_model_trace(reason: str, request_id: str) -> dict[str, Any]:
+    return {
+        "model_class": LOCAL_OPEN_WEIGHT_7B_MODEL_CLASS,
+        "provider_kind": "local",
+        "trace_status": "blocked",
+        "runner_status": "not_invoked",
+        "policy_request_id": request_id,
+        "citation_verifier_status": "not_run",
+        "abstention_status": "abstained_no_model_execution",
+        "source_span_ids": [],
+        "reason_code": reason,
+        "output_tokens": 0,
+        "gpu_seconds": 0.0,
+    }
+
+
+def _workbench_trace_payload(q: str, command_label: str = WORKBENCH_TRACE_COMMAND_LABEL) -> dict[str, Any]:
+    search_payload = _search_corpus_payload(q=q)
+    query = q.strip().lower()
+    envelope = _gateway_policy_envelope(command_label, query)
+    source_span_results = search_payload["source_span_results"]
+    source_ids_used = _source_id_records(source_span_results, "used")
+    source_ids_rejected = _metadata_rejection_records(search_payload["metadata_results"], "no_validated_source_span_context")
+    source_contexts = _source_span_contexts_for_gateway(source_span_results)
+    warnings = list(search_payload["warning_labels"])
+    retrieval_steps = [
+        {
+            "step_id": "command",
+            "status": "received",
+            "command_label": command_label,
+        },
+        {
+            "step_id": "retrieval",
+            "status": "completed",
+            "metadata_result_count": search_payload["metadata_result_count"],
+            "source_span_result_count": search_payload["source_span_result_count"],
+            "warning_labels": warnings,
+            "abstained": search_payload["abstained"],
+        },
+        {
+            "step_id": "source_selection",
+            "status": "completed" if source_contexts else "blocked",
+            "source_span_ids_used": [record["source_span_id"] for record in source_ids_used],
+            "rejected_count": len(source_ids_rejected),
+        },
+    ]
+    block_reason = None
+    if _is_advice_like_query(query):
+        block_reason = "unsupported_advice_like_prompt"
+    elif not source_contexts:
+        block_reason = "missing_validated_source_span_context"
+    if block_reason is not None:
+        if block_reason not in warnings:
+            warnings.append(block_reason)
+        gateway_decision = _blocked_gateway_decision(block_reason, envelope["request_id"])
+        model_trace = _blocked_model_trace(block_reason, envelope["request_id"])
+        ledger_entry = None
+    else:
+        dry_run = run_local_open_weight_7b_dry_run(envelope, source_contexts)
+        gateway_decision = {
+            "allowed": dry_run.decision.allowed,
+            "outcome": dry_run.decision.outcome,
+            "reason_code": dry_run.decision.reason_code,
+            "policy_request_id": envelope["request_id"],
+            "external_api_used": dry_run.ledger_entry["external_api_used"],
+        }
+        model_trace = dry_run.trace
+        ledger_entry = dry_run.ledger_entry
+    retrieval_steps.append(
+        {
+            "step_id": "model_gateway",
+            "status": gateway_decision["outcome"],
+            "model_class": LOCAL_OPEN_WEIGHT_7B_MODEL_CLASS,
+            "external_api_used": gateway_decision["external_api_used"],
+        }
+    )
+    evidence_ids = [record["evidence_id"] for record in source_ids_used] + [record["evidence_id"] for record in source_ids_rejected]
+    return {
+        "command_label": command_label,
+        "query": q,
+        "retrieval_steps": retrieval_steps,
+        "source_ids_used": source_ids_used,
+        "source_ids_rejected": source_ids_rejected,
+        "gateway_decision": gateway_decision,
+        "model_class": LOCAL_OPEN_WEIGHT_7B_MODEL_CLASS,
+        "model_trace": model_trace,
+        "cost_ledger_entry": ledger_entry,
+        "citation_verifier_status": model_trace["citation_verifier_status"],
+        "warnings": sorted(set(warnings), key=warnings.index),
+        "abstained": True,
+        "abstention_status": model_trace["abstention_status"],
+        "evidence_ids": evidence_ids,
+        "no_claim": True,
+        "model_routing": MODEL_ROUTING,
+    }
+
+
+def score_retrieval_gold_fixture(k: int = 5) -> dict[str, Any]:
+    fixture = _load_retrieval_gold_fixture()
+    case_results: list[dict[str, Any]] = []
+    passed = True
+    for case in fixture["cases"]:
+        filters = case.get("allowed_filters", {})
+        payload = _search_corpus_payload(
+            q=case["query"],
+            disease_site=_case_filter_value(filters, "disease_site"),
+            resource_type=_case_filter_value(filters, "resource_type"),
+            document_status=_case_filter_value(filters, "document_status"),
+            archive_status=_case_filter_value(filters, "archive_status"),
+            parse_status=_case_filter_value(filters, "parse_status"),
+            source_spans=case.get("expected_source_spans", []),
+        )
+        metadata_resource_ids = [resource["resource_id"] for resource in payload["metadata_results"]]
+        span_resource_ids = [span["resource_id"] for span in payload["source_span_results"]]
+        ranked_resource_ids = list(dict.fromkeys(metadata_resource_ids + span_resource_ids))
+        expected_resource_ids = case["expected_resource_ids"]
+        expected_span_ids = case["expected_source_span_ids"]
+        metadata_span_ids = [
+            span_id
+            for resource in payload["metadata_results"]
+            for span_id in resource.get("source_span_ids", [])
+            if isinstance(span_id, str)
+        ]
+        observed_span_ids = list(dict.fromkeys([span["span_id"] for span in payload["source_span_results"]] + metadata_span_ids))
+        expected_in_top_k = [resource_id for resource_id in expected_resource_ids if resource_id in ranked_resource_ids[:k]]
+        recall_at_k = 1.0 if not expected_resource_ids else len(expected_in_top_k) / len(expected_resource_ids)
+        first_result = (
+            payload["metadata_results"][0]
+            if payload["metadata_results"]
+            else payload["source_span_results"][0]
+            if payload["source_span_results"]
+            else None
+        )
+        graph_metadata_ok = True
+        if first_result is not None:
+            graph_metadata_ok = (
+                first_result["focus_node_id"] == case["expected_graph_focus_node"]
+                and first_result["resource_node_id"] == case["expected_graph_focus_node"]
+                and bool(first_result["neighbor_node_ids"])
+                and bool(first_result["edge_types"])
+            )
+        case_passed = (
+            payload["abstained"] == case["expected_abstention"]
+            and set(expected_resource_ids).issubset(set(ranked_resource_ids[:k]))
+            and set(expected_span_ids).issubset(set(observed_span_ids))
+            and set(case["warning_labels"]).issubset(set(payload["warning_labels"]))
+            and graph_metadata_ok
+            and payload["no_claim"] is True
+        )
+        passed = passed and case_passed
+        case_results.append(
+            {
+                "case_id": case["case_id"],
+                "passed": case_passed,
+                "ranked_resource_ids": ranked_resource_ids,
+                "observed_source_span_ids": observed_span_ids,
+                "expected_resource_ids": expected_resource_ids,
+                "expected_source_span_ids": expected_span_ids,
+                "recall_at_k": recall_at_k,
+                "rank_at_k": k,
+                "focus_node_id": first_result.get("focus_node_id") if first_result else None,
+                "neighbor_node_ids": first_result.get("neighbor_node_ids", []) if first_result else [],
+                "edge_types": first_result.get("edge_types", []) if first_result else [],
+                "warning_labels": payload["warning_labels"],
+                "abstained": payload["abstained"],
+                "no_claim": payload["no_claim"],
+            }
+        )
+    return {
+        "fixture_id": fixture["fixture_id"],
+        "model_routing": fixture["model_routing"],
+        "rank_at_k": k,
+        "case_count": len(case_results),
+        "passed_count": sum(1 for result in case_results if result["passed"]),
+        "passed": passed,
+        "cases": case_results,
     }
 
 
@@ -669,31 +1100,19 @@ def search_corpus(
     archive_status: str | None = None,
     parse_status: str | None = None,
 ) -> dict[str, Any]:
-    query = q.strip().lower()
-    filtered_resources = _filtered_corpus_resources(
+    return _search_corpus_payload(
+        q=q,
         disease_site=disease_site,
         resource_type=resource_type,
         document_status=document_status,
         archive_status=archive_status,
         parse_status=parse_status,
     )
-    metadata_results = [_metadata_hit(resource) for resource in filtered_resources if query and _metadata_search_match(resource, query)]
-    source_span_resource_ids = {resource["resource_id"] for resource in filtered_resources}
-    source_span_coverage_ids = {
-        span["resource_id"] for span in _validated_corpus_source_spans(source_span_resource_ids) if isinstance(span.get("resource_id"), str)
-    }
-    source_span_results = _source_span_search_results(query, source_span_resource_ids) if query else []
-    return {
-        "query": q,
-        "metadata_results": metadata_results,
-        "source_span_results": source_span_results,
-        "metadata_result_count": len(metadata_results),
-        "source_span_result_count": len(source_span_results),
-        "source_span_coverage_count": len(source_span_coverage_ids),
-        "source_span_coverage_note": "Search checks metadata for all 198 resources and canonical validated source-span excerpts for filtered resources; spans containing safety-blocked advice language are excluded.",
-        "total_resource_count": len(_corpus_resources()),
-        "model_routing": MODEL_ROUTING,
-    }
+
+
+@router.get("/corpus/workbench/trace")
+def get_workbench_trace(q: str = "", command_label: str = WORKBENCH_TRACE_COMMAND_LABEL) -> dict[str, Any]:
+    return _workbench_trace_payload(q=q, command_label=command_label)
 
 
 @router.get("/corpus/interpretability")

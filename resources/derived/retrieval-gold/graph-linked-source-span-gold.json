@@ -1,0 +1,184 @@
+{
+  "fixture_id": "retrieval-gold.graph-linked-source-span.v1",
+  "fixture_version": "1.0.0",
+  "created_at": "2026-06-16T00:00:00Z",
+  "scope": "graph-linked source-span retrieval contract only; no generated answers",
+  "model_routing": "none-local-deterministic-search-only",
+  "source_span_coverage_scope": "bounded_fixture_cases_only",
+  "cases": [
+    {
+      "case_id": "gold-br005-title-source-span",
+      "query": "adjuvant radiotherapy invasive breast",
+      "allowed_filters": {
+        "disease_site": "breast",
+        "resource_type": "guideline"
+      },
+      "expected_resource_ids": [
+        "ahs-guru-breast-br005-adjuvant-rt-invasive-breast"
+      ],
+      "expected_source_span_ids": [
+        "source-span.retrieval-gold.ahs-guru-breast-br005-adjuvant-rt-invasive-breast.title"
+      ],
+      "expected_source_spans": [
+        {
+          "span_id": "source-span.retrieval-gold.ahs-guru-breast-br005-adjuvant-rt-invasive-breast.title",
+          "resource_id": "ahs-guru-breast-br005-adjuvant-rt-invasive-breast",
+          "document_id": "source-document.retrieval-gold.ahs-guru-breast-br005-adjuvant-rt-invasive-breast",
+          "source_document_id": "source-document.retrieval-gold.ahs-guru-breast-br005-adjuvant-rt-invasive-breast",
+          "access_date": "2026-06-15",
+          "stable_locator": "gold-case:br005-title;span:1",
+          "bounded_excerpt": "Adjuvant Radiation Therapy for Invasive Breast Cancer Effective Date: May, 2015 Clinical Practice Guideline BR-005 - Version 5 www.ahs.ca/guru Guideline Resource Unit guru@ahs.ca Under Review",
+          "quoted_span": "Adjuvant Radiation Therapy for Invasive Breast Cancer Effective Date: May, 2015 Clinical Practice Guideline BR-005 - Version 5 www.ahs.ca/guru Guideline Resource Unit guru@ahs.ca Under Review",
+          "quoted_text": "Adjuvant Radiation Therapy for Invasive Breast Cancer Effective Date: May, 2015 Clinical Practice Guideline BR-005 - Version 5 www.ahs.ca/guru Guideline Resource Unit guru@ahs.ca Under Review",
+          "excerpt_checksum": "278fcec05e68a1af23907fb1d071042eaf4a53f58c24cb8559fe8233b39eefdf",
+          "checksum_sha256": "278fcec05e68a1af23907fb1d071042eaf4a53f58c24cb8559fe8233b39eefdf",
+          "prompt_or_model_version": "none-local-deterministic-parser",
+          "reviewer": "unreviewed",
+          "review_status": "draft",
+          "timestamp": "2026-06-16T00:00:00Z",
+          "output_status": "draft"
+        }
+      ],
+      "expected_graph_focus_node": "resource.ahs-guru-breast-br005-adjuvant-rt-invasive-breast",
+      "expected_abstention": false,
+      "warning_labels": []
+    },
+    {
+      "case_id": "gold-br005-search-strategy-source-span",
+      "query": "search strategy randomized controlled trials",
+      "allowed_filters": {
+        "disease_site": "breast"
+      },
+      "expected_resource_ids": [
+        "ahs-guru-breast-br005-adjuvant-rt-invasive-breast"
+      ],
+      "expected_source_span_ids": [
+        "source-span.retrieval-gold.ahs-guru-breast-br005-adjuvant-rt-invasive-breast.search-strategy"
+      ],
+      "expected_source_spans": [
+        {
+          "span_id": "source-span.retrieval-gold.ahs-guru-breast-br005-adjuvant-rt-invasive-breast.search-strategy",
+          "resource_id": "ahs-guru-breast-br005-adjuvant-rt-invasive-breast",
+          "document_id": "source-document.retrieval-gold.ahs-guru-breast-br005-adjuvant-rt-invasive-breast",
+          "source_document_id": "source-document.retrieval-gold.ahs-guru-breast-br005-adjuvant-rt-invasive-breast",
+          "access_date": "2026-06-15",
+          "stable_locator": "gold-case:br005-search-strategy;span:1",
+          "bounded_excerpt": "Search Strategy The original guideline was developed by searching MEDLINE, EMBASE, Cochrane Library, American Society of Clinical Oncology abstracts, and the CANCERLIT database for practice guidelines, systematic reviews, meta-analyses, randomized controlled trials, and clinical trials.",
+          "quoted_span": "Search Strategy The original guideline was developed by searching MEDLINE, EMBASE, Cochrane Library, American Society of Clinical Oncology abstracts, and the CANCERLIT database for practice guidelines, systematic reviews, meta-analyses, randomized controlled trials, and clinical trials.",
+          "quoted_text": "Search Strategy The original guideline was developed by searching MEDLINE, EMBASE, Cochrane Library, American Society of Clinical Oncology abstracts, and the CANCERLIT database for practice guidelines, systematic reviews, meta-analyses, randomized controlled trials, and clinical trials.",
+          "excerpt_checksum": "d31b7f0618c57eac7047d6954423d0fe9378a59486181784d8d8ccd3f99e8da7",
+          "checksum_sha256": "d31b7f0618c57eac7047d6954423d0fe9378a59486181784d8d8ccd3f99e8da7",
+          "prompt_or_model_version": "none-local-deterministic-parser",
+          "reviewer": "unreviewed",
+          "review_status": "draft",
+          "timestamp": "2026-06-16T00:00:00Z",
+          "output_status": "draft"
+        }
+      ],
+      "expected_graph_focus_node": "resource.ahs-guru-breast-br005-adjuvant-rt-invasive-breast",
+      "expected_abstention": false,
+      "warning_labels": []
+    },
+    {
+      "case_id": "gold-cns014-metadata-focus",
+      "query": "CNS014 brain metastases",
+      "allowed_filters": {
+        "disease_site": "central nervous system",
+        "resource_type": "guideline"
+      },
+      "expected_resource_ids": [
+        "ahs-guru-central-nervous-system-cns014-management-of-brain-metastases"
+      ],
+      "expected_source_span_ids": [
+        "source-span.retrieval-gold.ahs-guru-central-nervous-system-cns014-management-of-brain-metastases.title"
+      ],
+      "expected_source_spans": [
+        {
+          "span_id": "source-span.retrieval-gold.ahs-guru-central-nervous-system-cns014-management-of-brain-metastases.title",
+          "resource_id": "ahs-guru-central-nervous-system-cns014-management-of-brain-metastases",
+          "document_id": "source-document.retrieval-gold.ahs-guru-central-nervous-system-cns014-management-of-brain-metastases",
+          "source_document_id": "source-document.retrieval-gold.ahs-guru-central-nervous-system-cns014-management-of-brain-metastases",
+          "access_date": "2026-06-15",
+          "stable_locator": "gold-case:cns014-title;span:1",
+          "bounded_excerpt": "Management of Brain Metastases Clinical Practice Guideline CNS-014 Guideline Resource Unit guru@ahs.ca Under Review",
+          "quoted_span": "Management of Brain Metastases Clinical Practice Guideline CNS-014 Guideline Resource Unit guru@ahs.ca Under Review",
+          "quoted_text": "Management of Brain Metastases Clinical Practice Guideline CNS-014 Guideline Resource Unit guru@ahs.ca Under Review",
+          "excerpt_checksum": "8966dc9f102a671690949f0ca5dd6bac179eaec4582499678986f8ae42d64413",
+          "checksum_sha256": "8966dc9f102a671690949f0ca5dd6bac179eaec4582499678986f8ae42d64413",
+          "prompt_or_model_version": "none-local-deterministic-parser",
+          "reviewer": "unreviewed",
+          "review_status": "draft",
+          "timestamp": "2026-06-16T00:00:00Z",
+          "output_status": "draft"
+        }
+      ],
+      "expected_graph_focus_node": "resource.ahs-guru-central-nervous-system-cns014-management-of-brain-metastases",
+      "expected_abstention": false,
+      "warning_labels": []
+    },
+    {
+      "case_id": "gold-radiation-dermatitis-metadata-only",
+      "query": "radiation dermatitis management evidence table",
+      "allowed_filters": {
+        "disease_site": "supportive care",
+        "resource_type": "evidence_table"
+      },
+      "expected_resource_ids": [
+        "ahs-guru-supportive-care-supp025-radiation-dermatitis-mgmt"
+      ],
+      "expected_source_span_ids": [],
+      "expected_source_spans": [],
+      "expected_graph_focus_node": "resource.ahs-guru-supportive-care-supp025-radiation-dermatitis-mgmt",
+      "expected_abstention": false,
+      "warning_labels": [
+        "metadata_only_expected"
+      ]
+    },
+    {
+      "case_id": "gold-colorectal-filtered-metadata",
+      "query": "metastatic colorectal local tips",
+      "allowed_filters": {
+        "disease_site": "gastrointestinal"
+      },
+      "expected_resource_ids": [
+        "ahs-guru-gastrointestinal-metastatic-colorectal-local-tips"
+      ],
+      "expected_source_span_ids": [],
+      "expected_source_spans": [],
+      "expected_graph_focus_node": "resource.ahs-guru-gastrointestinal-metastatic-colorectal-local-tips",
+      "expected_abstention": false,
+      "warning_labels": [
+        "metadata_only_expected"
+      ]
+    },
+    {
+      "case_id": "gold-safe-empty-no-match",
+      "query": "zzzz no matching guideline resource",
+      "allowed_filters": {},
+      "expected_resource_ids": [],
+      "expected_source_span_ids": [],
+      "expected_source_spans": [],
+      "expected_graph_focus_node": null,
+      "expected_abstention": true,
+      "warning_labels": [
+        "no_matching_resource"
+      ]
+    },
+    {
+      "case_id": "gold-advice-like-abstention",
+      "query": "Should someone choose radiotherapy based on this atlas result?",
+      "allowed_filters": {
+        "disease_site": "breast"
+      },
+      "expected_resource_ids": [],
+      "expected_source_span_ids": [],
+      "expected_source_spans": [],
+      "expected_graph_focus_node": null,
+      "expected_abstention": true,
+      "warning_labels": [
+        "abstain_advice_like_prompt",
+        "no_generated_claim"
+      ]
+    }
+  ]
+}
