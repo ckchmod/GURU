@@ -104,6 +104,10 @@ def selected_rows(selector_path: Path, corpus_path: Path) -> list[dict[str, Any]
     return [corpus_rows[resource_id] for resource_id in selected_ids]
 
 
+def all_public_rows(corpus_path: Path) -> list[dict[str, Any]]:
+    return list(load_corpus_rows(corpus_path).values())
+
+
 def filename_from_url(resource_id: str, url: str) -> str:
     parsed = urllib.parse.urlparse(url)
     name = Path(urllib.parse.unquote(parsed.path)).name
@@ -159,16 +163,11 @@ def copy_fixture(plan: ResourcePlan, fixture_dir: Path) -> tuple[Path, str]:
 
 def download_url(plan: ResourcePlan, timeout_seconds: int) -> tuple[Path, str]:
     request = urllib.request.Request(plan.url, headers={"User-Agent": "GURU-public-guideline-downloader/1.0"})
-    try:
-        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
-            media_type = response.headers.get_content_type() or plan.media_type
-            plan.output_path.parent.mkdir(parents=True, exist_ok=True)
-            with plan.output_path.open("wb") as handle:
-                shutil.copyfileobj(response, handle)
-    except urllib.error.URLError as exc:
-        raise SystemExit(f"ERROR {plan.resource_id}: download failed for {plan.url}: {exc}") from exc
-    except TimeoutError as exc:
-        raise SystemExit(f"ERROR {plan.resource_id}: download timed out for {plan.url}: {exc}") from exc
+    with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
+        media_type = response.headers.get_content_type() or plan.media_type
+        plan.output_path.parent.mkdir(parents=True, exist_ok=True)
+        with plan.output_path.open("wb") as handle:
+            shutil.copyfileobj(response, handle)
     return plan.output_path, media_type
 
 
@@ -192,26 +191,40 @@ def relative_to_root(path: Path) -> str:
         return path.resolve().as_posix()
 
 
+def failure_reason(exc: BaseException) -> str:
+    return " ".join(str(exc).split()) or exc.__class__.__name__
+
+
+def make_manifest_row(plan: ResourcePlan, retrieved_at: str, status: str, media_type: str, failure: str | None = None) -> dict[str, Any]:
+    row: dict[str, Any] = {
+        "file_path": relative_to_root(plan.output_path),
+        "media_type": media_type,
+        "resource_id": plan.resource_id,
+        "retrieved_at": retrieved_at,
+        "status": status,
+        "url": plan.url,
+    }
+    if failure is not None:
+        row["failure_reason"] = failure
+    return row
+
+
 def acquire(plans: list[ResourcePlan], fixture_dir: Path | None, timeout_seconds: int, retrieved_at: str) -> list[dict[str, Any]]:
     manifest_rows: list[dict[str, Any]] = []
     for plan in plans:
-        if fixture_dir is not None:
-            output_path, media_type = copy_fixture(plan, fixture_dir)
-        else:
-            output_path, media_type = download_url(plan, timeout_seconds)
-        byte_size = output_path.stat().st_size
-        checksum = sha256_file(output_path)
-        manifest_rows.append(
-            {
-                "byte_size": byte_size,
-                "file_path": relative_to_root(output_path),
-                "media_type": media_type,
-                "resource_id": plan.resource_id,
-                "retrieved_at": retrieved_at,
-                "sha256": checksum,
-                "url": plan.url,
-            }
-        )
+        row = make_manifest_row(plan, retrieved_at, "downloaded", plan.media_type)
+        try:
+            if fixture_dir is not None:
+                output_path, media_type = copy_fixture(plan, fixture_dir)
+            else:
+                output_path, media_type = download_url(plan, timeout_seconds)
+        except (OSError, TimeoutError, urllib.error.URLError, SystemExit) as exc:
+            manifest_rows.append(make_manifest_row(plan, retrieved_at, "failed", plan.media_type, failure_reason(exc)))
+            continue
+        row["media_type"] = media_type
+        row["byte_size"] = output_path.stat().st_size
+        row["sha256"] = sha256_file(output_path)
+        manifest_rows.append(row)
     return manifest_rows
 
 
@@ -221,21 +234,44 @@ def validate_manifest(path: Path) -> int:
     if not isinstance(rows, list) or not rows:
         print(f"ERROR {path}: expected non-empty rows array", file=sys.stderr)
         return 1
-    required = {"resource_id", "url", "retrieved_at", "file_path", "media_type", "byte_size", "sha256"}
+    required = {"resource_id", "url", "retrieved_at", "file_path", "media_type", "status"}
+    success_fields = {"byte_size", "sha256"}
+    allowed = required | success_fields | {"failure_reason"}
     errors: list[str] = []
+    downloaded_count = 0
+    failed_count = 0
     for index, row in enumerate(rows, start=1):
         row_path = f"{path}.rows[{index}]"
         if not isinstance(row, dict):
             errors.append(f"{row_path}: expected object")
             continue
         missing = sorted(required - set(row))
-        extras = sorted(set(row) - required)
+        extras = sorted(set(row) - allowed)
         if missing:
             errors.append(f"{row_path}: missing fields {missing!r}")
         if extras:
             errors.append(f"{row_path}: unexpected fields {extras!r}")
         if missing:
             continue
+        status = row["status"]
+        if status not in {"downloaded", "failed"}:
+            errors.append(f"{row_path}.status: expected 'downloaded' or 'failed', found {status!r}")
+            continue
+        if status == "failed":
+            failed_count += 1
+            if "failure_reason" not in row or not isinstance(row["failure_reason"], str) or not row["failure_reason"]:
+                errors.append(f"{row_path}.failure_reason: required for failed rows")
+            for field in success_fields:
+                if field in row:
+                    errors.append(f"{row_path}.{field}: must be omitted for failed rows")
+            continue
+        downloaded_count += 1
+        success_missing = sorted(success_fields - set(row))
+        if success_missing:
+            errors.append(f"{row_path}: downloaded row missing fields {success_missing!r}")
+            continue
+        if "failure_reason" in row:
+            errors.append(f"{row_path}.failure_reason: must be omitted for downloaded rows")
         file_path = resolve_path(row["file_path"])
         if not file_path.exists():
             errors.append(f"{row_path}.file_path: file not found: {file_path}")
@@ -251,7 +287,7 @@ def validate_manifest(path: Path) -> int:
     if errors:
         print(f"Manifest validation failed: {len(errors)} error(s)", file=sys.stderr)
         return 1
-    print(f"Manifest validation passed: {len(rows)} row(s)")
+    print(f"Manifest validation passed: {len(rows)} row(s), downloaded={downloaded_count}, failed={failed_count}")
     return 0
 
 
@@ -275,12 +311,20 @@ def print_dry_run(plans: list[ResourcePlan]) -> None:
         )
 
 
+def ensure_live_raw_dir(raw_dir: Path) -> None:
+    try:
+        raw_dir.resolve().relative_to(DEFAULT_RAW_DIR.resolve())
+    except ValueError:
+        raise SystemExit(f"ERROR live downloads must write under {relative_to_root(DEFAULT_RAW_DIR)}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Download the bounded public AHS/GURU pilot resources and write a SHA-256 manifest."
+        description="Download bounded public AHS/GURU resources and write a SHA-256 manifest."
     )
     parser.add_argument("--selector", default=str(DEFAULT_SELECTOR), help="Pilot selector JSON with resource_ids")
     parser.add_argument("--corpus", default=str(DEFAULT_CORPUS), help="Public corpus registry JSON with top-level rows")
+    parser.add_argument("--all-public", action="store_true", help="Plan or acquire every row in the public corpus registry")
     parser.add_argument("--raw-dir", default=str(DEFAULT_RAW_DIR), help="Destination for raw downloaded or fixture files")
     parser.add_argument("--manifest-dir", default=str(DEFAULT_MANIFEST_DIR), help="Directory for generated manifest JSON")
     parser.add_argument("--manifest-path", help="Exact manifest path to write instead of timestamped default")
@@ -297,7 +341,7 @@ def main() -> int:
     selector_path = resolve_path(args.selector)
     corpus_path = resolve_path(args.corpus)
     raw_dir = resolve_path(args.raw_dir)
-    rows = selected_rows(selector_path, corpus_path)
+    rows = all_public_rows(corpus_path) if args.all_public else selected_rows(selector_path, corpus_path)
     plans = build_plans(rows, raw_dir)
 
     if args.dry_run:
@@ -306,10 +350,14 @@ def main() -> int:
 
     retrieved_at = args.retrieved_at or iso_now()
     fixture_dir = resolve_path(args.fixture_dir) if args.fixture_dir else None
+    if fixture_dir is None:
+        ensure_live_raw_dir(raw_dir)
     manifest_rows = acquire(plans, fixture_dir, args.timeout_seconds, retrieved_at)
     manifest_path = resolve_path(args.manifest_path) if args.manifest_path else make_manifest_path(resolve_path(args.manifest_dir), retrieved_at)
     write_manifest(manifest_rows, manifest_path)
-    print(f"Downloaded {len(manifest_rows)} resource(s)")
+    downloaded_count = sum(1 for row in manifest_rows if row.get("status") == "downloaded")
+    failed_count = sum(1 for row in manifest_rows if row.get("status") == "failed")
+    print(f"Processed {len(manifest_rows)} resource(s): downloaded={downloaded_count}, failed={failed_count}")
     print(f"manifest={relative_to_root(manifest_path)}")
     return 0
 
