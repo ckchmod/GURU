@@ -323,12 +323,6 @@ describe("corpus atlas client and adapters", () => {
           review_task_id: reviewTaskId,
           resource_id: resourceId,
           source_span_ids: [sourceSpanId],
-          pico_placeholder: {
-            population: "placeholder population label",
-            intervention: null,
-            comparator: null,
-            outcome: null
-          },
           review_status: "draft",
           staleness_status: "not_evaluated_local",
           allowed_actions: ["inspect_source", "mark_needs_review_local", "link_source_local"]
@@ -337,12 +331,6 @@ describe("corpus atlas client and adapters", () => {
           review_task_id: nullPlaceholderReviewTaskId,
           resource_id: resourceId,
           source_span_ids: [sourceSpanId],
-          pico_placeholder: {
-            population: null,
-            intervention: null,
-            comparator: null,
-            outcome: null
-          },
           review_status: "draft",
           staleness_status: "not_evaluated_local",
           allowed_actions: ["inspect_source", "mark_needs_review_local", "link_source_local"]
@@ -412,12 +400,6 @@ describe("corpus atlas client and adapters", () => {
         reviewTaskId,
         resourceId,
         sourceSpanIds: [sourceSpanId],
-        picoPlaceholder: {
-          population: "placeholder population label",
-          intervention: null,
-          comparator: null,
-          outcome: null
-        },
         reviewStatus: "draft",
         stalenessStatus: "not_evaluated_local",
         allowedActions: ["inspect_source", "mark_needs_review_local", "link_source_local"]
@@ -426,12 +408,6 @@ describe("corpus atlas client and adapters", () => {
         reviewTaskId: nullPlaceholderReviewTaskId,
         resourceId,
         sourceSpanIds: [sourceSpanId],
-        picoPlaceholder: {
-          population: null,
-          intervention: null,
-          comparator: null,
-          outcome: null
-        },
         reviewStatus: "draft",
         stalenessStatus: "not_evaluated_local",
         allowedActions: ["inspect_source", "mark_needs_review_local", "link_source_local"]

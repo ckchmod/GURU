@@ -949,7 +949,7 @@ dt {
 .review-queue-local-state,
 .review-queue-relation small,
 .review-queue-relation span,
-.review-queue-pico dd {
+.review-queue-metadata dd {
   color: var(--color-muted);
   font-size: 0.72rem;
   line-height: 1.4;
@@ -1061,7 +1061,7 @@ dt {
   justify-content: space-between;
 }
 
-.review-queue-pico {
+.review-queue-metadata {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-1);
@@ -1069,18 +1069,18 @@ dt {
   padding: 0;
 }
 
-.review-queue-pico div {
+.review-queue-metadata div {
   border: 1px solid var(--color-line);
   border-radius: var(--radius-sm);
   padding: var(--space-1);
   background: var(--color-panel-soft);
 }
 
-.review-queue-pico dt {
+.review-queue-metadata dt {
   font-size: 0.56rem;
 }
 
-.review-queue-pico dd {
+.review-queue-metadata dd {
   margin: 0;
 }
 

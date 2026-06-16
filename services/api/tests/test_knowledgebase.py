@@ -410,12 +410,6 @@ def test_corpus_interpretability_endpoint_returns_local_deterministic_contract(m
         "review_task_id": f"workflow-task.{PILOT_RESOURCE_ID}.source-span.{PILOT_RESOURCE_ID}.local-test.evidence-review",
         "resource_id": PILOT_RESOURCE_ID,
         "source_span_ids": [f"source-span.{PILOT_RESOURCE_ID}.local-test"],
-        "pico_placeholder": {
-            "population": None,
-            "intervention": None,
-            "comparator": None,
-            "outcome": None,
-        },
         "review_status": "draft",
         "staleness_status": "not_evaluated_local",
         "allowed_actions": ["inspect_source", "mark_needs_review_local", "link_source_local"],

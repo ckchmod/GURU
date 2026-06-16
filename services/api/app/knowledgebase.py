@@ -438,15 +438,6 @@ def _review_task_id(resource_id: str, span_id: str) -> str:
     return f"workflow-task.{_safe_id_part(resource_id)}.{_safe_id_part(span_id)}.evidence-review"
 
 
-def _empty_pico_placeholder() -> dict[str, None]:
-    return {
-        "population": None,
-        "intervention": None,
-        "comparator": None,
-        "outcome": None,
-    }
-
-
 def _review_queue_item_from_span(span: dict[str, Any]) -> dict[str, Any]:
     resource_id = span["resource_id"]
     span_id = span["span_id"]
@@ -454,7 +445,6 @@ def _review_queue_item_from_span(span: dict[str, Any]) -> dict[str, Any]:
         "review_task_id": _review_task_id(resource_id, span_id),
         "resource_id": resource_id,
         "source_span_ids": [span_id],
-        "pico_placeholder": _empty_pico_placeholder(),
         "review_status": "draft",
         "staleness_status": "not_evaluated_local",
         "allowed_actions": list(REVIEW_QUEUE_ALLOWED_ACTIONS),

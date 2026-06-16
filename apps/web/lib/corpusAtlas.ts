@@ -158,18 +158,10 @@ export type CorpusSurveillanceStatus = {
   resources?: CorpusSurveillanceResourceStatus[];
 };
 
-export type CorpusPicoPlaceholder = {
-  population: string | null;
-  intervention: string | null;
-  comparator: string | null;
-  outcome: string | null;
-};
-
 export type CorpusReviewQueueItem = {
   review_task_id: string;
   resource_id: string;
   source_span_ids: string[];
-  pico_placeholder: CorpusPicoPlaceholder;
   review_status: string;
   staleness_status: string;
   allowed_actions: CorpusReviewQueueAllowedAction[];
@@ -314,7 +306,6 @@ export type CompactAtlasReviewQueueItem = {
   reviewTaskId: string;
   resourceId: string;
   sourceSpanIds: string[];
-  picoPlaceholder: CorpusPicoPlaceholder;
   reviewStatus: string;
   stalenessStatus: string;
   allowedActions: CorpusReviewQueueAllowedAction[];
@@ -642,7 +633,6 @@ function adaptReviewQueueItem(item: CorpusReviewQueueItem): CompactAtlasReviewQu
     reviewTaskId: item.review_task_id,
     resourceId: item.resource_id,
     sourceSpanIds: [...item.source_span_ids],
-    picoPlaceholder: item.pico_placeholder,
     reviewStatus: item.review_status,
     stalenessStatus: item.staleness_status,
     allowedActions: [...item.allowed_actions]

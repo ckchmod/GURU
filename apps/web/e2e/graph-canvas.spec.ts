@@ -1506,7 +1506,6 @@ type ReviewQueuePayloadItem = {
   review_task_id: string;
   resource_id: string;
   source_span_ids: string[];
-  pico_placeholder: { population: string | null; intervention: string | null; comparator: string | null; outcome: string | null };
   review_status: string;
   staleness_status: string;
   allowed_actions: string[];
@@ -1581,7 +1580,6 @@ function buildReviewQueueItem(overrides: Partial<ReviewQueuePayloadItem> = {}): 
     review_task_id: "review.local-test",
     resource_id: breastResourceId,
     source_span_ids: [reviewQueueFocusSpan.span_id],
-    pico_placeholder: { population: null, intervention: null, comparator: null, outcome: null },
     review_status: "draft",
     staleness_status: "local_current",
     allowed_actions: ["inspect_source", "mark_needs_review_local", "link_source_local"],

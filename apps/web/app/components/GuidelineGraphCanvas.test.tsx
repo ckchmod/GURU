@@ -200,7 +200,6 @@ type ReviewQueuePayloadItem = {
   review_task_id: string;
   resource_id: string;
   source_span_ids: string[];
-  pico_placeholder: { population: string | null; intervention: string | null; comparator: string | null; outcome: string | null };
   review_status: string;
   staleness_status: string;
   allowed_actions: string[];
@@ -533,13 +532,13 @@ describe("GuidelineGraphCanvas", () => {
     await waitFor(() => expect(screen.getByTestId("review-queue-section")).toHaveTextContent("page:2;span:4"));
     const reviewQueue = screen.getByTestId("review-queue-section");
     expect(reviewQueue).toHaveTextContent("Review Queue");
-    expect(reviewQueue).toHaveTextContent("Local evidence-review/PICO queue shell");
+    expect(reviewQueue).toHaveTextContent("Source-span-backed local review metadata");
     expect(reviewQueue).toHaveTextContent("Adjuvant Radiotherapy for Invasive Breast Cancer");
     expect(reviewQueue).toHaveTextContent("page:2;span:4");
     expect(reviewQueue).toHaveTextContent(`${"4".repeat(64)} · draft`);
     expect(reviewQueue).toHaveTextContent("draft · local_current");
-    expect(reviewQueue).toHaveTextContent("Population");
-    expect(reviewQueue).toHaveTextContent("not set");
+    expect(reviewQueue).toHaveTextContent("Backing source spans");
+    expect(reviewQueue).toHaveTextContent("Allowed local actions");
     expect(within(reviewQueue).getByRole("button", { name: "Inspect source" })).toBeVisible();
     expect(within(reviewQueue).getByRole("button", { name: "Mark needs review (local)" })).toBeVisible();
     expect(within(reviewQueue).getByRole("button", { name: "Link source (local)" })).toBeVisible();
@@ -758,7 +757,6 @@ function buildReviewQueueItem(overrides: Partial<ReviewQueuePayloadItem> = {}): 
     review_task_id: "review.local-test",
     resource_id: breastResourceId,
     source_span_ids: [reviewQueueFocusSpan.span_id],
-    pico_placeholder: { population: null, intervention: null, comparator: null, outcome: null },
     review_status: "draft",
     staleness_status: "local_current",
     allowed_actions: ["inspect_source", "mark_needs_review_local", "link_source_local"],

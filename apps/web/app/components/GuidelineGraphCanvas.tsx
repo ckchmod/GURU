@@ -1254,7 +1254,7 @@ function ReviewQueueRelation({
         <strong>Review Queue</strong>
         <span>{items.length}</span>
       </div>
-      <p className="review-queue-relation__note">Local evidence-review/PICO queue shell. Actions update this view only and do not write to a backend.</p>
+      <p className="review-queue-relation__note">Source-span-backed local review metadata. Actions update this view only and do not write to a backend.</p>
       {items.length > 0 ? (
         <ul>
           {items.map((item) => {
@@ -1293,11 +1293,11 @@ function ReviewQueueRelation({
                 <small className="wrap-anywhere">Task: {item.reviewTaskId}</small>
                 <small className="wrap-anywhere">Source-span locator: {primarySpan?.stable_locator ?? "blocked until a returned source span backs this item"}</small>
                 <small className="wrap-anywhere">Checksum/status: {primarySpan ? `${primarySpan.checksum_sha256 ?? "checksum not returned"} · ${primarySpan.output_status}` : "unbacked item blocked"}</small>
-                <dl className="review-queue-pico" aria-label="PICO placeholder fields">
-                  <div><dt>Population</dt><dd>{item.picoPlaceholder.population ?? "not set"}</dd></div>
-                  <div><dt>Intervention</dt><dd>{item.picoPlaceholder.intervention ?? "not set"}</dd></div>
-                  <div><dt>Comparator</dt><dd>{item.picoPlaceholder.comparator ?? "not set"}</dd></div>
-                  <div><dt>Outcome</dt><dd>{item.picoPlaceholder.outcome ?? "not set"}</dd></div>
+                <dl className="review-queue-metadata" aria-label="Source-backed review metadata">
+                  <div><dt>Backing source spans</dt><dd>{item.sourceSpanIds.length}</dd></div>
+                  <div><dt>Review status</dt><dd>{item.reviewStatus}</dd></div>
+                  <div><dt>Local state</dt><dd>{item.stalenessStatus}</dd></div>
+                  <div><dt>Allowed local actions</dt><dd>{item.allowedActions.length}</dd></div>
                 </dl>
                 {isSourceBacked && primarySpan?.excerpt ? <q>{primarySpan.excerpt}</q> : null}
                 {!isSourceBacked ? <p className="review-queue-card__blocked-copy">Blocked local fixture state: no source-backed review content is displayed and no finding is implied.</p> : null}
