@@ -124,6 +124,70 @@ export type CorpusSearchResponse = {
   model_routing: CorpusModelRouting;
 };
 
+export type CorpusWorkbenchTraceSourceRecord = {
+  source_span_id?: string;
+  resource_id?: string;
+  source_document_id?: string;
+  stable_locator?: string;
+  status: string;
+  reason?: string;
+  evidence_id: string;
+};
+
+export type CorpusWorkbenchTraceStep = {
+  step_id: string;
+  status: string;
+  command_label?: string;
+  metadata_result_count?: number;
+  source_span_result_count?: number;
+  warning_labels?: string[];
+  abstained?: boolean;
+  source_span_ids_used?: string[];
+  rejected_count?: number;
+  model_class?: string;
+  external_api_used?: boolean;
+};
+
+export type CorpusWorkbenchGatewayDecision = {
+  allowed: boolean;
+  outcome: string;
+  reason_code: string | null;
+  policy_request_id: string;
+  external_api_used: boolean;
+};
+
+export type CorpusWorkbenchModelTrace = {
+  model_class: string;
+  provider_kind: "local";
+  trace_status: string;
+  runner_status: string;
+  policy_request_id: string;
+  citation_verifier_status: "pass" | "not_run";
+  abstention_status: "abstained_no_answer_text" | "abstained_no_model_execution";
+  source_span_ids: string[];
+  output_tokens: number;
+  gpu_seconds: number;
+};
+
+export type CorpusWorkbenchTraceResponse = {
+  command_label: string;
+  query: string;
+  retrieval_steps: CorpusWorkbenchTraceStep[];
+  source_ids_used: CorpusWorkbenchTraceSourceRecord[];
+  source_ids_rejected: CorpusWorkbenchTraceSourceRecord[];
+  gateway_decision: CorpusWorkbenchGatewayDecision;
+  model_class: string;
+  model_trace: CorpusWorkbenchModelTrace;
+  cost_ledger_entry: Record<string, unknown> | null;
+  citation_verifier_status: "pass" | "not_run";
+  warnings: string[];
+  abstained: boolean;
+  abstention_status: "abstained_no_answer_text" | "abstained_no_model_execution";
+  evidence_ids: string[];
+  no_claim: true;
+  model_routing: CorpusModelRouting;
+};
+
 export type CorpusGraphNeighborhood = {
   focus_node_id: string;
   resource_node_id: string;
@@ -377,6 +441,11 @@ type LoadCorpusInterpretabilityOptions = {
   signal?: AbortSignal;
 };
 
+type LoadCorpusWorkbenchTraceOptions = {
+  basePath?: string;
+  signal?: AbortSignal;
+};
+
 export class CorpusAtlasClientError extends Error {
   constructor(message: string, readonly status: "api_unavailable" | "http_error") {
     super(message);
@@ -401,6 +470,15 @@ export async function searchCorpus(query: string, options: SearchCorpusOptions =
   const payload = await fetchJson<CorpusSearchResponse>(`${basePath}/search?${params.toString()}`, "corpus search", options.signal);
 
   return adaptSearchResponse(payload);
+}
+
+export async function loadCorpusWorkbenchTrace(
+  query: string,
+  options: LoadCorpusWorkbenchTraceOptions = {}
+): Promise<CorpusWorkbenchTraceResponse> {
+  const basePath = options.basePath ?? CORPUS_API_BASE_PATH;
+  const params = new URLSearchParams({ q: query });
+  return fetchJson<CorpusWorkbenchTraceResponse>(`${basePath}/workbench/trace?${params.toString()}`, "corpus workbench trace", options.signal);
 }
 
 export async function loadCorpusInterpretability(

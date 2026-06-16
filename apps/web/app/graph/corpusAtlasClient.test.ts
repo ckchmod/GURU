@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildCorpusAtlasModel,
   loadCorpusInterpretability,
+  loadCorpusWorkbenchTrace,
   searchCorpus,
   type CorpusCoverageStatus,
   type CorpusGraphPayload,
@@ -423,5 +424,71 @@ describe("corpus atlas client and adapters", () => {
     ]);
     expect(model.modelRouting).toBe("none-local-deterministic-search-only");
     expectNoGeneratedAnswerFields(model);
+  });
+
+  it("loads Task 6 workbench traces without adapting them into answer output", async () => {
+    const tracePayload = {
+      command_label: "run-evals:corpus-workbench-trace",
+      query: "deterministic parsed excerpt",
+      retrieval_steps: [
+        { step_id: "command", status: "received", command_label: "run-evals:corpus-workbench-trace" },
+        { step_id: "retrieval", status: "completed", metadata_result_count: 0, source_span_result_count: 1, warning_labels: [], abstained: false },
+        { step_id: "source_selection", status: "completed", source_span_ids_used: [sourceSpanId], rejected_count: 0 },
+        { step_id: "model_gateway", status: "executed", model_class: "local_open_weight_7b", external_api_used: false }
+      ],
+      source_ids_used: [
+        {
+          source_span_id: sourceSpanId,
+          resource_id: resourceId,
+          source_document_id: "source-document.local-test",
+          stable_locator: "page:1;span:1",
+          status: "used",
+          evidence_id: sourceSpanId
+        }
+      ],
+      source_ids_rejected: [],
+      gateway_decision: {
+        allowed: true,
+        outcome: "executed",
+        reason_code: null,
+        policy_request_id: "policy-request-local-test",
+        external_api_used: false
+      },
+      model_class: "local_open_weight_7b",
+      model_trace: {
+        model_class: "local_open_weight_7b",
+        provider_kind: "local",
+        trace_status: "abstained",
+        runner_status: "dry_run_completed",
+        policy_request_id: "policy-request-local-test",
+        citation_verifier_status: "pass",
+        abstention_status: "abstained_no_answer_text",
+        source_span_ids: [sourceSpanId],
+        output_tokens: 0,
+        gpu_seconds: 0
+      },
+      cost_ledger_entry: { external_api_used: false },
+      citation_verifier_status: "pass",
+      warnings: [],
+      abstained: true,
+      abstention_status: "abstained_no_answer_text",
+      evidence_ids: [sourceSpanId],
+      no_claim: true,
+      model_routing: "none-local-deterministic-search-only"
+    };
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify(tracePayload), { status: 200, headers: { "Content-Type": "application/json" } })
+    );
+
+    const trace = await loadCorpusWorkbenchTrace("deterministic parsed excerpt");
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      "/api/knowledgebase/corpus/workbench/trace?q=deterministic+parsed+excerpt",
+      { signal: undefined }
+    );
+    expect(trace).toEqual(tracePayload);
+    expect(trace.abstention_status).toBe("abstained_no_answer_text");
+    expect(trace.no_claim).toBe(true);
+    expectNoGeneratedAnswerFields(trace);
   });
 });
