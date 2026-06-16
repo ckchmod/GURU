@@ -12,9 +12,10 @@
     "typecheck:web": "npm run typecheck --workspace=apps/web",
     "dev:api": "uvicorn services.api.app.main:app --reload --host 127.0.0.1 --port 8000",
     "test:api": "pytest services/api",
-    "test:baseline": "npm run test:api && npm run test:web && npm run lint:web && npm run typecheck:web && npm run test:e2e:web && npm run test:schemas && python scripts/validate-resource-registry.py",
+    "test:baseline": "npm run test:api && npm run test:web && npm run lint:web && npm run typecheck:web && npm run test:e2e:web && npm run test:schemas && npm run test:safety && python scripts/validate-resource-registry.py",
     "smoke:api": "python -m services.api.scripts.smoke_health",
-    "test:schemas": "python scripts/validate-graph-schemas.py tests/fixtures/graph-provenance/synthetic-graph.json && ! python scripts/validate-graph-schemas.py tests/fixtures/graph-provenance/recommendation-missing-source-span.json && python scripts/validate-safety-boundaries.py",
+    "test:schemas": "python scripts/validate-graph-schemas.py tests/fixtures/graph-provenance/synthetic-graph.json && ! python scripts/validate-graph-schemas.py tests/fixtures/graph-provenance/recommendation-missing-source-span.json",
+    "test:safety": "python scripts/validate-safety-boundaries.py",
     "test:schemas:invalid": "python scripts/validate-graph-schemas.py tests/fixtures/graph-provenance/recommendation-missing-source-span.json"
   }
 }
