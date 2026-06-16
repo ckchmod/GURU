@@ -209,6 +209,13 @@ def make_manifest_row(plan: ResourcePlan, retrieved_at: str, status: str, media_
     return row
 
 
+def success_metadata(path: Path) -> dict[str, Any]:
+    byte_size = path.stat().st_size
+    if byte_size <= 0:
+        raise OSError(f"downloaded file is empty: {path}")
+    return {"byte_size": byte_size, "sha256": sha256_file(path)}
+
+
 def acquire(plans: list[ResourcePlan], fixture_dir: Path | None, timeout_seconds: int, retrieved_at: str) -> list[dict[str, Any]]:
     manifest_rows: list[dict[str, Any]] = []
     for plan in plans:
@@ -222,8 +229,11 @@ def acquire(plans: list[ResourcePlan], fixture_dir: Path | None, timeout_seconds
             manifest_rows.append(make_manifest_row(plan, retrieved_at, "failed", plan.media_type, failure_reason(exc)))
             continue
         row["media_type"] = media_type
-        row["byte_size"] = output_path.stat().st_size
-        row["sha256"] = sha256_file(output_path)
+        try:
+            row.update(success_metadata(output_path))
+        except OSError as exc:
+            manifest_rows.append(make_manifest_row(plan, retrieved_at, "failed", media_type, failure_reason(exc)))
+            continue
         manifest_rows.append(row)
     return manifest_rows
 
@@ -257,6 +267,11 @@ def validate_manifest(path: Path) -> int:
         if status not in {"downloaded", "failed"}:
             errors.append(f"{row_path}.status: expected 'downloaded' or 'failed', found {status!r}")
             continue
+        invalid_common_fields = False
+        for field in ["resource_id", "url", "retrieved_at", "file_path", "media_type"]:
+            if not isinstance(row[field], str) or not row[field]:
+                errors.append(f"{row_path}.{field}: expected non-empty string")
+                invalid_common_fields = True
         if status == "failed":
             failed_count += 1
             if "failure_reason" not in row or not isinstance(row["failure_reason"], str) or not row["failure_reason"]:
@@ -272,6 +287,19 @@ def validate_manifest(path: Path) -> int:
             continue
         if "failure_reason" in row:
             errors.append(f"{row_path}.failure_reason: must be omitted for downloaded rows")
+        if not isinstance(row["byte_size"], int) or row["byte_size"] <= 0:
+            errors.append(f"{row_path}.byte_size: expected positive integer")
+            continue
+        if not isinstance(row["sha256"], str) or len(row["sha256"]) != 64:
+            errors.append(f"{row_path}.sha256: expected 64-character SHA-256 hex string")
+            continue
+        try:
+            int(row["sha256"], 16)
+        except ValueError:
+            errors.append(f"{row_path}.sha256: expected 64-character SHA-256 hex string")
+            continue
+        if invalid_common_fields:
+            continue
         file_path = resolve_path(row["file_path"])
         if not file_path.exists():
             errors.append(f"{row_path}.file_path: file not found: {file_path}")

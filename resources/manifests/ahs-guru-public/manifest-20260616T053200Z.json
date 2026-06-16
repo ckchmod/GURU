@@ -1,0 +1,1984 @@
+{
+  "manifest_version": "1.0.0",
+  "rows": [
+    {
+      "byte_size": 1155484,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-br021-evidence-table.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-breast-br021-evidence-table",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "180c9566043e25d563bb40089db1cb4907bbeb2455944d03d6420e6ddca560df",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br021-evidence-table.pdf"
+    },
+    {
+      "byte_size": 818157,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-br005-adjuvant-rt-invasive-breast.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-breast-br005-adjuvant-rt-invasive-breast",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "c9b10b3ac1d37f1a711e8c89ae61f435aaa09c91976ad85100a509e9d1000193",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br005-adjuvant-rt-invasive-breast.pdf"
+    },
+    {
+      "byte_size": 512737,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-br016-breast-reconstruction.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-breast-br016-breast-reconstruction",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "5eae0ecc5fc8305901143c09ead90b6931bb5f352deaa57aaa8816118a56932a",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br016-breast-reconstruction.pdf"
+    },
+    {
+      "byte_size": 315857,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-br013-early-stage-follow-up.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-breast-br013-early-stage-follow-up",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "b15368bb649d2acc320057c569e46cec51da4821f10797e0ddb0707105c7089b",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br013-early-stage-follow-up.pdf"
+    },
+    {
+      "byte_size": 379638,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-br021-breast-implant.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-breast-br021-breast-implant",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "c92d604ad9dc410689257c301ef3268d1afa875f724d96fa55be1b1daeb3b0ee",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br021-breast-implant.pdf"
+    },
+    {
+      "byte_size": 532258,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-br018-phyllodes.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-breast-br018-phyllodes",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "cd7eedfc293e09d1d5c4cafcb13c272b634f3b63d7e1b5a1148f32849f774803",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br018-phyllodes.pdf"
+    },
+    {
+      "byte_size": 311288,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-br012-staging-investigations.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-breast-br012-staging-investigations",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "a9e5583744f4c5caa93c6fa7d9ddd20399571f7007ba70237aa5d6227c0506c0",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br012-staging-investigations.pdf"
+    },
+    {
+      "byte_size": 239742,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-br013-end-of-treatment-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-breast-br013-end-of-treatment-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "f5834fc4e9bdddfcb735196ab26b7e8e21429d39a5332fdeb850d40a75e289fe",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br013-end-of-treatment-patient.pdf"
+    },
+    {
+      "byte_size": 321678,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-br013-end-of-treatment-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-breast-br013-end-of-treatment-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "e30deac4cae9bea3cee11f5589ff0d3bcf826fc534cc1d91340d603e24e229dd",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br013-end-of-treatment-physician.pdf"
+    },
+    {
+      "byte_size": 279667,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-br013-transfer-of-care-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-breast-br013-transfer-of-care-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "213ee8e5f04abe442afb1fae0dad82fae13aa5a949903cafa8e96add5a5b1579",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br013-transfer-of-care-patient.pdf"
+    },
+    {
+      "byte_size": 292961,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-br013-transfer-of-care-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-breast-br013-transfer-of-care-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "28c0a8fbd011602f30b237e9dd3a83f793815cc89ec78d27b0a9c498487fa4a3",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br013-transfer-of-care-physician.pdf"
+    },
+    {
+      "byte_size": 243865,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-br021-summary.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-breast-br021-summary",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "9f68b2ffaeb7848c35ac6c30c38a942569af33aa7da7ce5e1e98fecf4e690bad",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br021-summary.pdf"
+    },
+    {
+      "byte_size": 789722,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-systemic-therapy-early-breast.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-breast-systemic-therapy-early-breast",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "da5a3128337df9bc045d091c475d99dea463efab9f8f149aa3cdbe84091f6c36",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-systemic-therapy-early-breast.pdf"
+    },
+    {
+      "byte_size": 349920,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cns014-management-of-brain-metastases.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-central-nervous-system-cns014-management-of-brain-metastases",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "d516bbc864629c818e62f3b37fda37d97136f38f308a8f95f0a8da8806881c50",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cns014-management-of-brain-metastases.pdf"
+    },
+    {
+      "byte_size": 782789,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cns015-idh-mutant-gliomas.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-central-nervous-system-cns015-idh-mutant-gliomas",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "f0de4370a4cc5afa7a075d470b7a465a37c2f8f2cbf399a9c6bf1985825f2b92",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cns015-idh-mutant-gliomas.pdf"
+    },
+    {
+      "byte_size": 294648,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cns003-low-grade-gliomas.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-central-nervous-system-cns003-low-grade-gliomas",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "8ece62941824c65e646ae23b69b1c891d528cbe1026605da37574e1fd31298b3",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cns003-low-grade-gliomas.pdf"
+    },
+    {
+      "byte_size": 487401,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cns012-seizures.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-central-nervous-system-cns012-seizures",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "226d9264ae0603c7c7975ab2f5a17556a99c1221f0914405203e824667099249",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cns012-seizures.pdf"
+    },
+    {
+      "byte_size": 192982,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cns013-stereotactic-radiosurgery-avm.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-central-nervous-system-cns013-stereotactic-radiosurgery-avm",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "927293e3b3c71f445bfc65f73e921f6ba75a6928e55b56ec75d177bed7c74c31",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cns013-stereotactic-radiosurgery-avm.pdf"
+    },
+    {
+      "byte_size": 180425,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cns013-stereotactic-radiosurgery-benign.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-central-nervous-system-cns013-stereotactic-radiosurgery-benign",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "ed4a8d8047a6711ff2a720f7e7e8ad56a71cb3bec044d84b1a8b680e4160d869",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cns013-stereotactic-radiosurgery-benign.pdf"
+    },
+    {
+      "byte_size": 493746,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cns011-dexamethasone.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-central-nervous-system-cns011-dexamethasone",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "0fe6bb7f475758acecd2ccdf9d1386483b6e845e3b9dd5921a052b971329825a",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cns011-dexamethasone.pdf"
+    },
+    {
+      "byte_size": 813434,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cu015-evidence-table.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-cutaneous-cu015-evidence-table",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "c977a057a869f01a153a29f7cb02c2bd815254008defd996c248646ea5c2734d",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cu015-evidence-table.pdf"
+    },
+    {
+      "byte_size": 290608,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cu006-biop-susp-lesion-v7.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-cutaneous-cu006-biop-susp-lesion-v7",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "3cb50740556a5678489c47deee02d86b50542d0991a64215008967e339cbf0f1",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cu006-biop-susp-lesion-v7.pdf"
+    },
+    {
+      "byte_size": 381123,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cu001-followup-surveillance.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-cutaneous-cu001-followup-surveillance",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "aff840e60e76d904afa05e0958c1cf7311b0ec721905dfd394eac7b1eb493ea2",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cu001-followup-surveillance.pdf"
+    },
+    {
+      "byte_size": 188216,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cu008-in-transit-disease.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-cutaneous-cu008-in-transit-disease",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "11f53f2683500754c4e67118d6a34c4b75a773a5c21cabf45bbe508f5d97921b",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cu008-in-transit-disease.pdf"
+    },
+    {
+      "byte_size": 449432,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cu013-scc.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-cutaneous-cu013-scc",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "91cd89d8051048831744ac763c5b6cb1c080e1f7841f885ef569a2eca02e47a1",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cu013-scc.pdf"
+    },
+    {
+      "byte_size": 189946,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cu004-merkel-cell.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-cutaneous-cu004-merkel-cell",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "72e5198efb5ddb16af275ebdd10910b7a5c5e16f785a7cbfd4321c0780276f79",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cu004-merkel-cell.pdf"
+    },
+    {
+      "byte_size": 376145,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cu017-mohs.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-cutaneous-cu017-mohs",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "f7304b79832691493b127f70e1f4fb89b843354c3abc631120993b23d0305177",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cu017-mohs.pdf"
+    },
+    {
+      "byte_size": 304854,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cu011-regional-node-dissection.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-cutaneous-cu011-regional-node-dissection",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "c06324a2fcdf54482073773cedfbc642c2289d124e09ddc5b954c2df4d10d78a",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cu011-regional-node-dissection.pdf"
+    },
+    {
+      "byte_size": 446651,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cu005-systemic-melanoma.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-cutaneous-cu005-systemic-melanoma",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "8cd6d598d47d0c1441459f9120ee8e30a4bdf82d6442fc56a9a25a7d2039ce50",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cu005-systemic-melanoma.pdf"
+    },
+    {
+      "byte_size": 989639,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cu015-uveal-melanoma.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-cutaneous-cu015-uveal-melanoma",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "a2bcaf99798739b91f0f21ce696b06bfc4ea1fc867ca345551d5e9feff5fcd9b",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cu015-uveal-melanoma.pdf"
+    },
+    {
+      "byte_size": 192244,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cu015a-transfer-of-care-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-cutaneous-cu015a-transfer-of-care-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "8664b3f7d726ec57b07d5c1631957510f25870abaf38da38ded2de5ef1edc492",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cu015a-transfer-of-care-physician.pdf"
+    },
+    {
+      "byte_size": 368968,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cu015b-transfer-of-care-physician2.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-cutaneous-cu015b-transfer-of-care-physician2",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "3005a606140a103ac497796b13782a2ee314a78ec909dc1377628dcc6e2ec9ef",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cu015b-transfer-of-care-physician2.pdf"
+    },
+    {
+      "byte_size": 160339,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cutaneous-transfer-of-care-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-cutaneous-cutaneous-transfer-of-care-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "2585ab19c413982bb03f284f66d4b8b2a76aa51691537777c2d8371f7e24864b",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cutaneous-transfer-of-care-patient.pdf"
+    },
+    {
+      "byte_size": 760532,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cutaneous-transfer-of-care-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-cutaneous-cutaneous-transfer-of-care-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "f4ba1bb9ab0ee48b026c95bf4e7ed8b182e2e96580e1ee8963a8dc0e3ffcd02b",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cutaneous-transfer-of-care-physician.pdf"
+    },
+    {
+      "byte_size": 355649,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-endo008-ppgl.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-endocrine-neuroendocrine-endo008-ppgl",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "e1b573fb93d1a794e27d68f0f891070155079f64d0a9d42be9fc3999b2c5c17b",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-endo008-ppgl.pdf"
+    },
+    {
+      "byte_size": 299418,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-net002-SSA.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-endocrine-neuroendocrine-net002-ssa",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "1c7b1e97de4aa4b881d793bb88ac2413921ae2c4ca320496e4633060cf94024a",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-net002-SSA.pdf"
+    },
+    {
+      "byte_size": 378394,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-endo007-pet.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-endocrine-neuroendocrine-endo007-pet",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "9a0b42d77f85dcdd3e48665aa2e76be6b72a747724a1e3b1b67551ad73e6311a",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-endo007-pet.pdf"
+    },
+    {
+      "byte_size": 291686,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-endo006-177lu.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-endocrine-neuroendocrine-endo006-177lu",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "74b3884d3ebd216343572c0edc40647fd5b5e924e970b9e604a1817d416d8c55",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-endo006-177lu.pdf"
+    },
+    {
+      "byte_size": 354467,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gi006-pancreas.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gastrointestinal-gi006-pancreas",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "b7f09140f2ac72485697ca2e78bab37665861ec059e4b045e7030bab656f9bcf",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gi006-pancreas.pdf"
+    },
+    {
+      "byte_size": 243726,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gi001-anal-canal.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gastrointestinal-gi001-anal-canal",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "eed96215f3585ff05a64fd7ee8f309da66588b68ecc7b443b847b683b83402e2",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gi001-anal-canal.pdf"
+    },
+    {
+      "byte_size": 415270,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gi011-barretts-esophagus.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gastrointestinal-gi011-barretts-esophagus",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "8c0baf0fb187ec4cc5dea5ecae9f3ed3af55286085089cf0c40108091a525061",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gi011-barretts-esophagus.pdf"
+    },
+    {
+      "byte_size": 282294,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-bevacizumab.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gastrointestinal-bevacizumab",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "b5052fd3102ff92f0986e30b0e498f1aeed75d81253880ed73d536b41ddf0cf5",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-bevacizumab.pdf"
+    },
+    {
+      "byte_size": 293033,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gi010-biliary.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gastrointestinal-gi010-biliary",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "fae1897a1feffbdbf8426f072c9ae58f281f240c01ba5ac3d2f0122b7fa6c53c",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gi010-biliary.pdf"
+    },
+    {
+      "byte_size": 415481,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gi004-early-stage-colon.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gastrointestinal-gi004-early-stage-colon",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "25820e0e4032925e20cc6475f78ba97c5bc1c9d00c36f35b34888b2b60216a4d",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gi004-early-stage-colon.pdf"
+    },
+    {
+      "byte_size": 557520,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gi002-colon-surveillance.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gastrointestinal-gi002-colon-surveillance",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "162b67081bc87c27148c76b3df7851a078e78d0649c42d02cfc16a8b485ceff3",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gi002-colon-surveillance.pdf"
+    },
+    {
+      "byte_size": 489093,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gi005-early-stage-rectal.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gastrointestinal-gi005-early-stage-rectal",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "bc4c450efaa4add47c8c78cbecf6127bb013e06ce968ad7f91e281a82f0d01ae",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gi005-early-stage-rectal.pdf"
+    },
+    {
+      "byte_size": 527980,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gi009-esophageal.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gastrointestinal-gi009-esophageal",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "e8428e13a95083d3f044bf89d7991844f45fab72960ae21738c6b702c4fc749f",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gi009-esophageal.pdf"
+    },
+    {
+      "byte_size": 438297,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gi008-gastric.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gastrointestinal-gi008-gastric",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "51bc437308bee2c93c3777606bfb6c511e7ff142bbd9014bc612c22436dc04c6",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gi008-gastric.pdf"
+    },
+    {
+      "byte_size": 552947,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gi007-hepatocellular-carcinoma.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gastrointestinal-gi007-hepatocellular-carcinoma",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "46fc28709aba5218afdac6acb2a6d5b51e3d69a7be3d05cd4e1305215fb22505",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gi007-hepatocellular-carcinoma.pdf"
+    },
+    {
+      "byte_size": 292809,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gi012-malignant-biliary-obstruction.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gastrointestinal-gi012-malignant-biliary-obstruction",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "2731d99f5ddf4e61e6e3477553fcb30287a89b34aa09770639bfd0a80b1bf85e",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gi012-malignant-biliary-obstruction.pdf"
+    },
+    {
+      "byte_size": 285164,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-5fu-infusion-overdose.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gastrointestinal-5fu-infusion-overdose",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "88915d0d9caac3cb1c99373f16a2d5a8388f08f5b14245be3a736f6a48f88247",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-5fu-infusion-overdose.pdf"
+    },
+    {
+      "byte_size": 659821,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gi003-colorectal-metastatic.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gastrointestinal-gi003-colorectal-metastatic",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "aea8f9f0b70f9fe423bf941481d4c2e6e4ca585735ac434c80dde03e3d3ce636",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gi003-colorectal-metastatic.pdf"
+    },
+    {
+      "byte_size": 274278,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-panitumumab.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gastrointestinal-panitumumab",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "d992834f2e1d33f3c997ac48872358c624bb0932c404f3a822f95da6b96feee7",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-panitumumab.pdf"
+    },
+    {
+      "byte_size": 376276,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-metastatic-colorectal-referral.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gastrointestinal-metastatic-colorectal-referral",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "fda8b864f06f9eddb4d635de7c1c86fcc5257bd914b2e68513598aac073218d3",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-metastatic-colorectal-referral.pdf"
+    },
+    {
+      "byte_size": 197450,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gi002-transfer-of-care-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gastrointestinal-gi002-transfer-of-care-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "be15e5307d2508adf6f537d678cd99a432b3eaed0f7b671152e29fb658bb4efd",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gi002-transfer-of-care-patient.pdf"
+    },
+    {
+      "byte_size": 196085,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gi002-transfer-of-care-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gastrointestinal-gi002-transfer-of-care-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "85484f261f5a92c40aaf4c64697c076d4a82b70aeed380641d3a731f12ed3452",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gi002-transfer-of-care-physician.pdf"
+    },
+    {
+      "byte_size": 220327,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-rectal-tnt-transfer-of-care-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gastrointestinal-rectal-tnt-transfer-of-care-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "a09bbff46b457d86ee1a4ddacbb2e150d6398c529f91ef54c52b64d16478bcbe",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-rectal-tnt-transfer-of-care-patient.pdf"
+    },
+    {
+      "byte_size": 219763,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-rectal-tnt-transfer-of-care-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gastrointestinal-rectal-tnt-transfer-of-care-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "4a58de1d004bd030177d6d2b4a38624986704180cc381c6ef19385e6b13ac0b7",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-rectal-tnt-transfer-of-care-physician.pdf"
+    },
+    {
+      "byte_size": 599833,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-metastatic-colorectal-local-tips.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gastrointestinal-metastatic-colorectal-local-tips",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "06f32ee661db22f3c71b0e46c55af5bd18c9ba262e1d1107e272df307210b919",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-metastatic-colorectal-local-tips.pdf"
+    },
+    {
+      "byte_size": 328528,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu010-met-prostate.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-genitourinary-gu010-met-prostate",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "53ec4759887eff51bcbe01800662c9a7b48966d0ac117583afd9415c25972c42",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu010-met-prostate.pdf"
+    },
+    {
+      "byte_size": 217473,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu011-bone-health.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-genitourinary-gu011-bone-health",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "ff7335fce8f7ae7b86e2ddaca4a9827f59739c0be2cfb37e671a8d793cb7c2dd",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu011-bone-health.pdf"
+    },
+    {
+      "byte_size": 226094,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu012-local-prostate.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-genitourinary-gu012-local-prostate",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "d37646f74d52ae7c7e96fd66504d0ea945f2b88d3f4ca792fea4b202a088d142",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu012-local-prostate.pdf"
+    },
+    {
+      "byte_size": 351336,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu014-ambc.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-genitourinary-gu014-ambc",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "1b2374335392637bc1b0e1726bc9737e447a10d1add6bbe3827520b6c5abf77c",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu014-ambc.pdf"
+    },
+    {
+      "byte_size": 540606,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu013-mibc.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-genitourinary-gu013-mibc",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "b5ac02ed1be31ff6848a19678b3fbfc57641dbfd0c331ba53eee8771932a91c7",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu013-mibc.pdf"
+    },
+    {
+      "byte_size": 278418,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu009-noninvasive-bladder.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-genitourinary-gu009-noninvasive-bladder",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "763e4f37462db03a38d8d1479f85d30102f77d96febccce60fd24ad1acde4f62",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu009-noninvasive-bladder.pdf"
+    },
+    {
+      "byte_size": 1168621,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu003-renal-cell.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-renal-cell-carcinoma-gu003",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "b7ef478748b6e83d16eeff3e632aa0ffd91170d8a67d25c566caae247a167e5d",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu003-renal-cell.pdf"
+    },
+    {
+      "byte_size": 339623,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu001-testicular.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-genitourinary-gu001-testicular",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "9aa2c9519a7a0fb729d2d06a17cf9bb2b5616b7b8c3369e823e24f80808e5263",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu001-testicular.pdf"
+    },
+    {
+      "byte_size": 402466,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu008-upper-tract.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-genitourinary-gu008-upper-tract",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "4874d13d9e57c4769224ffaf4af76a94a0862bc49189451a1ca182c606f8d247",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu008-upper-tract.pdf"
+    },
+    {
+      "byte_size": 201877,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu012-end-of-treatment-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-genitourinary-gu012-end-of-treatment-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "6205393d1090ec9f1807b46dc32321976e041c50e00571c3c952dd80f7eab415",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu012-end-of-treatment-patient.pdf"
+    },
+    {
+      "byte_size": 221230,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu012-end-of-treatment-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-genitourinary-gu012-end-of-treatment-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "4d095c9a4dbbe881e5195c6cf8f9ec854afc6f833bd87f8bf2479a469e64b32a",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu012-end-of-treatment-physician.pdf"
+    },
+    {
+      "byte_size": 211045,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu001b-end-of-treatment-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-genitourinary-gu001b-end-of-treatment-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "c03434b6a862aef1298b3901b395d637f3f88562a3d362c489cb56fd395a1d1f",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu001b-end-of-treatment-patient.pdf"
+    },
+    {
+      "byte_size": 234361,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu001b-transfer-of-care-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-genitourinary-gu001b-transfer-of-care-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "b3180267b85b20f903b0c1faf98d2c19f83bfa34a5352ef6a35991dfb7a73edc",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu001b-transfer-of-care-patient.pdf"
+    },
+    {
+      "byte_size": 199595,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu001a-end-of-treatment-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-genitourinary-gu001a-end-of-treatment-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "6b8fc42e4cc721a18b97cb5e32f2827bd2c244112d4c445e104dd4b31f62a54a",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu001a-end-of-treatment-patient.pdf"
+    },
+    {
+      "byte_size": 200297,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu001a-transfer-of-care-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-genitourinary-gu001a-transfer-of-care-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "c166b8e0f22b7933604201f02bd924dc1a45a1f9f2c25cbae452d510e7d43b35",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu001a-transfer-of-care-patient.pdf"
+    },
+    {
+      "byte_size": 272681,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu001b-end-of-treatment-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-genitourinary-gu001b-end-of-treatment-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "bd61806914797735b6019499b80dd94e3d39e4bf10e1744f876b1db72f305b15",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu001b-end-of-treatment-physician.pdf"
+    },
+    {
+      "byte_size": 362281,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu001b-transfer-of-care-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-genitourinary-gu001b-transfer-of-care-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "a91be4505142d7534a6d021d3e09c65a12962fb148f4d1756ecd97a13acc8ae0",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu001b-transfer-of-care-physician.pdf"
+    },
+    {
+      "byte_size": 256602,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu001a-end-of-treatment-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-genitourinary-gu001a-end-of-treatment-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "ed0eae1249eaa4c0fd39588604b00b8d038c803784c225ea88ae792ce258bb72",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu001a-end-of-treatment-physician.pdf"
+    },
+    {
+      "byte_size": 264710,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu001a-transfer-of-care-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-genitourinary-gu001a-transfer-of-care-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "12b5ceb8739d10d4fdec90068dc5ab0fea371ae8b55813c4bef2900dce351891",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu001a-transfer-of-care-physician.pdf"
+    },
+    {
+      "byte_size": 192550,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu012-transfer-of-care-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-genitourinary-gu012-transfer-of-care-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "3a4cb440912048b3bd5874b45be4420830e5bb58e6f550bf469e00418d546c0e",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu012-transfer-of-care-patient.pdf"
+    },
+    {
+      "byte_size": 187419,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu012-transfer-of-care-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-genitourinary-gu012-transfer-of-care-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "b1ad017eeca530efa78ee9acf75d92fcb67f30fbb9b96ba008164cea753f37ee",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu012-transfer-of-care-physician.pdf"
+    },
+    {
+      "byte_size": 256529,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gyne008-algorithm-gtn.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gynecologic-gyne008-algorithm-gtn",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "a734c70ac8447e0f7b14120359ede0722818751804383e89f7be718654758100",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gyne008-algorithm-gtn.pdf"
+    },
+    {
+      "byte_size": 342792,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gyne004-cervical.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gynecologic-gyne004-cervical",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "6453319e9723d88a8ef4ff4d11918c89d577c86edcfe13b1ce1dfd84054eb756",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gyne004-cervical.pdf"
+    },
+    {
+      "byte_size": 2035066,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gyne002-endometrial.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gynecologic-gyne002-endometrial",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "4ff8deee846e6072e2e0069e20d02010defd537287a24a77968d005860f62e9c",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gyne002-endometrial.pdf"
+    },
+    {
+      "byte_size": 434263,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gyne008-gestational-trophoblastic-neoplasia.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gynecologic-gyne008-gestational-trophoblastic-neoplasia",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "caa497d6804f7d993f990d49db38bf0d74d3f5db729720929f3d2caa56d56a41",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gyne008-gestational-trophoblastic-neoplasia.pdf"
+    },
+    {
+      "byte_size": 332198,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gyne003-hbot-for-lrti.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gynecologic-gyne003-hbot-for-lrti",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "17fcf73208b74f4f39a566224606cdce47900a0d71e5e22dcb322d56d655e9cf",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gyne003-hbot-for-lrti.pdf"
+    },
+    {
+      "byte_size": 444608,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gyne007-uterine-sarcoma.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gynecologic-gyne007-uterine-sarcoma",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "38a154996c77ff1396a437e543b1f74336a9ce86fb93ec6053e8e93121a88946",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gyne007-uterine-sarcoma.pdf"
+    },
+    {
+      "byte_size": 301201,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gyne010-vte.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gynecologic-gyne010-vte",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "8b69cec35eea6253b68d71fcdbe9016b66b629ba555cce86798f009ea7b9921a",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gyne010-vte.pdf"
+    },
+    {
+      "byte_size": 178960,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gyne004-end-of-treatment-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gynecologic-gyne004-end-of-treatment-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "1391bfd5cf5b3878e25dc18d5a0e0a6f5695231ba7144b78f7bc4f12d1391dbc",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gyne004-end-of-treatment-patient.pdf"
+    },
+    {
+      "byte_size": 188016,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gyne002-end-of-treatment-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gynecologic-gyne002-end-of-treatment-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "2ce92b58ab967fefc64c538190d41f9bd50541afb5b1f19d87f513af56f4474e",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gyne002-end-of-treatment-patient.pdf"
+    },
+    {
+      "byte_size": 220228,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gyne004-end-of-treatment-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gynecologic-gyne004-end-of-treatment-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "9cd401052ae85c5b14f9fa29bc0b8334ec69cfaf9dd56d7ce4f98b1ca9179c10",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gyne004-end-of-treatment-physician.pdf"
+    },
+    {
+      "byte_size": 234909,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gyne002-end-of-treatment-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gynecologic-gyne002-end-of-treatment-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "3c1b56d613b4e43403a66f0f19b8f39e883c5371edc9dd5d267a850d4126a34e",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gyne002-end-of-treatment-physician.pdf"
+    },
+    {
+      "byte_size": 191320,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gyne004-transfer-of-care-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gynecologic-gyne004-transfer-of-care-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "53405ee017e60cf1e9adf56c28a3d357d78965fc7247a008f8226006c090669f",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gyne004-transfer-of-care-patient.pdf"
+    },
+    {
+      "byte_size": 220276,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gyne002-transfer-of-care-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gynecologic-gyne002-transfer-of-care-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "f343d09dba643fe71268092ff7e0e0839cd9ce0c6453adba866959baf71a6190",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gyne002-transfer-of-care-patient.pdf"
+    },
+    {
+      "byte_size": 207612,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gyne004-transfer-of-care-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gynecologic-gyne004-transfer-of-care-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "9c33f7e5046cde802e49179c5b80de8c0262134dae78132aa9b149ba45d04955",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gyne004-transfer-of-care-physician.pdf"
+    },
+    {
+      "byte_size": 257186,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gyne002-transfer-of-care-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-gynecologic-gyne002-transfer-of-care-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "639cb0d9774ee377ac9106b5df8f9eba322fab32c5b3b6489e706fe18010044f",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gyne002-transfer-of-care-physician.pdf"
+    },
+    {
+      "byte_size": 305495,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-hn008-diagnostic-workup.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-head-and-neck-hn008-diagnostic-workup",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "365d728110d1e52b71e94bf1b666944a77116a12e0b9a9646fc5a2c0ede32065",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-hn008-diagnostic-workup.pdf"
+    },
+    {
+      "byte_size": 476980,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-hn009-laryngeal.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-head-and-neck-hn009-laryngeal",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "52b6e1ac3583dae97e761cc9fa9b1f054018401d15d97a880038e1c2f4c0f011",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-hn009-laryngeal.pdf"
+    },
+    {
+      "byte_size": 323708,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-hn003-nasopharyngeal.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-head-and-neck-hn003-nasopharyngeal",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "e9820b0c74d4f2b338d80bdd06d02273f785adfe3f938a186a83f6e8855942da",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-hn003-nasopharyngeal.pdf"
+    },
+    {
+      "byte_size": 415592,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-hn006-dental-oral.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-head-and-neck-hn006-dental-oral",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "5ec74e98127ed18c937d10a8c2558d99e2bec739391dc05c9313a8c923ab49f7",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-hn006-dental-oral.pdf"
+    },
+    {
+      "byte_size": 423337,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-hn002-oral-cavity.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-head-and-neck-hn002-oral-cavity",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "ab4ec6e04d52d0d3ef54535a8d7d9e5267ca53fc7c5d0fcb07bc9a3f76f72fcc",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-hn002-oral-cavity.pdf"
+    },
+    {
+      "byte_size": 388861,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-hn001-organization.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-head-and-neck-hn001-organization",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "8b3b765f2440a7537b634d6c36cbc9b0b03396bb4bec17a1020fbbca9ffc60ce",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-hn001-organization.pdf"
+    },
+    {
+      "byte_size": 687870,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-hn004-oropharyngeal.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-head-and-neck-hn004-oropharyngeal",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "a8b13fd96ae2c09a01fb4abce8ca37edb924064827bdb9c42bd177280ce877e6",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-hn004-oropharyngeal.pdf"
+    },
+    {
+      "byte_size": 216060,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-hn-end-of-treatment-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-head-and-neck-hn-end-of-treatment-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "93482517e2246c541e8328055d93e55f7e9b4cd0ea8e33f6dccb88179fe4667e",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-hn-end-of-treatment-patient.pdf"
+    },
+    {
+      "byte_size": 235339,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-hn-end-of-treatment-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-head-and-neck-hn-end-of-treatment-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "087e1498256c1809cb128db890d87a0b3f1804bb5bf7e221f9c396d0fafce819",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-hn-end-of-treatment-physician.pdf"
+    },
+    {
+      "byte_size": 277191,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-hn-transfer-of-care-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-head-and-neck-hn-transfer-of-care-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "e560b0f9033b698f29271e277a9ec66fa4e46a6b480a3bc05c68001db5a12c71",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-hn-transfer-of-care-patient.pdf"
+    },
+    {
+      "byte_size": 257271,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-hn-transfer-of-care-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-head-and-neck-hn-transfer-of-care-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "0ca49c5c418e82547870c778a388523e158bc5ae7ee5d3f52db0d648841a8ba1",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-hn-transfer-of-care-physician.pdf"
+    },
+    {
+      "byte_size": 403649,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-symptom-summary-oral-care.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-head-and-neck-symptom-summary-oral-care",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "1d643af51355a5344221a89d0147d4f0afaddd118f932a6f89587341b6e16b22",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-symptom-summary-oral-care.pdf"
+    },
+    {
+      "byte_size": 340408,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lu012-nsclc-mutation-negative.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lung-lu012-nsclc-mutation-negative",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "e52b8761346ace2a7359d279eca7b6a6c8411bf313d175375d55fbee194c0469",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lu012-nsclc-mutation-negative.pdf"
+    },
+    {
+      "byte_size": 279818,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lu011-advanced-nsclc-driver-mutation-positive.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lung-lu011-advanced-nsclc-driver-mutation-positive",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "4dbf7807d9ea7ec993f7a0d650918566977f8e30e9afab04ff3b8ea86a42a6a0",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lu011-advanced-nsclc-driver-mutation-positive.pdf"
+    },
+    {
+      "byte_size": 339415,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lu014-early-stage-nsclc.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lung-lu014-early-stage-nsclc",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "86e91b1adfb5e1d7ec4d0846b5bdba1e3f4d42c8d533f5b5a0076f102f320d7d",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lu014-early-stage-nsclc.pdf"
+    },
+    {
+      "byte_size": 282074,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lu013-surveillance-nsclc.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lung-lu013-surveillance-nsclc",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "b077fc207a99b3605ed22e18ac3f4a85888c9c0ebbf5b12396ee91594fd793c1",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lu013-surveillance-nsclc.pdf"
+    },
+    {
+      "byte_size": 255927,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lu008-thymic.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lung-lu008-thymic",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "36e34de4fce939d6bb9c39921755c4c8ac7f4202c470335565cb6071c825ea03",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lu008-thymic.pdf"
+    },
+    {
+      "byte_size": 231902,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lu015-unresectable-stage3-nsclc.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lung-lu015-unresectable-stage3-nsclc",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "baef812765c4f863d21637a683b36e0536809f358d967a0233100cff67302f40",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lu015-unresectable-stage3-nsclc.pdf"
+    },
+    {
+      "byte_size": 201200,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lu-nsclc-summary.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lung-lu-nsclc-summary",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "3258ed2e8067f83c10ffaff1f8976d1e10eeb8509e3d7bd96db1477f56c1813d",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lu-nsclc-summary.pdf"
+    },
+    {
+      "byte_size": 806291,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe005-all.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lymphoma-hematology-lyhe005-all",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "ce39a918d0b998bdae145fc1d473891ac77cc9462401cf7009065004f82d403e",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe005-all.pdf"
+    },
+    {
+      "byte_size": 1894513,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe006-aml.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lymphoma-hematology-lyhe006-aml",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "fd174d13ef9e9c25d54ef1fe1dbbeea43d0a3a326eaa62a0a70169ea21edfb1e",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe006-aml.pdf"
+    },
+    {
+      "byte_size": 524953,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe008-apl.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lymphoma-hematology-lyhe008-apl",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "b508675d04e89b91fd95f4952f45ab9f39c00da3bdcca2eb8488eaacc6585869",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe008-apl.pdf"
+    },
+    {
+      "byte_size": 564798,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe007-cll.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lymphoma-hematology-lyhe007-cll",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "0dacf8002cd7584942bec3e3cfc4f3c574cc809a952d0f679e6aa212c17944ce",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe007-cll.pdf"
+    },
+    {
+      "byte_size": 496151,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe001-cml.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lymphoma-hematology-lyhe001-cml",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "861dd4231b67b08a1e9b130b57a908a02f8e77132d50615a0058d814c1a8a215",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe001-cml.pdf"
+    },
+    {
+      "byte_size": 859357,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe012-et.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lymphoma-hematology-lyhe012-et",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "2ae7a9686b7c25cf2e613b97936a285f7eb003f82b12c759ee34bf5d7c49a984",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe012-et.pdf"
+    },
+    {
+      "byte_size": 3326742,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe002-lymphoma.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lymphoma-hematology-lyhe002-lymphoma",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "77df6abd2c8684c5984646e2bef233b5d5d1c755fe92fe2c4a7c1da115f3c6b1",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe002-lymphoma.pdf"
+    },
+    {
+      "byte_size": 350559,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe015-mmrr.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lymphoma-hematology-lyhe015-mmrr",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "9e991bc155eb9402da50a1a6c7a4cdbd25c46eeb6876a819af0bfd8742bb4275",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe015-mmrr.pdf"
+    },
+    {
+      "byte_size": 415127,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe013-mmte.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lymphoma-hematology-lyhe013-mmte",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "5a9c7eb1dbfffbc05ee6e2d85782dafb02426b6aedba76e9f4b076b87f041f0c",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe013-mmte.pdf"
+    },
+    {
+      "byte_size": 236176,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe014-mmnti.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lymphoma-hematology-lyhe014-mmnti",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "f000f311291b600d9f7d77523016388ec0514184dda9584c09f89ea8c3ccf4e9",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe014-mmnti.pdf"
+    },
+    {
+      "byte_size": 974287,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe011-mf.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lymphoma-hematology-lyhe011-mf",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "32bd1324478c56b8b85dfe01efec2e8b9ea8098159ebcaa3e84f84a1e9168e4e",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe011-mf.pdf"
+    },
+    {
+      "byte_size": 324344,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe-ngs-testing.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lymphoma-hematology-lyhe-ngs-testing",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "ffc365303f92c17373499d084d86055c255ef434c12939c236a3163af8c49723",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe-ngs-testing.pdf"
+    },
+    {
+      "byte_size": 513647,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe009-pv.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lymphoma-hematology-lyhe009-pv",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "2d01a320dae11653a846b712f72fc564cff486e6c21487f1bc4dacb8a0660e35",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe009-pv.pdf"
+    },
+    {
+      "byte_size": 201772,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe007-transfer-of-care-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lymphoma-hematology-lyhe007-transfer-of-care-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "f40f15cdf6892d6ab3b015400b255039c0641e68253a7eda61ed3945bf666512",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe007-transfer-of-care-patient.pdf"
+    },
+    {
+      "byte_size": 220621,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-dlbcl-transfer-of-care-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lymphoma-hematology-dlbcl-transfer-of-care-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "25319a57be12ecab88a0003a152ee1eb10ec5bdd755f62feec81c957cdf4f449",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-dlbcl-transfer-of-care-patient.pdf"
+    },
+    {
+      "byte_size": 227221,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-hl-transfer-of-care-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lymphoma-hematology-hl-transfer-of-care-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "0abed3fa7e2a8e50e8cb6b530a4e0ec62e6249e1982569bfaca3a9a009909201",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-hl-transfer-of-care-patient.pdf"
+    },
+    {
+      "byte_size": 211718,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-inhl-transfer-of-care-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lymphoma-hematology-inhl-transfer-of-care-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "050ee4b4cbf52fb40660f765d737daf7f32e1276c4b3b3294ed59343d90e4e76",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-inhl-transfer-of-care-patient.pdf"
+    },
+    {
+      "byte_size": 238070,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe007-transfer-of-care-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lymphoma-hematology-lyhe007-transfer-of-care-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "a2690a5cf2133f7986ad1a235c0f8a51dacd2eea429d9e792960d6ab815e9418",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe007-transfer-of-care-physician.pdf"
+    },
+    {
+      "byte_size": 216658,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-dlbcl-transfer-of-care-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lymphoma-hematology-dlbcl-transfer-of-care-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "db2887a926d41ef41ec5c7880740996cb0fa5085d4188366b7482d5803c09aee",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-dlbcl-transfer-of-care-physician.pdf"
+    },
+    {
+      "byte_size": 212253,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-hl-transfer-of-care-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lymphoma-hematology-hl-transfer-of-care-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "13a2102686d9a90615fae411ed0c4e4560b004713a88af21ca293d081dc1f802",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-hl-transfer-of-care-physician.pdf"
+    },
+    {
+      "byte_size": 217117,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-inhl-transfer-of-care-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-lymphoma-hematology-inhl-transfer-of-care-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "57e448f2ca2b787483862763d076607ef90fa341f28c504b02f524d5f2e0fda9",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-inhl-transfer-of-care-physician.pdf"
+    },
+    {
+      "byte_size": 293529,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-utilization-handbook.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-methodology-utilization-handbook",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "245aca69117b1708ef2b166d4c29fb4bfbf90a4599e8261eadce9b399cb1c156",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-utilization-handbook.pdf"
+    },
+    {
+      "byte_size": 105391,
+      "file_path": "resources/raw/ahs-guru-public/page1731.aspx",
+      "media_type": "text/html",
+      "resource_id": "ahs-guru-cancer-guidelines-index",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "9ed959f6dcc82a7a8a20884d268b2e1f29901be401ef3edafa8acc76428adfbf",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/cancer/page1731.aspx"
+    },
+    {
+      "byte_size": 250202,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-molecular-fna-report.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-not-applicable-molecular-fna-report",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "71fe8690f718518057fc27f47c76150fca92e41ee9a62020e5262689b28ec0a4",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-molecular-fna-report.pdf"
+    },
+    {
+      "byte_size": 198253,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-generic-end-of-treatment-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-not-applicable-generic-end-of-treatment-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "1846924c6c56329c7e424b60f2aff1e080fb4b5310ca6c34e0a389d8f1e827fb",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-generic-end-of-treatment-patient.pdf"
+    },
+    {
+      "byte_size": 201502,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-generic-transfer-of-care-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-not-applicable-generic-transfer-of-care-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "cd0d52f9c586bb6203dad29f8e1b7d9eeba339b81b3b8574e8b0bcd34d542121",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-generic-transfer-of-care-patient.pdf"
+    },
+    {
+      "byte_size": 219886,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-generic-end-of-treatment-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-not-applicable-generic-end-of-treatment-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "ad61ed3de1910c748411880f12f584331ea58b65907d2d679dd683b4879a340b",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-generic-end-of-treatment-physician.pdf"
+    },
+    {
+      "byte_size": 203586,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-generic-transfer-of-care-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-not-applicable-generic-transfer-of-care-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "768be0ddf19abeb0ed69f24a7037d21be80514654e3b9ee1d211ffbfebdf5027",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-generic-transfer-of-care-physician.pdf"
+    },
+    {
+      "byte_size": 129890,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-dcis-patient-letter.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-not-applicable-dcis-patient-letter",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "0ea2c69654bd5839438b472cc2e3221eee4600eee0a74f6932c25a5f5e11361a",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-dcis-patient-letter.pdf"
+    },
+    {
+      "byte_size": 223332,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-dcis-physician-letter.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-not-applicable-dcis-physician-letter",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "2f93a2e6e86e08abbd19f711be59f31880cb5608af2b1839ec2ae74fee8d0f8c",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-dcis-physician-letter.pdf"
+    },
+    {
+      "failure_reason": "<urlopen error unknown url type: mailto>",
+      "file_path": "resources/raw/ahs-guru-public/GURU@ahs.ca",
+      "media_type": "application/octet-stream",
+      "resource_id": "ahs-guru-not-applicable-guru-contact",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "status": "failed",
+      "url": "mailto:GURU@ahs.ca"
+    },
+    {
+      "byte_size": 82475,
+      "file_path": "resources/raw/ahs-guru-public/Page18324.aspx",
+      "media_type": "text/html",
+      "resource_id": "ahs-guru-generic-cancer-surveillance-page",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "7139897d819f9736d9edab908332436a58ffb5418290a3db95c70497269ac09e",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/cancer/Page18324.aspx"
+    },
+    {
+      "byte_size": 561240,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-peds001-biopsy.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-pediatric-peds001-biopsy",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "2e30f1fbd5a34081e391db3869c6c10a0e433b83ededb576d9f6078a1c28ba45",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-peds001-biopsy.pdf"
+    },
+    {
+      "byte_size": 3254867,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-pedsbmt-manual.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-pediatric-pedsbmt-manual",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "b0c8d791ac3639ce1d971cdcd4f24d9519fde770474e3e20346590fcdc68183b",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-pedsbmt-manual.pdf"
+    },
+    {
+      "byte_size": 627932,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-rt002-proton-beam-RT.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-radiation-therapy-rt002-proton-beam-rt",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "7126a7883a5a66d739f259c044850b07c34889694084b4ddee79e498e087cb8b",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-rt002-proton-beam-RT.pdf"
+    },
+    {
+      "byte_size": 300902,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-sar006-biopsy.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-sarcoma-sar006-biopsy",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "7fe010f2bfbd9df031733e7cbd566902599226eb29f15f48341f61ac07e22d8b",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-sar006-biopsy.pdf"
+    },
+    {
+      "byte_size": 427080,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-sar004-desmoid.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-sarcoma-sar004-desmoid",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "c6e5d223213df4269c467de37cd5a5d12acf3b36e9735d0ef295a288adb7e86a",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-sar004-desmoid.pdf"
+    },
+    {
+      "byte_size": 266363,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-sar002-gist.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-sarcoma-sar002-gist",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "57809753bd8375a1860a059cfdfd1ca4773fac53c498508136582159b95e3726",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-sar002-gist.pdf"
+    },
+    {
+      "byte_size": 320801,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-sar-003-management-soft-tissue-sarcoma.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-sarcoma-sar-003-management-soft-tissue-sarcoma",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "e6e262821c0bbbda40927d593fde71e6af76e53b627b0ade02b9960a7c62ee06",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-sar-003-management-soft-tissue-sarcoma.pdf"
+    },
+    {
+      "byte_size": 121025,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-sar001-follow-up-soft-tissue-sarcoma.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-sarcoma-sar001-follow-up-soft-tissue-sarcoma",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "d0ff212a1c13b70172f00a3ea04290b03e63d856c1eb8d887e1c2c91c0dd61bc",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-sar001-follow-up-soft-tissue-sarcoma.pdf"
+    },
+    {
+      "byte_size": 336618,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-spec002-DPDdeficiencytesting.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-special-topics-spec002-dpddeficiencytesting",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "551cea8825ded5a2fe3da5ce8374b6d87cb8da9dd69a1222039e966884d09d1d",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-spec002-DPDdeficiencytesting.pdf"
+    },
+    {
+      "byte_size": 248417,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-spec001-cup.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-special-topics-spec001-cup",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "d4173c89f5eb992aba9e668eff922162ab4aa1679b97b81a3d40683ea182ee2a",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-spec001-cup.pdf"
+    },
+    {
+      "byte_size": 873809,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-evidence-supp003-egfri-rash.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp003-egfri-rash",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "d1a8f81acec743e27ccbc9bd9c0a4fdafc65cfdcb10e72cbf964153d2136a79c",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-evidence-supp003-egfri-rash.pdf"
+    },
+    {
+      "byte_size": 848505,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp023-evidence-table.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp023-evidence-table",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "764d7b55fc2581cb62752791ba20941b8a52aac0a8482a2ff07a739ec3f177dd",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp023-evidence-table.pdf"
+    },
+    {
+      "byte_size": 440777,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-evidence-supp025-radiation-dermatitis-chronic.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp025-radiation-dermatitis-chronic",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "ddf5c747fba5b9575e50c4dcb2be6c2e07a85a0c612c3730afa2ed27bae5a6b2",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-evidence-supp025-radiation-dermatitis-chronic.pdf"
+    },
+    {
+      "byte_size": 457445,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-evidence-supp025-radiation-dermatitis-mgmt.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp025-radiation-dermatitis-mgmt",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "2f33da00c290bd6cbf68f7fa0db1755906548ff941f8fbccd4e274b592c7a003",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-evidence-supp025-radiation-dermatitis-mgmt.pdf"
+    },
+    {
+      "byte_size": 873991,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-evidence-supp025-radiation-dermatitis-prevention.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp025-radiation-dermatitis-prevention",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "0e945aa3bf81f0bdacecaca4f6a1359cfdc4fb3bfd804c9de053c5fcba8f8469",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-evidence-supp025-radiation-dermatitis-prevention.pdf"
+    },
+    {
+      "byte_size": 986214,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-influenza-immunization-evidence-table.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-influenza-immunization-evidence-table",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "42fd1a32da638cf4e62d124725a172ecf5b940fa4dd28c08e7434b976cfd5362",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-influenza-immunization-evidence-table.pdf"
+    },
+    {
+      "byte_size": 733698,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp019-infusionreactions.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp019-infusionreactions",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "96f391bca5e8ac7fbf951d9ac6c9b0853773d6c23e8319a411183c68251e46d9",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp019-infusionreactions.pdf"
+    },
+    {
+      "byte_size": 419853,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp020-adolescent-young-adult.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp020-adolescent-young-adult",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "a7cb2babe29c26b2874351e31f6141536f065a78021ef1fd2b5a684de86e710d",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp020-adolescent-young-adult.pdf"
+    },
+    {
+      "byte_size": 1138331,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp012-cancer-pain.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp012-cancer-pain",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "9d7ad3173d04fc5594b464df7963ce5347b6912c6dbcf10afd7b4f61410475c8",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp012-cancer-pain.pdf"
+    },
+    {
+      "byte_size": 468174,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp008-fatigue.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp008-fatigue",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "562421749de88fa597a962001d4af61909a0b683f95d5eb0a322b4c8840c94df",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp008-fatigue.pdf"
+    },
+    {
+      "byte_size": 536447,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp018-immunotherapy-toxicities.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp018-immunotherapy-toxicities",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "2d34fa099f9883060ed418f2648ea3ac75a47184fe782d7a22a3297b241f9b84",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp018-immunotherapy-toxicities.pdf"
+    },
+    {
+      "byte_size": 409868,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp011-nausea-vomiting.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp011-nausea-vomiting",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "2959a925ecc85769f667254a9972f510b1202ffd8a912d6b2a9338a9c366e85b",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp011-nausea-vomiting.pdf"
+    },
+    {
+      "byte_size": 461068,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp010-peripheral-neuropathy.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp010-peripheral-neuropathy",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "8607c59616920d5186f624e092c4ad93884da3379ad5803a2ad0ff5717b7a4b1",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp010-peripheral-neuropathy.pdf"
+    },
+    {
+      "byte_size": 600913,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-adult-febrile-neutropenia.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-adult-febrile-neutropenia",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "9188d5f8ae5c540481c250b7e15a81f0a3b3a8e60e2a69629ff4b06654293f18",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-adult-febrile-neutropenia.pdf"
+    },
+    {
+      "byte_size": 278526,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp024-follow-up-model-of-care.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp024-follow-up-model-of-care",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "020967df8832afdadddde400abae267e812a236c736d06202443118c20ed1484",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp024-follow-up-model-of-care.pdf"
+    },
+    {
+      "byte_size": 1524711,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp002-vaccination.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp002-vaccination",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "447af3915583e01b360c847b0aba3b4ed0b2b442ecad470de88f207f7cf0c4b8",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp002-vaccination.pdf"
+    },
+    {
+      "byte_size": 1764155,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp023-early-palliative-care-advanced-cancer.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp023-early-palliative-care-advanced-cancer",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "90c997c8b94b89e8837e7e450e54a2a06a5afad3dfd83953c55555db8b89d8a4",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp023-early-palliative-care-advanced-cancer.pdf"
+    },
+    {
+      "byte_size": 291209,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-palliative-care-tips.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-palliative-care-tips",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "2dd4d34a1cd6645c3f2fb686414b7c3f428abbdc31240fab960b875bcf1ac366",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-palliative-care-tips.pdf"
+    },
+    {
+      "byte_size": 883196,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp003-egfri-rash.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp003-egfri-rash-2",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "15601ca2e142fdf2ffd1e391cf1001ebf78955c7cc300f83979a776a9460490e",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp003-egfri-rash.pdf"
+    },
+    {
+      "byte_size": 442679,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-oncologic-emergencies.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-oncologic-emergencies",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "267786a5b97978ad497534429e39d61a1f768f1b74c9f8215a8cd80a2d78e58d",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-oncologic-emergencies.pdf"
+    },
+    {
+      "byte_size": 485034,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp006-vte.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp006-vte",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "8cd785583c7365a60a94a941e61dc913ecda934a70b57c5d56f6560fbc1b477b",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp006-vte.pdf"
+    },
+    {
+      "byte_size": 439271,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp025-radiation-dermatitis.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp025-radiation-dermatitis",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "973bccb12e459fc4886946d4512f27b32b9445e69142c58454c0c71f35c01c6b",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp025-radiation-dermatitis.pdf"
+    },
+    {
+      "byte_size": 445727,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp001-tobacco-cessation.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp001-tobacco-cessation",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "01eca45cac0fd89560e50633160ddd07c90431a0976c4e85119cef24420fedb9",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp001-tobacco-cessation.pdf"
+    },
+    {
+      "byte_size": 215169,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp023-shared-care-letter-patient.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp023-shared-care-letter-patient",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "8c73564c97ffb7b334461b018729cb57e6be5008e45ec98872c5788cec2101eb",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp023-shared-care-letter-patient.pdf"
+    },
+    {
+      "byte_size": 278851,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp023-shared-care-letter.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp023-shared-care-letter",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "2e5932077922ae6790d0f0742959cf77f04dd048ed44bf2d090bd4691734593e",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp023-shared-care-letter.pdf"
+    },
+    {
+      "byte_size": 206098,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-clinician-factsheet.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-clinician-factsheet",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "164319f15cf1ca68f67b47b8e2b213e40e525f569ac9fb53acdee5731bc8cd7e",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-clinician-factsheet.pdf"
+    },
+    {
+      "byte_size": 980250,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-palliative-local-tips-central.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-palliative-local-tips-central",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "888aaf0c1172594730f9d5d10ead4d8c123dab8438dcc73e591bab556039d708",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-palliative-local-tips-central.pdf"
+    },
+    {
+      "byte_size": 2496790,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-palliative-local-tips-edmonton.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-palliative-local-tips-edmonton",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "348ff36d169af4a83a84f51d47505a13d6bbe651579fbbc288b6fde2ab8a0eb2",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-palliative-local-tips-edmonton.pdf"
+    },
+    {
+      "byte_size": 603782,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-palliative-local-tips-south.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-palliative-local-tips-south",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "c6666a4c23cb0fb21d92736f893e2455a9e4c043710ec1ba3a8f9916dd0e7b5e",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-palliative-local-tips-south.pdf"
+    },
+    {
+      "byte_size": 347330,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-symptom-summary-anxiety.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-symptom-summary-anxiety",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "a9b817730d8223800f7ebfd1b4df196a7f677fc2a25964e45eef1879e0f6a756",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-symptom-summary-anxiety.pdf"
+    },
+    {
+      "byte_size": 375018,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp012-cancer-pain-summary.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp012-cancer-pain-summary",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "bc3e850e1bf273fab8bd9d2f82a3462fb44920df4e4463d9d18e1d6ad29a2458",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp012-cancer-pain-summary.pdf"
+    },
+    {
+      "byte_size": 214827,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp011-nausea-vomiting-summary.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp011-nausea-vomiting-summary",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "538e40cbaea9ea5374a6e977fda07505565283793014131794205fe99bcecc90",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp011-nausea-vomiting-summary.pdf"
+    },
+    {
+      "byte_size": 99361,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp010-peripheral-neuropathy-summary.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp010-peripheral-neuropathy-summary",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "ac422a68300fb8729d188c36e19a082bb05233af7313cac6524071d3f7c29e90",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp010-peripheral-neuropathy-summary.pdf"
+    },
+    {
+      "byte_size": 259747,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-symptom-summary-depression.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-symptom-summary-depression",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "4b809e0344441fe92d5cb1894f7666614d991e463ce0d68ff7a2363091dd7cbf",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-symptom-summary-depression.pdf"
+    },
+    {
+      "byte_size": 104079,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp008-fatigue-summary.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-supp008-fatigue-summary",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "d01bacd5ebd6c5a346e9b9822609884e4978fb0381fce8cca9f77326219a8fc0",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp008-fatigue-summary.pdf"
+    },
+    {
+      "byte_size": 346327,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-symptom-summary-sleep-disturbance.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-symptom-summary-sleep-disturbance",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "2eae86133f6c30aaf590c97f3f8af7eb161d3e37fe104666d368152617db3d78",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-symptom-summary-sleep-disturbance.pdf"
+    },
+    {
+      "byte_size": 339092,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-symptom-summary-tenesmus.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-supportive-care-symptom-summary-tenesmus",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "e667268b09b108cae3aa190fb9a421c4ac544837598d3270d28f99c41624bccd",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-symptom-summary-tenesmus.pdf"
+    },
+    {
+      "byte_size": 172094,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-southern-alberta-providers-thyroid.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-thyroid-southern-alberta-providers-thyroid",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "a620006cb3c7eadb361cc2eefd18d0dea9be04c530e3d0ef917e7102d29fcdae",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-southern-alberta-providers-thyroid.pdf"
+    },
+    {
+      "byte_size": 235783,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-thy-lobectomy-criteria.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-thyroid-thy-lobectomy-criteria",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "88c4852c92ecf88792c30e46cf06ed9112c481861b3509584c8bab89b83c94ee",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-thy-lobectomy-criteria.pdf"
+    },
+    {
+      "byte_size": 189012,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-provider-list-surgery-services-and-cancer-referrals.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-thyroid-surgery-services-and-cancer-referrals",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "2fbe1fa8e2322d457bc58ace734b1e08a6e90e4c046e354fde993d730a33f943",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-provider-list-surgery-services-and-cancer-referrals.pdf"
+    },
+    {
+      "byte_size": 191882,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-car-t-cell-transfer-of-care-physician.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-transplant-cell-therapy-car-t-cell-transfer-of-care-physician",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "4f7d53493fffe0619d9ae1d2232289f22073d3d8aaecc05f2e825caadfa2d646",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-car-t-cell-transfer-of-care-physician.pdf"
+    },
+    {
+      "byte_size": 10667235,
+      "file_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-bmt-manual.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "ahs-guru-transplant-cell-therapy-bmt-manual",
+      "retrieved_at": "2026-06-16T05:32:00Z",
+      "sha256": "e1649919fc75dc55e83810910c7c71e18b73765ac67db3ee8a6d2f41f46b566d",
+      "status": "downloaded",
+      "url": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-bmt-manual.pdf"
+    }
+  ]
+}
