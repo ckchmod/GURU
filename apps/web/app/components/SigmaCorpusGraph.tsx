@@ -55,7 +55,11 @@ type CanvasLabelNode = {
   y: number;
   size: number;
   color?: string;
+  kind?: AtlasNodeView["kind"];
+  group?: AtlasNodeView["group"];
+  highlighted?: boolean;
   isDragging?: boolean;
+  isClusterAnchor?: boolean;
 };
 
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
@@ -114,6 +118,8 @@ export function SigmaCorpusGraph({
       data-drag-policy="sigma-node-drag-session-positions-with-neighbor-tension"
       data-tension-policy="edge-weighted-neighbor-pull"
       data-document-layout-policy="centroid-integrated-classification-pockets"
+      data-visual-theme="dark-evidence-vault"
+      data-node-encoding-policy="color-ring-shape-label-chip"
       data-dragging-node={draggingNodeId ?? "none"}
     >
       <SigmaContainer<SigmaAtlasNodeAttributes, SigmaAtlasEdgeAttributes>
@@ -251,7 +257,7 @@ function ConstellationOverlay({
             };
 
             return (
-              <g key={edge.id ?? `${edge.source}-${edge.target}-${edge.type}`} data-edge-type={edge.type} data-active-edge="true">
+              <g key={edge.id ?? `${edge.source}-${edge.target}-${edge.type}`} data-edge-type={edge.type} data-edge-tone={edgeTypeShortLabel(edge.type)} data-active-edge="true">
                 <line
                   x1={`${sourcePosition.left}%`}
                   y1={`${sourcePosition.top}%`}
@@ -278,12 +284,15 @@ function ConstellationOverlay({
         return (
           <span
             key={node.id}
-            className={`sigma-constellation-node sigma-constellation-node--${node.kind}`}
+            className={`sigma-constellation-node sigma-constellation-node--${node.kind} sigma-constellation-node--${node.group}`}
             data-active={isActive}
             data-dragging={node.id === draggingNodeId}
             data-reacting={isReacting}
             data-node-id={node.id}
+            data-node-kind={node.kind}
             data-node-group={node.group}
+            data-node-status={node.provenanceStatus}
+            data-node-type={node.type}
             data-layout-x={point.x}
             data-layout-y={point.y}
             style={{ left: `${position.left}%`, top: `${position.top}%` }}
@@ -313,7 +322,12 @@ function ConstellationOverlay({
               }
             }}
           >
-            {showLabel ? <span className="sigma-constellation-label">{truncateLabel(node.title)}</span> : null}
+            {showLabel ? (
+              <span className="sigma-constellation-label">
+                <span className="sigma-constellation-label__chip">{nodeVisualLabel(node)}</span>
+                <span>{truncateLabel(node.title)}</span>
+              </span>
+            ) : null}
           </span>
         );
       })}
@@ -470,6 +484,7 @@ function SigmaAtlasRuntime({
         }
 
         nextData.color = readAtlasColorToken("--color-faint");
+        nextData.highlighted = false;
         nextData.zIndex = 0;
         return nextData;
       },
@@ -480,7 +495,12 @@ function SigmaAtlasRuntime({
           return nextData;
         }
 
-        nextData.hidden = !graph.extremities(edgeId).includes(activeNodeId);
+        const isActiveEdge = graph.extremities(edgeId).includes(activeNodeId);
+        nextData.hidden = !isActiveEdge;
+        if (isActiveEdge) {
+          nextData.color = toActiveSigmaEdgeColor(data.edgeType);
+          nextData.size = 2.2;
+        }
         return nextData;
       }
     });
@@ -528,8 +548,8 @@ function buildSigmaGraph(model: CorpusAtlasModel, nodeViews: AtlasNodeView[], la
 
       graph.addDirectedEdgeWithKey(stableSigmaEdgeKey(edge, edgeKeyCounts), edge.source, edge.target, {
         edgeType: edge.type,
-        color: readAtlasColorToken("--color-line-strong"),
-        size: 1
+        color: toSigmaEdgeColor(edge.type),
+        size: 0.86
       });
     });
 
@@ -553,13 +573,42 @@ function toSigmaNodeColor(node: AtlasNodeView) {
   if (node.kind === "resource") {
     return readAtlasColorToken("--color-cyan");
   }
-  if (node.kind === "archive" || node.group === "documents") {
+  if (node.group === "documents") {
     return readAtlasColorToken("--color-green");
+  }
+  if (node.kind === "archive") {
+    return readAtlasColorToken("--color-violet");
   }
   if (node.kind === "sourceSpan") {
     return readAtlasColorToken("--color-red");
   }
   return readAtlasColorToken("--color-gold");
+}
+
+function toSigmaEdgeColor(edgeType: string) {
+  if (edgeType === "resource_to_source_span") {
+    return withAlpha(readAtlasColorToken("--color-red"), 0.34);
+  }
+  if (edgeType === "resource_to_document_type") {
+    return withAlpha(readAtlasColorToken("--color-green"), 0.28);
+  }
+  if (edgeType === "resource_to_archive_status") {
+    return withAlpha(readAtlasColorToken("--color-violet"), 0.3);
+  }
+  return readAtlasColorToken("--color-line-strong");
+}
+
+function toActiveSigmaEdgeColor(edgeType: string) {
+  if (edgeType === "resource_to_archive_status") {
+    return readAtlasColorToken("--color-violet");
+  }
+  if (edgeType === "resource_to_document_type") {
+    return readAtlasColorToken("--color-green");
+  }
+  if (edgeType === "resource_to_source_span") {
+    return readAtlasColorToken("--color-red");
+  }
+  return readAtlasColorToken("--color-edge-label");
 }
 
 function buildSigmaSettings() {
@@ -887,30 +936,39 @@ function shouldShowPersistentLabel(node: AtlasNodeView) {
   return node.kind === "archive" || node.aggregateCount >= 8;
 }
 
-function drawAtlasNode(context: CanvasRenderingContext2D, node: CanvasLabelNode & { isClusterAnchor?: boolean }) {
+function drawAtlasNode(context: CanvasRenderingContext2D, node: CanvasLabelNode) {
   context.save();
   if (node.isClusterAnchor) {
     context.beginPath();
-    context.arc(node.x, node.y, node.size + 10, 0, Math.PI * 2);
-    context.fillStyle = withAlpha(node.color ?? readAtlasColorToken("--color-gold"), 0.1);
+    context.arc(node.x, node.y, node.size + 9, 0, Math.PI * 2);
+    context.fillStyle = withAlpha(node.color ?? readAtlasColorToken("--color-gold"), node.highlighted ? 0.18 : 0.08);
     context.fill();
+  }
+
+  if (node.highlighted || node.isDragging) {
+    context.beginPath();
+    context.arc(node.x, node.y, node.size + (node.isDragging ? 8 : 5.4), 0, Math.PI * 2);
+    context.strokeStyle = withAlpha(readAtlasColorToken("--color-ink"), node.isDragging ? 0.72 : 0.54);
+    context.lineWidth = node.isDragging ? 2.2 : 1.4;
+    context.stroke();
   }
 
   context.beginPath();
   context.arc(node.x, node.y, node.size, 0, Math.PI * 2);
   context.fillStyle = node.color ?? readAtlasColorToken("--color-cyan");
   context.shadowColor = node.color ?? readAtlasColorToken("--color-cyan");
-  context.shadowBlur = node.isDragging ? 22 : node.isClusterAnchor ? 16 : 10;
+  context.shadowBlur = node.isDragging ? 18 : node.highlighted ? 12 : node.isClusterAnchor ? 9 : 5;
   context.fill();
   context.shadowBlur = 0;
-  context.strokeStyle = node.isDragging ? readAtlasColorToken("--color-ink") : "rgba(232, 238, 231, 0.45)";
-  context.lineWidth = node.isDragging ? 2.2 : node.isClusterAnchor ? 1.5 : 1;
+  context.strokeStyle = node.isDragging || node.highlighted ? readAtlasColorToken("--color-ink") : withAlpha(readAtlasColorToken("--color-ink"), 0.42);
+  context.lineWidth = node.isDragging ? 2.2 : node.highlighted ? 1.7 : node.isClusterAnchor ? 1.35 : 0.9;
   context.stroke();
+  drawNodeEncodingMark(context, node);
   if (!node.isClusterAnchor || node.isDragging) {
     context.beginPath();
-    context.arc(node.x, node.y, node.size + 3.5, 0, Math.PI * 2);
-    context.strokeStyle = withAlpha(node.color ?? readAtlasColorToken("--color-cyan"), node.isDragging ? 0.62 : 0.24);
-    context.lineWidth = node.isDragging ? 1.6 : 0.9;
+    context.arc(node.x, node.y, node.size + 3.2, 0, Math.PI * 2);
+    context.strokeStyle = withAlpha(node.color ?? readAtlasColorToken("--color-cyan"), node.isDragging ? 0.64 : node.highlighted ? 0.5 : 0.2);
+    context.lineWidth = node.isDragging || node.highlighted ? 1.45 : 0.8;
     context.stroke();
   }
   context.restore();
@@ -919,14 +977,48 @@ function drawAtlasNode(context: CanvasRenderingContext2D, node: CanvasLabelNode 
 function drawAtlasNodeHover(context: CanvasRenderingContext2D, node: CanvasLabelNode, settings: { labelSize: number; labelFont: string; labelWeight: string }) {
   context.save();
   context.beginPath();
-  context.arc(node.x, node.y, node.size + 7, 0, Math.PI * 2);
-  context.fillStyle = "rgba(125, 229, 223, 0.16)";
+  context.arc(node.x, node.y, node.size + 7.6, 0, Math.PI * 2);
+  context.fillStyle = withAlpha(node.color ?? readAtlasColorToken("--color-cyan"), 0.14);
   context.fill();
-  context.strokeStyle = "rgba(232, 238, 231, 0.58)";
-  context.lineWidth = 1.4;
+  context.strokeStyle = readAtlasColorToken("--color-ink");
+  context.lineWidth = 1.7;
   context.stroke();
   context.restore();
   drawAtlasNodeLabel(context, node, settings);
+}
+
+function drawNodeEncodingMark(context: CanvasRenderingContext2D, node: CanvasLabelNode) {
+  const markColor = node.kind === "resource" ? withAlpha(readAtlasColorToken("--color-bg"), 0.72) : withAlpha(readAtlasColorToken("--color-ink"), 0.72);
+  context.save();
+  context.strokeStyle = markColor;
+  context.fillStyle = markColor;
+  context.lineWidth = Math.max(0.8, node.size * 0.12);
+
+  if (node.kind === "archive") {
+    const markSize = Math.max(3.4, node.size * 0.54);
+    roundedRect(context, node.x - markSize / 2, node.y - markSize / 2, markSize, markSize, Math.max(1.2, markSize * 0.18));
+    context.stroke();
+  } else if (node.kind === "sourceSpan") {
+    const markSize = Math.max(3.8, node.size * 0.58);
+    context.beginPath();
+    context.moveTo(node.x, node.y - markSize / 2);
+    context.lineTo(node.x + markSize / 2, node.y);
+    context.lineTo(node.x, node.y + markSize / 2);
+    context.lineTo(node.x - markSize / 2, node.y);
+    context.closePath();
+    context.stroke();
+  } else if (node.isClusterAnchor || node.kind === "cluster") {
+    const markWidth = Math.max(4.2, node.size * 0.7);
+    context.beginPath();
+    context.moveTo(node.x - markWidth / 2, node.y);
+    context.lineTo(node.x + markWidth / 2, node.y);
+    context.stroke();
+  } else {
+    context.beginPath();
+    context.arc(node.x, node.y, Math.max(1.3, node.size * 0.22), 0, Math.PI * 2);
+    context.fill();
+  }
+  context.restore();
 }
 
 function drawAtlasNodeLabel(context: CanvasRenderingContext2D, node: CanvasLabelNode, settings: { labelSize: number; labelFont: string; labelWeight: string }) {
@@ -971,8 +1063,38 @@ function roundedRect(context: CanvasRenderingContext2D, x: number, y: number, wi
   context.closePath();
 }
 
-function truncateLabel(label: string) {
-  return label.length > 44 ? `${label.slice(0, 41)}...` : label;
+export function truncateLabel(label: string, maxGraphemes = 44) {
+  const graphemes = segmentGraphemes(label);
+  if (graphemes.length <= maxGraphemes) {
+    return label;
+  }
+
+  return `${graphemes.slice(0, Math.max(maxGraphemes - 3, 1)).join("")}...`;
+}
+
+function segmentGraphemes(label: string) {
+  if (typeof Intl !== "undefined" && "Segmenter" in Intl) {
+    const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+    return Array.from(segmenter.segment(label), (segment) => segment.segment);
+  }
+
+  return Array.from(label);
+}
+
+function nodeVisualLabel(node: AtlasNodeView) {
+  if (node.kind === "resource") {
+    return "resource";
+  }
+  if (node.group === "documents") {
+    return "doc type";
+  }
+  if (node.kind === "archive") {
+    return "archive";
+  }
+  if (node.kind === "sourceSpan") {
+    return "span";
+  }
+  return "site";
 }
 
 function withAlpha(color: string, alpha: number) {
@@ -1031,5 +1153,8 @@ const tokenFallbacks: Record<string, string> = {
   "--color-gold": "#d5b56a",
   "--color-red": "#c87567",
   "--color-green": "#9bd17f",
+  "--color-violet": "#a897ff",
+  "--color-bg": "#070909",
+  "--color-edge-label": "#cfe9df",
   "--color-line-strong": "rgba(166, 208, 190, 0.32)"
 };

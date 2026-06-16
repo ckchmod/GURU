@@ -17,6 +17,18 @@
   --color-violet: #a897ff;
   --color-edge-label: #cfe9df;
   --color-edge-label-bg: #0c1112;
+  --graph-vault-base: #030606;
+  --graph-vault-panel: rgba(6, 10, 11, 0.9);
+  --graph-vault-panel-strong: rgba(8, 13, 15, 0.94);
+  --graph-vault-grid: rgba(132, 154, 148, 0.11);
+  --graph-vault-grid-strong: rgba(125, 229, 223, 0.13);
+  --graph-node-resource: var(--color-cyan);
+  --graph-node-site: var(--color-gold);
+  --graph-node-document: var(--color-green);
+  --graph-node-archive: var(--color-violet);
+  --graph-node-source-span: var(--color-red);
+  --graph-focus-ring: rgba(232, 238, 231, 0.72);
+  --graph-active-edge: rgba(207, 233, 223, 0.72);
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -313,17 +325,69 @@ dt {
   background: var(--color-green);
 }
 
+.layer-dot--violet {
+  color: var(--color-violet);
+  background: var(--color-violet);
+}
+
+.status-chip,
+.status-chip-row {
+  min-width: 0;
+}
+
+.status-chip {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid rgba(232, 238, 231, 0.16);
+  border-radius: 999px;
+  padding: 0.1rem 0.42rem;
+  color: var(--color-edge-label);
+  font-family: "JetBrains Mono", "IBM Plex Mono", "Cascadia Code", monospace;
+  font-size: 0.62rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.status-chip[data-tone="warning"] {
+  border-color: rgba(213, 181, 106, 0.34);
+  color: var(--color-gold);
+  background: rgba(213, 181, 106, 0.08);
+}
+
+.status-chip[data-tone="success"] {
+  border-color: rgba(155, 209, 127, 0.32);
+  color: var(--color-green);
+  background: rgba(155, 209, 127, 0.07);
+}
+
+.status-chip[data-tone="neutral"] {
+  border-color: rgba(160, 181, 172, 0.22);
+  color: var(--color-muted);
+}
+
+.status-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
 .graph-canvas {
   position: relative;
   min-height: 0;
   overflow: hidden;
   background:
-    linear-gradient(120deg, rgba(125, 229, 223, 0.075), transparent 28%),
-    linear-gradient(300deg, rgba(213, 181, 106, 0.052), transparent 34%),
-    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
-    #050708;
-  background-size: auto, auto, 2rem 2rem, 2rem 2rem, auto;
+    linear-gradient(118deg, rgba(125, 229, 223, 0.05), transparent 30%),
+    linear-gradient(298deg, rgba(168, 151, 255, 0.042), transparent 36%),
+    linear-gradient(var(--graph-vault-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--graph-vault-grid) 1px, transparent 1px),
+    linear-gradient(var(--graph-vault-grid-strong) 1px, transparent 1px),
+    linear-gradient(90deg, var(--graph-vault-grid-strong) 1px, transparent 1px),
+    var(--graph-vault-base);
+  background-size: auto, auto, 2rem 2rem, 2rem 2rem, 8rem 8rem, 8rem 8rem, auto;
 }
 
 .graph-canvas::before {
@@ -333,9 +397,9 @@ dt {
   pointer-events: none;
   content: "";
   background:
-    linear-gradient(90deg, rgba(0, 0, 0, 0.34), transparent 16%, transparent 84%, rgba(0, 0, 0, 0.34)),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.24), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.24)),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.026), transparent 28%, rgba(255, 255, 255, 0.015));
+    linear-gradient(90deg, rgba(0, 0, 0, 0.5), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.48)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.34), transparent 20%, transparent 80%, rgba(0, 0, 0, 0.34)),
+    repeating-linear-gradient(0deg, transparent 0, transparent 0.7rem, rgba(232, 238, 231, 0.018) 0.72rem);
 }
 
 .graph-canvas:focus-visible {
@@ -366,7 +430,7 @@ dt {
 
 .sigma-atlas canvas {
   cursor: grab;
-  filter: drop-shadow(0 0 1.2rem rgba(125, 229, 223, 0.08));
+  filter: drop-shadow(0 0 0.85rem rgba(125, 229, 223, 0.06));
 }
 
 .sigma-atlas-frame[data-dragging-node]:not([data-dragging-node="none"]) .sigma-atlas canvas {
@@ -387,7 +451,7 @@ dt {
 }
 
 .sigma-interaction-cue span {
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--color-line-strong);
   border-radius: 999px;
   padding: 0.2rem 0.52rem;
   color: var(--color-edge-label);
@@ -396,8 +460,8 @@ dt {
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  background: var(--color-panel-soft);
-  box-shadow: 0 0.7rem 1.6rem rgba(0, 0, 0, 0.28);
+  background: var(--graph-vault-panel);
+  box-shadow: 0 0.7rem 1.6rem rgba(0, 0, 0, 0.32), inset 0 1px rgba(232, 238, 231, 0.06);
 }
 
 .sigma-constellation-map {
@@ -417,17 +481,29 @@ dt {
 }
 
 .sigma-relationship-overlay line {
-  stroke: rgba(207, 233, 223, 0.58);
-  stroke-width: 1.8;
+  stroke: var(--graph-active-edge);
+  stroke-width: 2;
   stroke-linecap: round;
-  stroke-dasharray: 4 5;
-  filter: drop-shadow(0 0 0.45rem rgba(125, 229, 223, 0.42));
+  stroke-dasharray: 5 4;
+  filter: drop-shadow(0 0 0.34rem rgba(125, 229, 223, 0.34));
+}
+
+.sigma-relationship-overlay [data-edge-tone="type"] line {
+  stroke: rgba(155, 209, 127, 0.72);
+}
+
+.sigma-relationship-overlay [data-edge-tone="archive"] line {
+  stroke: rgba(168, 151, 255, 0.74);
+}
+
+.sigma-relationship-overlay [data-edge-tone="span"] line {
+  stroke: rgba(200, 117, 103, 0.76);
 }
 
 .sigma-relationship-overlay text {
   fill: var(--color-edge-label);
   paint-order: stroke;
-  stroke: rgba(7, 9, 9, 0.86);
+  stroke: rgba(3, 6, 6, 0.92);
   stroke-width: 4px;
   font-family: "JetBrains Mono", "IBM Plex Mono", "Cascadia Code", monospace;
   font-size: 0.58rem;
@@ -440,14 +516,34 @@ dt {
   position: absolute;
   width: 0.46rem;
   height: 0.46rem;
-  border: 1px solid rgba(232, 238, 231, 0.38);
+  border: 1px solid rgba(232, 238, 231, 0.44);
   border-radius: 999px;
-  background: var(--color-cyan);
-  box-shadow: 0 0 0.8rem rgba(125, 229, 223, 0.5);
+  color: var(--graph-node-resource);
+  background: var(--graph-node-resource);
+  box-shadow: 0 0 0.58rem rgba(125, 229, 223, 0.34), 0 0 0 0.22rem rgba(125, 229, 223, 0.08);
   transform: translate(-50%, -50%);
   cursor: grab;
   pointer-events: auto;
-  transition: width var(--transition), height var(--transition), box-shadow var(--transition), border-color var(--transition);
+  transition: width var(--transition), height var(--transition), box-shadow var(--transition), border-color var(--transition), border-radius var(--transition);
+}
+
+.sigma-constellation-node::before,
+.sigma-constellation-node::after {
+  position: absolute;
+  pointer-events: none;
+  content: "";
+}
+
+.sigma-constellation-node::before {
+  inset: 28%;
+  border-radius: 999px;
+  background: rgba(3, 6, 6, 0.74);
+}
+
+.sigma-constellation-node::after {
+  inset: -0.26rem;
+  border: 1px solid rgba(232, 238, 231, 0.14);
+  border-radius: inherit;
 }
 
 .sigma-constellation-node--cluster,
@@ -459,64 +555,131 @@ dt {
 }
 
 .sigma-constellation-node--cluster {
-  background: var(--color-gold);
-  box-shadow: 0 0 1rem rgba(213, 181, 106, 0.58), 0 0 0 0.58rem rgba(213, 181, 106, 0.08);
+  color: var(--graph-node-site);
+  background: var(--graph-node-site);
+  box-shadow: 0 0 0.82rem rgba(213, 181, 106, 0.42), 0 0 0 0.48rem rgba(213, 181, 106, 0.075);
+}
+
+.sigma-constellation-node--documents {
+  color: var(--graph-node-document);
+  background: var(--graph-node-document);
+  box-shadow: 0 0 0.82rem rgba(155, 209, 127, 0.4), 0 0 0 0.48rem rgba(155, 209, 127, 0.075);
+}
+
+.sigma-constellation-node--cluster::before {
+  inset: 44% 24%;
+  border-radius: 999px;
+  background: rgba(3, 6, 6, 0.68);
 }
 
 .sigma-constellation-node--archive {
-  background: var(--color-green);
-  box-shadow: 0 0 1rem rgba(155, 209, 127, 0.56), 0 0 0 0.58rem rgba(155, 209, 127, 0.08);
+  border-radius: var(--radius-sm);
+  color: var(--graph-node-archive);
+  background: var(--graph-node-archive);
+  box-shadow: 0 0 0.82rem rgba(168, 151, 255, 0.42), 0 0 0 0.48rem rgba(168, 151, 255, 0.075);
+}
+
+.sigma-constellation-node--archive::before {
+  inset: 30%;
+  border: 1px solid rgba(3, 6, 6, 0.76);
+  border-radius: 0.12rem;
+  background: transparent;
 }
 
 .sigma-constellation-node--sourceSpan {
-  background: var(--color-red);
-  box-shadow: 0 0 1rem rgba(200, 117, 103, 0.56), 0 0 0 0.58rem rgba(200, 117, 103, 0.08);
+  color: var(--graph-node-source-span);
+  background: var(--graph-node-source-span);
+  box-shadow: 0 0 0.82rem rgba(200, 117, 103, 0.42), 0 0 0 0.48rem rgba(200, 117, 103, 0.075);
+}
+
+.sigma-constellation-node--sourceSpan::before {
+  inset: 27%;
+  border: 1px solid rgba(3, 6, 6, 0.76);
+  border-radius: 0.08rem;
+  background: transparent;
+  transform: rotate(45deg);
 }
 
 .sigma-constellation-node[data-active="true"] {
   width: 0.92rem;
   height: 0.92rem;
-  border-color: rgba(255, 255, 255, 0.84);
-  box-shadow: 0 0 1.1rem currentColor, 0 0 0 0.46rem rgba(125, 229, 223, 0.12);
+  border-color: var(--graph-focus-ring);
+  box-shadow: 0 0 0.86rem currentColor, 0 0 0 0.28rem rgba(232, 238, 231, 0.12), 0 0 0 0.56rem rgba(125, 229, 223, 0.08);
+}
+
+.sigma-constellation-node[data-active="true"]::after {
+  inset: -0.38rem;
+  border-color: var(--graph-focus-ring);
 }
 
 .sigma-constellation-node[data-reacting="true"] {
   width: 0.74rem;
   height: 0.74rem;
   border-color: rgba(207, 233, 223, 0.72);
-  box-shadow: 0 0 1.1rem rgba(207, 233, 223, 0.58), 0 0 0 0.36rem rgba(125, 229, 223, 0.1);
+  box-shadow: 0 0 0.92rem rgba(207, 233, 223, 0.46), 0 0 0 0.34rem rgba(125, 229, 223, 0.09);
 }
 
 .sigma-constellation-node[data-dragging="true"] {
   cursor: grabbing;
-  box-shadow: 0 0 1.4rem currentColor, 0 0 0 0.62rem rgba(125, 229, 223, 0.14);
+  box-shadow: 0 0 1.1rem currentColor, 0 0 0 0.7rem rgba(232, 238, 231, 0.11), 0 0 0 1rem rgba(125, 229, 223, 0.08);
 }
 
 .sigma-constellation-label {
   position: absolute;
   top: 50%;
   left: calc(100% + 0.45rem);
-  width: max-content;
-  max-width: 16rem;
-  border: 1px solid rgba(125, 229, 223, 0.22);
-  border-radius: 0.42rem;
-  padding: 0.24rem 0.48rem;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  width: min(16rem, max-content);
+  min-width: 0;
+  max-width: min(16rem, calc(100vw - 2rem));
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.22rem 0.46rem;
   color: var(--color-edge-label);
   font-family: "JetBrains Mono", "IBM Plex Mono", "Cascadia Code", monospace;
   font-size: 0.68rem;
   font-weight: 800;
   line-height: 1.25;
-  background: rgba(5, 8, 9, 0.88);
-  box-shadow: 0 0.7rem 1.6rem rgba(0, 0, 0, 0.38);
+  line-break: strict;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+  background: var(--graph-vault-panel-strong);
+  box-shadow: 0 0.7rem 1.6rem rgba(0, 0, 0, 0.42), inset 0 1px rgba(232, 238, 231, 0.06);
   transform: translateY(-50%);
+}
+
+.sigma-constellation-label__chip {
+  flex: 0 0 auto;
+  min-width: 0;
+  border: 1px solid rgba(232, 238, 231, 0.16);
+  border-radius: 999px;
+  padding: 0.06rem 0.28rem;
+  color: var(--color-bg);
+  font-size: 0.54rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--color-edge-label);
+}
+
+.sigma-constellation-label > span:last-child {
+  min-width: 0;
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-break: strict;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
 }
 
 .sigma-atlas .react-sigma-controls.atlas-controls {
   overflow: hidden;
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--color-line-strong);
   border-radius: var(--radius-sm);
-  background: var(--color-panel);
-  box-shadow: 0 0.8rem 2rem rgba(0, 0, 0, 0.32);
+  background: var(--graph-vault-panel-strong);
+  box-shadow: 0 0.8rem 2rem rgba(0, 0, 0, 0.36), inset 0 1px rgba(232, 238, 231, 0.06);
 }
 
 .sigma-atlas .react-sigma-control {
@@ -555,8 +718,8 @@ dt {
 .atlas-state-card {
   position: absolute;
   z-index: 5;
-  border: 1px solid rgba(160, 181, 172, 0.18);
-  background: rgba(11, 14, 16, 0.78);
+  border: 1px solid rgba(160, 181, 172, 0.22);
+  background: var(--graph-vault-panel);
   box-shadow: var(--shadow-panel), inset 0 1px rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(1rem);
 }
@@ -584,6 +747,17 @@ dt {
   font-size: 0.86rem;
 }
 
+.graph-view-title strong,
+.graph-view-title small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-break: strict;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+
 .graph-settings {
   top: var(--space-3);
   right: var(--space-3);
@@ -592,6 +766,12 @@ dt {
   width: 15.5rem;
   border-radius: var(--radius-md);
   padding: var(--space-3);
+  box-shadow: var(--shadow-panel), inset 0 0 0 1px rgba(125, 229, 223, 0.035), inset 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.graph-settings .layer-dot--red {
+  color: var(--graph-node-archive);
+  background: var(--graph-node-archive);
 }
 
 .graph-settings__header {
@@ -656,9 +836,14 @@ dt {
 }
 
 .sigma-search-results span {
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-break: strict;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
 }
 
 .graph-purpose-card {
@@ -957,6 +1142,221 @@ dt {
   padding: var(--space-2);
 }
 
+.trust-drawer,
+.relationship-trace,
+.source-span-provenance,
+.review-queue-relation {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.trust-drawer {
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-2);
+  background:
+    linear-gradient(135deg, rgba(125, 229, 223, 0.055), transparent 42%),
+    var(--color-panel-soft);
+}
+
+.trust-drawer__header {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.trust-drawer__header strong,
+.relationship-trace__title strong,
+.source-span-provenance strong,
+.review-queue-relation strong {
+  overflow: hidden;
+  color: var(--color-ink);
+  font-family: "JetBrains Mono", "IBM Plex Mono", "Cascadia Code", monospace;
+  font-size: 0.76rem;
+  line-break: strict;
+  overflow-wrap: anywhere;
+  text-overflow: ellipsis;
+  word-break: keep-all;
+}
+
+.trust-drawer__header small,
+.trust-status-grid p,
+.relationship-trace small,
+.source-span-provenance dd,
+.review-queue-relation__note,
+.review-queue-relation__empty,
+.review-queue-card__blocked-copy,
+.review-queue-local-state,
+.review-queue-relation small,
+.review-queue-relation span,
+.review-queue-pico dd {
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.trust-status-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
+}
+
+.trust-status-grid article,
+.relationship-trace li,
+.source-span-provenance,
+.review-queue-relation li {
+  border: 1px solid rgba(160, 181, 172, 0.16);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.trust-status-grid article {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2);
+}
+
+.trust-status-grid span,
+.source-span-provenance > div > span,
+.relationship-trace li > span,
+.review-queue-relation li > span {
+  color: var(--color-gold);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.trust-status-grid strong {
+  color: var(--color-cyan);
+  font-family: "JetBrains Mono", "IBM Plex Mono", "Cascadia Code", monospace;
+  font-size: 0.72rem;
+}
+
+.relationship-trace__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.relationship-trace__title span {
+  color: var(--color-gold);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.relationship-trace ol,
+.review-queue-relation ul {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.relationship-trace li,
+.review-queue-relation li {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2);
+}
+
+.review-queue-relation__note {
+  border-left: 2px solid var(--color-gold);
+  padding-left: var(--space-2);
+}
+
+.review-queue-card {
+  cursor: pointer;
+}
+
+.review-queue-card:hover,
+.review-queue-card:focus-visible {
+  border-color: var(--color-line-strong);
+  outline: none;
+}
+
+.review-queue-card[data-blocked="true"] {
+  border-style: dashed;
+  cursor: not-allowed;
+  opacity: 0.78;
+}
+
+.review-queue-card__topline,
+.review-queue-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.review-queue-card__topline {
+  justify-content: space-between;
+}
+
+.review-queue-pico {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-1);
+  margin: var(--space-1) 0 0;
+  padding: 0;
+}
+
+.review-queue-pico div {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1);
+  background: var(--color-panel-soft);
+}
+
+.review-queue-pico dt {
+  font-size: 0.56rem;
+}
+
+.review-queue-pico dd {
+  margin: 0;
+}
+
+.review-queue-card q {
+  color: var(--color-edge-label);
+  font-size: 0.72rem;
+  line-height: 1.4;
+  line-break: strict;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+
+.review-queue-actions button {
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  padding: 0.18rem 0.48rem;
+  color: var(--color-ink);
+  font-size: 0.68rem;
+  font-weight: 800;
+  background: var(--color-panel-raised);
+  cursor: pointer;
+}
+
+.review-queue-actions button:hover,
+.review-queue-actions button:focus-visible {
+  border-color: var(--color-line-strong);
+  color: var(--color-cyan);
+  outline: none;
+}
+
+.review-queue-local-state {
+  color: var(--color-cyan);
+}
+
+.source-span-provenance {
+  padding: var(--space-2);
+}
+
+.source-span-provenance > div {
+  display: grid;
+  gap: var(--space-1);
+}
+
 .inspector-compact-rows div {
   display: flex;
   align-items: center;
@@ -1176,8 +1576,13 @@ dt {
 .atlas-workbench-result span,
 .atlas-workbench-result small,
 .atlas-workbench-result q {
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-break: strict;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
 }
 
 .atlas-workbench-result span,

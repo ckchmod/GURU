@@ -44,6 +44,7 @@ vi.mock("@react-sigma/core", async () => {
 });
 
 import { GuidelineGraphCanvas } from "./GuidelineGraphCanvas";
+import { truncateLabel } from "./SigmaCorpusGraph";
 import Home from "../page";
 
 const breastResourceId = "ahs-guru-breast-br005-adjuvant-rt-invasive-breast";
@@ -158,6 +159,26 @@ const sourceSpanSearchResult = {
   output_status: "draft"
 };
 
+const reviewQueueFocusSpan = {
+  span_id: "source-span.local-review-card",
+  resource_id: breastResourceId,
+  document_id: "source-document.local-review-card",
+  stable_locator: "page:2;span:4",
+  excerpt: "Deterministic source-backed queue excerpt for UI focus.",
+  checksum_sha256: "4".repeat(64),
+  output_status: "draft"
+};
+
+type ReviewQueuePayloadItem = {
+  review_task_id: string;
+  resource_id: string;
+  source_span_ids: string[];
+  pico_placeholder: { population: string | null; intervention: string | null; comparator: string | null; outcome: string | null };
+  review_status: string;
+  staleness_status: string;
+  allowed_actions: string[];
+};
+
 describe("GuidelineGraphCanvas", () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -197,6 +218,10 @@ describe("GuidelineGraphCanvas", () => {
     expect(screen.getByTestId("source-document-panel")).toHaveTextContent("No source-span records are available");
     expect(screen.getByTestId("compact-inspector-summary")).toHaveTextContent("Selected graph node");
     expect(screen.getByTestId("compact-inspector-summary")).toHaveTextContent("Source availability");
+    expect(screen.getAllByText("changed local archive").length).toBeGreaterThan(0);
+    expect(screen.getByTestId("trust-provenance-drawer")).toHaveTextContent("Offline/local manifest comparison only");
+    expect(screen.getByTestId("trust-provenance-drawer")).toHaveTextContent("needs review 1");
+    expect(screen.getByTestId("trust-provenance-drawer")).not.toHaveTextContent(/impact diff|recommendation impact|live surveillance/i);
     expect(screen.getByTestId("compact-inspector-summary")).not.toHaveTextContent(breastResourceId);
     expect(screen.getByTestId("resource-identifier-details")).not.toHaveAttribute("open");
     expect(screen.getByTestId("source-span-details")).not.toHaveAttribute("open");
@@ -216,6 +241,15 @@ describe("GuidelineGraphCanvas", () => {
     expect(screen.getByTestId("node-inspector")).toHaveTextContent("6 nodes · 6 edges");
     expect(screen.getByRole("searchbox", { name: "Search public corpus graph nodes" })).toBeVisible();
     expect(screen.getByRole("contentinfo", { name: "Corpus search workbench" })).toHaveTextContent("Model answers disabled until retrieval/source-span verification is implemented.");
+  });
+
+  it("truncates Sigma labels by grapheme clusters for mixed CJK and emoji labels", () => {
+    expect(truncateLabel("에이전트오케스트레이션현황및미래", 8)).toBe("에이전트오...");
+
+    const clinicianEmoji = "🧑‍⚕️";
+    const truncatedEmojiLabel = truncateLabel(clinicianEmoji.repeat(12), 8);
+    expect(truncatedEmojiLabel).toBe(`${clinicianEmoji.repeat(5)}...`);
+    expect(truncatedEmojiLabel).not.toContain("\uFFFD");
   });
 
   it("renders the workspace shell without decorative window control dots", async () => {
@@ -320,6 +354,12 @@ describe("GuidelineGraphCanvas", () => {
 
     await waitFor(() => expect(screen.getByTestId("node-inspector")).toHaveTextContent(breastResourceId));
     expect(screen.getByTestId("source-document-panel")).toHaveTextContent("Adjuvant Radiotherapy for Invasive Breast Cancer");
+    expect(screen.getByTestId("trust-provenance-drawer")).toHaveTextContent("metadata_only");
+    expect(screen.getByTestId("trust-provenance-drawer")).toHaveTextContent("Metadata-only coverage: source spans are unavailable/not parsed");
+    expect(screen.getByTestId("lookup-relationship-trace")).toHaveTextContent("resource");
+    expect(screen.getByTestId("lookup-relationship-trace")).toHaveTextContent("disease site");
+    expect(screen.getByTestId("lookup-relationship-trace")).toHaveTextContent("document type");
+    expect(screen.getByTestId("lookup-relationship-trace")).toHaveTextContent("archive");
     expect(workbench).toHaveTextContent("none-local-deterministic-search-only");
     expect(workbench).toHaveTextContent("Model answers disabled until retrieval/source-span verification is implemented.");
   });
@@ -342,6 +382,104 @@ describe("GuidelineGraphCanvas", () => {
     expect(workbench).toHaveTextContent("source status: draft");
     expect(workbench).toHaveTextContent("parse status: not-parsed");
     expect(workbench).toHaveTextContent("Adjuvant Radiotherapy for Invasive Breast Cancer");
+    fireEvent.click(within(workbench).getByRole("button", { name: /Local deterministic parsed excerpt/i }));
+
+    await waitFor(() => expect(screen.getByTestId("node-inspector")).toHaveTextContent(breastResourceId));
+    expect(screen.getByTestId("trust-provenance-drawer")).toHaveTextContent("page:1;span:1");
+    expect(screen.getByTestId("trust-provenance-drawer")).toHaveTextContent(`${"0".repeat(64)} · draft`);
+    expect(screen.getByTestId("trust-provenance-drawer")).toHaveTextContent("Parent resource");
+    expect(screen.getByTestId("lookup-relationship-trace")).toHaveTextContent("source span");
+    expect(screen.getByTestId("lookup-relationship-trace")).toHaveTextContent("review item");
+  });
+
+  it("renders source-backed review queue cards with local-only actions and focus behavior", async () => {
+    const fetchSpy = mockCorpusFetch({ interpretabilitySourceSpans: [reviewQueueFocusSpan] });
+
+    render(<GuidelineGraphCanvas />);
+
+    await waitFor(() => expect(screen.getByTestId("review-queue-section")).toHaveTextContent("page:2;span:4"));
+    const reviewQueue = screen.getByTestId("review-queue-section");
+    expect(reviewQueue).toHaveTextContent("Review Queue");
+    expect(reviewQueue).toHaveTextContent("Local evidence-review/PICO queue shell");
+    expect(reviewQueue).toHaveTextContent("Adjuvant Radiotherapy for Invasive Breast Cancer");
+    expect(reviewQueue).toHaveTextContent("page:2;span:4");
+    expect(reviewQueue).toHaveTextContent(`${"4".repeat(64)} · draft`);
+    expect(reviewQueue).toHaveTextContent("draft · local_current");
+    expect(reviewQueue).toHaveTextContent("Population");
+    expect(reviewQueue).toHaveTextContent("not set");
+    expect(within(reviewQueue).getByRole("button", { name: "Inspect source" })).toBeVisible();
+    expect(within(reviewQueue).getByRole("button", { name: "Mark needs review (local)" })).toBeVisible();
+    expect(within(reviewQueue).getByRole("button", { name: "Link source (local)" })).toBeVisible();
+
+    fireEvent.click(within(reviewQueue).getByRole("button", { name: /Focus review queue item review\.local-test/i }));
+    expect(screen.getByTestId("trust-provenance-drawer")).toHaveTextContent("page:2;span:4");
+    expect(screen.getByTestId("source-span-details")).toHaveTextContent("source-span.local-review-card");
+
+    const fetchCountBeforeLocalAction = fetchSpy.mock.calls.length;
+    fireEvent.click(within(reviewQueue).getByRole("button", { name: "Mark needs review (local)" }));
+    expect(fetchSpy.mock.calls).toHaveLength(fetchCountBeforeLocalAction);
+    expect(reviewQueue).toHaveTextContent("Local UI state: Mark needs review (local)");
+    expect(document.body).not.toHaveTextContent(/mutation|recommendation drafting|approved recommendation|patient-specific/i);
+  });
+
+  it("blocks invalid or unbacked review queue fixture cards without source content or actions", async () => {
+    mockCorpusFetch({
+      reviewQueueItems: [buildReviewQueueItem({
+        review_task_id: "review.unbacked-local-fixture",
+        source_span_ids: [],
+        staleness_status: "invalid_unbacked_local_fixture"
+      })]
+    });
+
+    render(<GuidelineGraphCanvas />);
+
+    await waitFor(() => expect(screen.getByTestId("review-queue-section")).toHaveTextContent("Blocked local fixture state"));
+    const reviewQueue = screen.getByTestId("review-queue-section");
+    const blockedCard = within(reviewQueue).getByTestId("review-queue-card-blocked");
+    expect(blockedCard).toHaveAttribute("data-blocked", "true");
+    expect(blockedCard).toHaveAttribute("aria-disabled", "true");
+    expect(blockedCard).toHaveTextContent("Blocked local fixture state");
+    expect(blockedCard).toHaveTextContent("blocked until a returned source span backs this item");
+    expect(blockedCard).not.toHaveTextContent("Deterministic source-backed queue excerpt for UI focus.");
+    expect(within(blockedCard).queryByRole("button", { name: "Inspect source" })).toBeNull();
+    expect(within(blockedCard).queryByRole("button", { name: "Mark needs review (local)" })).toBeNull();
+    expect(within(blockedCard).queryByRole("button", { name: "Link source (local)" })).toBeNull();
+    expect(screen.getByTestId("trust-provenance-drawer")).not.toHaveTextContent(/evidence conclusion|treatment advice|dosing|diagnosis/i);
+  });
+
+  it("explains parse-failed, download-failed, and checksum-mismatch coverage without implying absent evidence", async () => {
+    const statusRows = [
+      { response_state: "parse_failed", archive_status: "downloaded", parse_status: "parse_failed", expected: "Parser output is unavailable" },
+      { response_state: "download_failed", archive_status: "download-failed", parse_status: "download_missing", expected: "Archive download failed" },
+      { response_state: "metadata_only", archive_status: "downloaded", parse_status: "checksum_mismatch", expected: "Checksum mismatch blocks source-span use" }
+    ];
+
+    for (const row of statusRows) {
+      vi.restoreAllMocks();
+      const resource = { ...resourcesPayload.resources[0], ...row };
+      mockCorpusFetch({
+        resources: { ...resourcesPayload, resources: [resource, resourcesPayload.resources[1]], count: 2 },
+        graph: {
+          ...graphPayload,
+          nodes: graphPayload.nodes.map((node) => node.id === `resource.${breastResourceId}`
+            ? { ...node, archive_status: row.archive_status, parse_status: row.parse_status, response_state: row.response_state }
+            : node)
+        }
+      });
+
+      const { unmount } = render(<GuidelineGraphCanvas />);
+      await screen.findByText(/Public corpus metadata loaded from the local API/);
+      const workbench = screen.getByTestId("atlas-workbench");
+      fireEvent.change(within(workbench).getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }), {
+        target: { value: "Adjuvant Radiotherapy for Invasive Breast Cancer" }
+      });
+      fireEvent.submit(within(workbench).getByRole("search", { name: "Search public corpus metadata and source spans" }));
+      fireEvent.click(await within(workbench).findByRole("button", { name: /Adjuvant Radiotherapy for Invasive Breast Cancer/i }));
+
+      await waitFor(() => expect(screen.getByTestId("trust-provenance-drawer")).toHaveTextContent(row.expected));
+      expect(screen.getByTestId("trust-provenance-drawer")).not.toHaveTextContent(/no evidence/i);
+      unmount();
+    }
   });
 
   it("renders a safe empty workbench state for nonsense queries without fake chat or advice", async () => {
@@ -386,18 +524,26 @@ describe("GuidelineGraphCanvas", () => {
   });
 });
 
-function mockCorpusFetch(overrides: { resources?: unknown; graph?: unknown; sourceSpans?: unknown } = {}) {
+function mockCorpusFetch(overrides: {
+  resources?: unknown;
+  graph?: unknown;
+  sourceSpans?: unknown;
+  interpretabilitySourceSpans?: Array<typeof sourceSpanSearchResult>;
+  reviewQueueItems?: ReviewQueuePayloadItem[];
+} = {}) {
   const payloads: Record<string, unknown> = {
     "/api/knowledgebase/corpus/resources": overrides.resources ?? resourcesPayload,
     "/api/knowledgebase/corpus/graph": overrides.graph ?? graphPayload,
     "/api/knowledgebase/corpus/source-spans": overrides.sourceSpans ?? sourceSpansPayload
   };
 
-  vi.spyOn(globalThis, "fetch").mockImplementation((input: RequestInfo | URL) => {
+  const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation((input: RequestInfo | URL) => {
     const url = input.toString();
     const parsedUrl = new URL(url, "http://localhost");
     const payload = parsedUrl.pathname === "/api/knowledgebase/corpus/search"
       ? buildSearchPayload(parsedUrl.searchParams.get("q") ?? "")
+      : parsedUrl.pathname === "/api/knowledgebase/corpus/interpretability"
+        ? buildInterpretabilityPayload(parsedUrl.searchParams.get("resource_id") ?? breastResourceId, overrides.interpretabilitySourceSpans, overrides.reviewQueueItems)
       : payloads[parsedUrl.pathname];
 
     if (!payload) {
@@ -406,14 +552,25 @@ function mockCorpusFetch(overrides: { resources?: unknown; graph?: unknown; sour
 
     return Promise.resolve(new Response(JSON.stringify(payload), { status: 200, headers: { "Content-Type": "application/json" } }));
   });
+
+  return fetchSpy;
 }
 
 function buildSearchPayload(query: string) {
   const normalizedQuery = query.trim().toLowerCase();
-  const metadataResults = resourcesPayload.resources.filter((resource) => (
-    `${resource.title} ${resource.resource_id} ${resource.disease_site} ${resource.document_type} ${resource.resource_type}`.toLowerCase().includes(normalizedQuery)
-  ));
-  const sourceSpanResults = normalizedQuery.includes("deterministic parsed excerpt") ? [sourceSpanSearchResult] : [];
+  const metadataResults = resourcesPayload.resources
+    .filter((resource) => (
+      `${resource.title} ${resource.resource_id} ${resource.disease_site} ${resource.document_type} ${resource.resource_type}`.toLowerCase().includes(normalizedQuery)
+    ))
+    .map((resource) => ({ ...resource, ...graphFocusMetadata(resource.resource_id, [], graphCoverageStatus(resource)) }));
+  const sourceSpanResults = normalizedQuery.includes("deterministic parsed excerpt") ? [{
+    ...sourceSpanSearchResult,
+    ...graphFocusMetadata(breastResourceId, [sourceSpanSearchResult.span_id], "source_span_ready"),
+    focus_resource: {
+      ...resourcesPayload.resources[0],
+      ...graphFocusMetadata(breastResourceId, [sourceSpanSearchResult.span_id], "source_span_ready")
+    }
+  }] : [];
 
   return {
     query,
@@ -426,4 +583,127 @@ function buildSearchPayload(query: string) {
     total_resource_count: 198,
     model_routing: "none-local-deterministic-search-only"
   };
+}
+
+function buildInterpretabilityPayload(
+  resourceId: string,
+  interpretabilitySourceSpans: Array<typeof sourceSpanSearchResult> = [],
+  reviewQueueItems?: ReviewQueuePayloadItem[]
+) {
+  const resource = resourcesPayload.resources.find((item) => item.resource_id === resourceId) ?? resourcesPayload.resources[0];
+  const sourceSpans = resource.resource_id === breastResourceId ? interpretabilitySourceSpans : [];
+  const coverageStatus = sourceSpans.length > 0 ? "source_span_ready" : graphCoverageStatus(resource);
+  const focus = graphFocusMetadata(resource.resource_id, sourceSpans.map((span) => span.span_id), coverageStatus);
+  const queueItems = reviewQueueItems ?? (sourceSpans.length > 0 ? [buildReviewQueueItem({ source_span_ids: sourceSpans.map((span) => span.span_id) })] : []);
+
+  return {
+    resource: { ...resource, ...focus },
+    graph_neighborhood: {
+      focus_node_id: `resource.${resource.resource_id}`,
+      resource_node_id: `resource.${resource.resource_id}`,
+      neighbor_node_ids: focus.neighbor_node_ids,
+      edge_types: focus.edge_types,
+      neighbor_nodes: graphPayload.nodes.filter((node) => focus.neighbor_node_ids.includes(node.id)),
+      edges: graphPayload.edges.filter((edge) => edge.source === `resource.${resource.resource_id}` || edge.target === `resource.${resource.resource_id}`)
+    },
+    source_spans: sourceSpans,
+    surveillance_status: buildSurveillanceStatus(resource.resource_id),
+    review_queue_items: queueItems,
+    review_task_ids: queueItems.map((item) => item.review_task_id),
+    review_queue_contract: {
+      source_of_truth: "source-span-backed local review queue",
+      invalid_unbacked_items: "excluded"
+    },
+    coverage_status: coverageStatus,
+    coverage_status_vocabulary: ["source_span_ready", "partial_source_span", "metadata_only", "download_failed", "checksum_mismatch", "parse_failed"],
+    model_routing: "none-local-deterministic-search-only"
+  };
+}
+
+function buildReviewQueueItem(overrides: Partial<ReviewQueuePayloadItem> = {}): ReviewQueuePayloadItem {
+  return {
+    review_task_id: "review.local-test",
+    resource_id: breastResourceId,
+    source_span_ids: [reviewQueueFocusSpan.span_id],
+    pico_placeholder: { population: null, intervention: null, comparator: null, outcome: null },
+    review_status: "draft",
+    staleness_status: "local_current",
+    allowed_actions: ["inspect_source", "mark_needs_review_local", "link_source_local"],
+    ...overrides
+  };
+}
+
+function buildSurveillanceStatus(resourceId: string) {
+  return {
+    mode: "local_manifest_status_only",
+    status: "offline_local_archive_comparison",
+    review_status: "needs_review",
+    resource_count: 2,
+    changed_count: 1,
+    missing_count: 1,
+    unchanged_count: 1,
+    needs_review_count: 1,
+    summary_counts: { checksum_mismatch: 1, missing: 1, unchanged: 1 },
+    resource_statuses: {
+      [breastResourceId]: {
+        resource_id: breastResourceId,
+        status: "needs_review",
+        change_state: resourceId === breastResourceId ? "checksum_mismatch" : "unchanged",
+        review_status: resourceId === breastResourceId ? "needs_review" : "no_change",
+        previous_status: "downloaded",
+        current_status: "downloaded",
+        previous_checksum_sha256: "1".repeat(64),
+        current_checksum_sha256: resourceId === breastResourceId ? "2".repeat(64) : "1".repeat(64)
+      },
+      [brainResourceId]: {
+        resource_id: brainResourceId,
+        status: "no_change",
+        change_state: resourceId === brainResourceId ? "missing" : "unchanged",
+        review_status: resourceId === brainResourceId ? "needs_review" : "no_change",
+        previous_status: "downloaded",
+        current_status: resourceId === brainResourceId ? "failed" : "downloaded",
+        previous_checksum_sha256: "3".repeat(64),
+        current_checksum_sha256: resourceId === brainResourceId ? undefined : "3".repeat(64)
+      }
+    }
+  };
+}
+
+function graphFocusMetadata(resourceId: string, sourceSpanIds: string[] = [], coverageStatus = "metadata_only") {
+  const resource = resourcesPayload.resources.find((item) => item.resource_id === resourceId) ?? resourcesPayload.resources[0];
+  const diseaseSiteNodeId = `disease-site.${resource.disease_site}`;
+  const edgeTypes = ["resource_to_disease_site", "resource_to_document_type", "resource_to_archive_status"];
+  if (sourceSpanIds.length > 0) {
+    edgeTypes.push("resource_to_source_span", "source_span_to_review_item");
+  }
+
+  return {
+    focus_node_id: `resource.${resourceId}`,
+    resource_node_id: `resource.${resourceId}`,
+    neighbor_node_ids: [diseaseSiteNodeId, "document-type.guideline", "archive-status.metadata-only.not-parsed"],
+    edge_types: edgeTypes,
+    source_span_ids: sourceSpanIds,
+    review_task_ids: sourceSpanIds.length > 0 ? ["review.local-test"] : [],
+    coverage_status: coverageStatus,
+    interpretability_summary: {
+      mode: "deterministic-local-search",
+      coverage_status: coverageStatus,
+      source_span_count: sourceSpanIds.length,
+      graph_neighbor_count: 3 + sourceSpanIds.length,
+      model_routing: "none-local-deterministic-search-only"
+    }
+  };
+}
+
+function graphCoverageStatus(resource: (typeof resourcesPayload.resources)[number]) {
+  if (resource.response_state === "download_failed") {
+    return "download_failed";
+  }
+  if (resource.parse_status === "checksum_mismatch") {
+    return "checksum_mismatch";
+  }
+  if (resource.response_state === "parse_failed") {
+    return "parse_failed";
+  }
+  return "metadata_only";
 }
