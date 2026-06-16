@@ -14,6 +14,9 @@
     "@react-sigma/core": "^5.0.6",
     "@xyflow/react": "^12.8.6",
     "graphology": "^0.26.0",
+    "graphology-layout": "^0.6.1",
+    "graphology-layout-forceatlas2": "^0.10.1",
+    "graphology-layout-noverlap": "^0.4.2",
     "graphology-types": "^0.24.8",
     "next": "^15.1.8",
     "react": "^19.0.0",
@@ -21,10 +24,10 @@
     "sigma": "^3.0.3"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.2.0",
     "@playwright/test": "^1.49.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
-    "@eslint/eslintrc": "^3.2.0",
     "@types/node": "^22.10.5",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
