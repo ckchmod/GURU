@@ -24,6 +24,7 @@ PARSER_VERSION = "source-document-parser-skeleton-v1"
 SOURCE_SPAN_COVERAGE_COUNT = 5
 MODEL_ROUTING = "none-local-deterministic-search-only"
 DETERMINISTIC_PARSER_VERSION = "none-local-deterministic-parser"
+MAX_SOURCE_SPAN_SEARCH_RESULTS = 12
 REVIEW_QUEUE_ALLOWED_ACTIONS = ("inspect_source", "mark_needs_review_local", "link_source_local")
 SURVEILLANCE_REVIEW_STATES = {"changed", "checksum_mismatch", "missing", "resource_added", "resource_removed"}
 COVERAGE_STATUS_VOCABULARY = {
@@ -339,6 +340,8 @@ def _source_span_search_results(query: str, allowed_resource_ids: set[str]) -> l
             resource = resource_lookup.get(resource_id)
             if resource is not None:
                 results.append(_source_span_hit(span, resource))
+                if len(results) >= MAX_SOURCE_SPAN_SEARCH_RESULTS:
+                    break
     return results
 
 
@@ -478,8 +481,8 @@ def _resource_interpretability_fields(resource: dict[str, Any], source_spans: li
     }
 
 
-def _metadata_hit(resource: dict[str, Any]) -> dict[str, Any]:
-    return {**resource, **_resource_interpretability_fields(resource)}
+def _metadata_hit(resource: dict[str, Any], source_spans: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    return {**resource, **_resource_interpretability_fields(resource, source_spans)}
 
 
 def _safe_source_span(span: dict[str, Any]) -> dict[str, Any]:
@@ -510,7 +513,7 @@ def _source_span_hit(span: dict[str, Any], resource: dict[str, Any]) -> dict[str
         **fields,
         "focus_node_id": resource["node_id"],
         "source_span_ids": [span["span_id"]],
-        "focus_resource": _metadata_hit(resource),
+        "focus_resource": _metadata_hit(resource, [span]),
     }
 
 

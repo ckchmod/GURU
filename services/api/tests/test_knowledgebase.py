@@ -272,6 +272,21 @@ def test_corpus_search_is_case_insensitive_over_public_metadata() -> None:
     assert id_response.json()["metadata_results"][0]["resource_id"] == "ahs-guru-central-nervous-system-cns014-management-of-brain-metastases"
 
 
+def test_corpus_search_bounds_safe_generic_radiotherapy_query() -> None:
+    response = client.get("/knowledgebase/corpus/search", params={"q": "radiotherapy"})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["query"] == "radiotherapy"
+    assert payload["metadata_result_count"] >= 1
+    assert payload["source_span_result_count"] <= 12
+    assert len(payload["source_span_results"]) == payload["source_span_result_count"]
+    assert payload["model_routing"] == "none-local-deterministic-search-only"
+    assert "generated_answer" not in payload
+    assert_no_generated_answer_or_clinical_claim_fields(payload)
+    assert_no_corpus_patient_specific_advice_strings(payload)
+
+
 def test_corpus_search_returns_empty_for_nonsense_or_blank_queries() -> None:
     nonsense_response = client.get("/knowledgebase/corpus/search", params={"q": "zzzz-no-such-guideline"})
     blank_response = client.get("/knowledgebase/corpus/search", params={"q": "   "})
