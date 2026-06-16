@@ -2,8 +2,17 @@ import { buildAtlasGraph, type AtlasApiEdge, type AtlasApiNode, type AtlasGraph 
 
 export const CORPUS_API_BASE_PATH = "/api/knowledgebase/corpus";
 
+export type CorpusModelRouting = "none-local-deterministic-search-only";
 export type CorpusResponseState = "metadata_only" | "downloaded_unparsed" | "parsed" | "download_failed" | "parse_failed";
 export type CorpusResponseStateVocabulary = Record<CorpusResponseState, string>;
+export type CorpusCoverageStatus =
+  | "source_span_ready"
+  | "partial_source_span"
+  | "metadata_only"
+  | "download_failed"
+  | "checksum_mismatch"
+  | "parse_failed";
+export type CorpusReviewQueueAllowedAction = "inspect_source" | "mark_needs_review_local" | "link_source_local";
 
 export type CorpusResource = {
   resource_id: string;
@@ -71,16 +80,117 @@ export type CorpusSourceSpansResponse = {
   coverage_note: string;
 };
 
+export type CorpusInterpretabilitySummary = {
+  mode: string;
+  coverage_status: CorpusCoverageStatus;
+  source_span_count: number;
+  graph_neighbor_count: number;
+  model_routing: CorpusModelRouting;
+};
+
+export type CorpusGraphFocusMetadata = {
+  focus_node_id: string;
+  resource_node_id: string;
+  neighbor_node_ids: string[];
+  edge_types: string[];
+  source_span_ids: string[];
+  review_task_ids: string[];
+  coverage_status: CorpusCoverageStatus;
+  interpretability_summary: CorpusInterpretabilitySummary;
+};
+
+export type CorpusSearchMetadataResource = CorpusResource & CorpusGraphFocusMetadata;
+
+export type CorpusSearchSourceSpanResult = CorpusSourceSpan & CorpusGraphFocusMetadata & {
+  source_document_id?: string;
+  quoted_span?: string;
+  excerpt_checksum?: string;
+  prompt_or_model_version?: string;
+  reviewer?: string;
+  review_status?: string;
+  timestamp?: string;
+  focus_resource: CorpusSearchMetadataResource;
+};
+
 export type CorpusSearchResponse = {
   query: string;
-  metadata_results: CorpusResource[];
-  source_span_results: CorpusSourceSpan[];
+  metadata_results: CorpusSearchMetadataResource[];
+  source_span_results: CorpusSearchSourceSpanResult[];
   metadata_result_count: number;
   source_span_result_count: number;
   source_span_coverage_count: number;
   source_span_coverage_note: string;
   total_resource_count: number;
-  model_routing: "none-local-deterministic-search-only";
+  model_routing: CorpusModelRouting;
+};
+
+export type CorpusGraphNeighborhood = {
+  focus_node_id: string;
+  resource_node_id: string;
+  neighbor_node_ids: string[];
+  edge_types: string[];
+  neighbor_nodes: CorpusGraphNode[];
+  edges: AtlasApiEdge[];
+};
+
+export type CorpusSurveillanceResourceStatus = {
+  resource_id: string;
+  status?: string;
+  change_state?: string;
+  review_status: string;
+  previous_status?: string;
+  current_status?: string;
+  previous_checksum_sha256?: string;
+  current_checksum_sha256?: string;
+};
+
+export type CorpusSurveillanceStatus = {
+  mode: string;
+  status: string;
+  review_status: string;
+  resource_count?: number;
+  changed_count?: number;
+  missing_count?: number;
+  unchanged_count?: number;
+  needs_review_count?: number;
+  summary_counts?: Record<string, number>;
+  resource_statuses?: Record<string, CorpusSurveillanceResourceStatus> | CorpusSurveillanceResourceStatus[];
+  resources?: CorpusSurveillanceResourceStatus[];
+};
+
+export type CorpusPicoPlaceholder = {
+  population: string | null;
+  intervention: string | null;
+  comparator: string | null;
+  outcome: string | null;
+};
+
+export type CorpusReviewQueueItem = {
+  review_task_id: string;
+  resource_id: string;
+  source_span_ids: string[];
+  pico_placeholder: CorpusPicoPlaceholder;
+  review_status: string;
+  staleness_status: string;
+  allowed_actions: CorpusReviewQueueAllowedAction[];
+};
+
+export type CorpusReviewQueueContract = {
+  source_of_truth: string;
+  invalid_unbacked_items: string;
+};
+
+export type CorpusInterpretabilityResponse = {
+  resource: CorpusSearchMetadataResource;
+  graph_neighborhood: CorpusGraphNeighborhood;
+  source_spans: CorpusSourceSpan[];
+  surveillance_status: CorpusSurveillanceStatus;
+  review_queue_items: CorpusReviewQueueItem[];
+  review_task_ids: string[];
+  review_queue_contract: CorpusReviewQueueContract;
+  coverage_status: CorpusCoverageStatus;
+  coverage_status_vocabulary: CorpusCoverageStatus[];
+  model_routing: CorpusModelRouting;
 };
 
 export type CompactAtlasResource = {
@@ -103,6 +213,25 @@ export type CompactAtlasSearchResult = {
   locator: string;
 };
 
+export type CompactAtlasInterpretabilitySummary = {
+  mode: string;
+  coverageStatus: CorpusCoverageStatus;
+  sourceSpanCount: number;
+  graphNeighborCount: number;
+  modelRouting: CorpusModelRouting;
+};
+
+export type CompactAtlasGraphFocusMetadata = {
+  focusNodeId: string;
+  resourceNodeId: string;
+  neighborNodeIds: string[];
+  edgeTypes: string[];
+  sourceSpanIds: string[];
+  reviewTaskIds: string[];
+  coverageStatus: CorpusCoverageStatus;
+  interpretabilitySummary: CompactAtlasInterpretabilitySummary;
+};
+
 export type CompactAtlasMetadataSearchResult = CompactAtlasSearchResult & {
   resultType: "metadata";
   resourceId: string;
@@ -113,7 +242,7 @@ export type CompactAtlasMetadataSearchResult = CompactAtlasSearchResult & {
   archiveStatus: string;
   parseStatus: string;
   url: string;
-};
+} & CompactAtlasGraphFocusMetadata;
 
 export type CompactAtlasSourceSpanSearchResult = CompactAtlasSearchResult & {
   resultType: "source_span";
@@ -124,7 +253,7 @@ export type CompactAtlasSourceSpanSearchResult = CompactAtlasSearchResult & {
   excerpt?: string;
   checksumSha256?: string;
   outputStatus: string;
-};
+} & CompactAtlasGraphFocusMetadata;
 
 export type CompactAtlasSearchResponse = {
   query: string;
@@ -135,7 +264,65 @@ export type CompactAtlasSearchResponse = {
   sourceSpanCoverageCount: number;
   sourceSpanCoverageNote: string;
   totalResourceCount: number;
-  modelRouting: "none-local-deterministic-search-only";
+  modelRouting: CorpusModelRouting;
+};
+
+export type CompactAtlasInterpretabilityResource = CompactAtlasResource & CompactAtlasGraphFocusMetadata;
+
+export type CompactAtlasGraphNeighborhood = {
+  focusNodeId: string;
+  resourceNodeId: string;
+  neighborNodeIds: string[];
+  edgeTypes: string[];
+  neighborNodes: CorpusGraphNode[];
+  edges: AtlasApiEdge[];
+};
+
+export type CompactAtlasSurveillanceResourceStatus = {
+  resourceId: string;
+  status?: string;
+  changeState?: string;
+  reviewStatus: string;
+  previousStatus?: string;
+  currentStatus?: string;
+  previousChecksumSha256?: string;
+  currentChecksumSha256?: string;
+};
+
+export type CompactAtlasSurveillanceStatus = {
+  mode: string;
+  status: string;
+  reviewStatus: string;
+  resourceCount?: number;
+  changedCount?: number;
+  missingCount?: number;
+  unchangedCount?: number;
+  needsReviewCount?: number;
+  summaryCounts?: Record<string, number>;
+  resourceStatuses: CompactAtlasSurveillanceResourceStatus[];
+};
+
+export type CompactAtlasReviewQueueItem = {
+  reviewTaskId: string;
+  resourceId: string;
+  sourceSpanIds: string[];
+  picoPlaceholder: CorpusPicoPlaceholder;
+  reviewStatus: string;
+  stalenessStatus: string;
+  allowedActions: CorpusReviewQueueAllowedAction[];
+};
+
+export type CompactAtlasInterpretabilityModel = {
+  resource: CompactAtlasInterpretabilityResource;
+  graphNeighborhood: CompactAtlasGraphNeighborhood;
+  sourceSpans: CorpusSourceSpan[];
+  surveillanceStatus: CompactAtlasSurveillanceStatus;
+  reviewQueueItems: CompactAtlasReviewQueueItem[];
+  reviewTaskIds: string[];
+  reviewQueueContract: CorpusReviewQueueContract;
+  coverageStatus: CorpusCoverageStatus;
+  coverageStatusVocabulary: CorpusCoverageStatus[];
+  modelRouting: CorpusModelRouting;
 };
 
 export type CompactAtlasNode = {
@@ -186,6 +373,11 @@ type SearchCorpusOptions = {
   signal?: AbortSignal;
 };
 
+type LoadCorpusInterpretabilityOptions = {
+  basePath?: string;
+  signal?: AbortSignal;
+};
+
 export class CorpusAtlasClientError extends Error {
   constructor(message: string, readonly status: "api_unavailable" | "http_error") {
     super(message);
@@ -210,6 +402,21 @@ export async function searchCorpus(query: string, options: SearchCorpusOptions =
   const payload = await fetchJson<CorpusSearchResponse>(`${basePath}/search?${params.toString()}`, "corpus search", options.signal);
 
   return adaptSearchResponse(payload);
+}
+
+export async function loadCorpusInterpretability(
+  resourceId: string,
+  options: LoadCorpusInterpretabilityOptions = {}
+): Promise<CompactAtlasInterpretabilityModel> {
+  const basePath = options.basePath ?? CORPUS_API_BASE_PATH;
+  const params = new URLSearchParams({ resource_id: resourceId });
+  const payload = await fetchJson<CorpusInterpretabilityResponse>(
+    `${basePath}/interpretability?${params.toString()}`,
+    "corpus interpretability",
+    options.signal
+  );
+
+  return adaptInterpretabilityResponse(payload);
 }
 
 export function buildCorpusAtlasModel(
@@ -274,7 +481,8 @@ export function adaptSearchResponse(payload: CorpusSearchResponse): CompactAtlas
     responseState: resource.response_state,
     archiveStatus: resource.archive_status,
     parseStatus: resource.parse_status,
-    url: resource.url
+    url: resource.url,
+    ...adaptGraphFocusMetadata(resource)
   }));
   const sourceSpanResults = payload.source_span_results.map((span) => ({
     id: span.span_id,
@@ -287,7 +495,8 @@ export function adaptSearchResponse(payload: CorpusSearchResponse): CompactAtlas
     stableLocator: span.stable_locator,
     excerpt: span.excerpt,
     checksumSha256: span.checksum_sha256,
-    outputStatus: span.output_status
+    outputStatus: span.output_status,
+    ...adaptGraphFocusMetadata(span)
   }));
 
   return {
@@ -300,6 +509,114 @@ export function adaptSearchResponse(payload: CorpusSearchResponse): CompactAtlas
     sourceSpanCoverageNote: payload.source_span_coverage_note,
     totalResourceCount: payload.total_resource_count,
     modelRouting: payload.model_routing
+  };
+}
+
+export function adaptInterpretabilityResponse(payload: CorpusInterpretabilityResponse): CompactAtlasInterpretabilityModel {
+  return {
+    resource: adaptInterpretabilityResource(payload.resource),
+    graphNeighborhood: {
+      focusNodeId: payload.graph_neighborhood.focus_node_id,
+      resourceNodeId: payload.graph_neighborhood.resource_node_id,
+      neighborNodeIds: [...payload.graph_neighborhood.neighbor_node_ids],
+      edgeTypes: [...payload.graph_neighborhood.edge_types],
+      neighborNodes: [...payload.graph_neighborhood.neighbor_nodes],
+      edges: [...payload.graph_neighborhood.edges]
+    },
+    sourceSpans: [...payload.source_spans],
+    surveillanceStatus: adaptSurveillanceStatus(payload.surveillance_status),
+    reviewQueueItems: payload.review_queue_items.map(adaptReviewQueueItem),
+    reviewTaskIds: [...payload.review_task_ids],
+    reviewQueueContract: payload.review_queue_contract,
+    coverageStatus: payload.coverage_status,
+    coverageStatusVocabulary: [...payload.coverage_status_vocabulary],
+    modelRouting: payload.model_routing
+  };
+}
+
+function adaptInterpretabilityResource(resource: CorpusSearchMetadataResource): CompactAtlasInterpretabilityResource {
+  return {
+    id: resource.resource_id,
+    title: resource.title,
+    diseaseSite: resource.disease_site,
+    documentType: resource.document_type ?? resource.resource_type,
+    documentStatus: resource.document_status,
+    responseState: resource.response_state,
+    archiveStatus: resource.archive_status,
+    parseStatus: resource.parse_status,
+    url: resource.url,
+    sourceSpanCount: resource.source_span_ids.length,
+    ...adaptGraphFocusMetadata(resource)
+  };
+}
+
+function adaptGraphFocusMetadata(record: CorpusGraphFocusMetadata): CompactAtlasGraphFocusMetadata {
+  return {
+    focusNodeId: record.focus_node_id,
+    resourceNodeId: record.resource_node_id,
+    neighborNodeIds: [...record.neighbor_node_ids],
+    edgeTypes: [...record.edge_types],
+    sourceSpanIds: [...record.source_span_ids],
+    reviewTaskIds: [...record.review_task_ids],
+    coverageStatus: record.coverage_status,
+    interpretabilitySummary: {
+      mode: record.interpretability_summary.mode,
+      coverageStatus: record.interpretability_summary.coverage_status,
+      sourceSpanCount: record.interpretability_summary.source_span_count,
+      graphNeighborCount: record.interpretability_summary.graph_neighbor_count,
+      modelRouting: record.interpretability_summary.model_routing
+    }
+  };
+}
+
+function adaptSurveillanceStatus(status: CorpusSurveillanceStatus): CompactAtlasSurveillanceStatus {
+  return {
+    mode: status.mode,
+    status: status.status,
+    reviewStatus: status.review_status,
+    resourceCount: status.resource_count,
+    changedCount: status.changed_count,
+    missingCount: status.missing_count,
+    unchangedCount: status.unchanged_count,
+    needsReviewCount: status.needs_review_count,
+    summaryCounts: status.summary_counts,
+    resourceStatuses: surveillanceResourceStatusList(status).map(adaptSurveillanceResourceStatus)
+  };
+}
+
+function surveillanceResourceStatusList(status: CorpusSurveillanceStatus): CorpusSurveillanceResourceStatus[] {
+  const resourceStatuses = status.resource_statuses;
+  if (Array.isArray(resourceStatuses)) {
+    return resourceStatuses;
+  }
+  if (resourceStatuses) {
+    return Object.values(resourceStatuses);
+  }
+  return status.resources ?? [];
+}
+
+function adaptSurveillanceResourceStatus(status: CorpusSurveillanceResourceStatus): CompactAtlasSurveillanceResourceStatus {
+  return {
+    resourceId: status.resource_id,
+    status: status.status,
+    changeState: status.change_state,
+    reviewStatus: status.review_status,
+    previousStatus: status.previous_status,
+    currentStatus: status.current_status,
+    previousChecksumSha256: status.previous_checksum_sha256,
+    currentChecksumSha256: status.current_checksum_sha256
+  };
+}
+
+function adaptReviewQueueItem(item: CorpusReviewQueueItem): CompactAtlasReviewQueueItem {
+  return {
+    reviewTaskId: item.review_task_id,
+    resourceId: item.resource_id,
+    sourceSpanIds: [...item.source_span_ids],
+    picoPlaceholder: item.pico_placeholder,
+    reviewStatus: item.review_status,
+    stalenessStatus: item.staleness_status,
+    allowedActions: [...item.allowed_actions]
   };
 }
 
