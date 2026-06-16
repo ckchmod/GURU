@@ -2,7 +2,7 @@
 
 ## Goal
 
-Maintain a full test baseline from the start. Every significant milestone must pass the affected tests before commit. Tests protect the project from regressions in graph logic, provenance handling, resource governance, and clinical safety boundaries.
+Maintain a full test baseline from the start. Every significant milestone must pass the affected tests before commit. Tests protect the project from regressions in graph logic, provenance handling, resource governance, interpretability scope, and clinical safety boundaries.
 
 ## Test levels
 
@@ -30,6 +30,8 @@ Maintain a full test baseline from the start. Every significant milestone must p
 - Grep assertions for PHI, secrets, and restricted file patterns.
 - Provenance metadata checks on generated graph nodes.
 - Git status checks to confirm no raw large files or credentials are staged.
+- Documentation grep checks for generated answers disabled, source-backed graph/search interpretability, best-effort manifest-accounted acquisition, offline/local surveillance, and draft/non-claim evidence-review wording.
+- Documentation grep checks that overclaiming phrases are absent or explicitly scoped as disabled, excluded, blocked, local-only, or future-roadmap work.
 
 ## Commands
 
@@ -72,7 +74,7 @@ npm run test:safety
 # Graph/provenance schema validation (expected failure: missing source spans)
 npm run test:schemas:invalid || true
 
-# Resource registry validation (real registry — must pass)
+# Resource registry validation, real registry must pass
 python scripts/validate-resource-registry.py
 
 # Resource registry fixture diagnostics (contains intentional failures)
@@ -111,6 +113,18 @@ npm run smoke:api
 # Frontend development server
 npm run dev:web
 ```
+
+### Docs-only interpretability milestone checks
+
+For docs-only tasks that synchronize Source-backed Evidence Atlas Workbench v2 language, do not run browser tests. Use focused read and grep checks over the changed docs instead. The checks should prove that these statements are present:
+
+- Generated answers remain disabled.
+- Graph/search interpretability is clinician-facing and source-backed only where validated source spans exist.
+- All-public acquisition is best-effort and manifest-accounted, not guaranteed all-198 parsed coverage.
+- Surveillance is an offline/local manifest scaffold only.
+- The evidence-review shell is draft/non-claim unless source-span-backed.
+
+The same docs-only check should search for overclaims such as full RAG answers, generated clinical summaries, recommendation-impact diff, guaranteed all-198 parsing, approved recommendations, patient-specific advice, live surveillance, crawler behavior, or clinical inference. Matches are acceptable only when the surrounding text says the capability is disabled, excluded, blocked, local-only, or future-roadmap work.
 
 ## Test data
 
