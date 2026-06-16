@@ -142,6 +142,7 @@ STUDY_DESIGNS = {
 
 TASK_TYPES = {"review", "extract", "update", "validate", "triage", "publish"}
 REVIEW_DECISIONS = {"accept", "revise", "reject", "defer"}
+TRACE_STATUSES = {"executed", "rejected", "approval_pending", "quota_exceeded", "abstained"}
 
 
 @dataclass(frozen=True)
@@ -265,7 +266,7 @@ def validate_base_node(node: dict[str, Any], path: str, findings: list[Finding])
     missing = sorted(required - set(node.keys()))
     for field in missing:
         add_error(findings, f"{path}: missing required field {field!r}")
-    extras = sorted(set(node.keys()) - required - {"title", "jurisdiction", "disease_site", "topic", "version", "effective_date", "guideline_id", "recommendation_text", "strength", "certainty", "source_span_ids", "pico_ids", "population", "intervention", "comparison", "outcome", "owner", "access_date", "access_path", "license_status", "checksum_sha256", "version_or_date", "span_id", "source_document_id", "stable_locator", "quoted_span", "excerpt_checksum", "prompt_or_model_version", "reviewer", "review_status", "timestamp", "output_status", "citation_text", "evidence_text", "study_design", "rule_text", "task_type", "description", "assignee", "due_date", "decision", "rationale", "model_name", "model_version", "input_digest", "output_text", "gpu_seconds", "cost_ledger_id"})
+    extras = sorted(set(node.keys()) - required - {"title", "jurisdiction", "disease_site", "topic", "version", "effective_date", "guideline_id", "recommendation_text", "strength", "certainty", "source_span_ids", "pico_ids", "population", "intervention", "comparison", "outcome", "owner", "access_date", "access_path", "license_status", "checksum_sha256", "version_or_date", "span_id", "source_document_id", "stable_locator", "quoted_span", "excerpt_checksum", "prompt_or_model_version", "reviewer", "review_status", "timestamp", "output_status", "citation_text", "evidence_text", "study_design", "rule_text", "task_type", "description", "assignee", "due_date", "decision", "rationale", "model_name", "model_version", "model_class", "trace_status", "policy_request_id", "citation_verifier_status", "input_digest", "output_digest", "output_text", "gpu_seconds", "cost_ledger_id"})
     for field in extras:
         add_error(findings, f"{path}: unexpected field {field!r}")
 
@@ -333,8 +334,16 @@ def validate_review_decision(node: dict[str, Any], path: str, findings: list[Fin
 def validate_model_trace(node: dict[str, Any], path: str, findings: list[Finding]) -> None:
     expect_string(node.get("model_name"), f"{path}.model_name", findings)
     expect_string(node.get("model_version"), f"{path}.model_version", findings)
+    expect_string(node.get("model_class"), f"{path}.model_class", findings)
+    expect_enum(node.get("trace_status"), TRACE_STATUSES, f"{path}.trace_status", findings)
+    expect_string(node.get("policy_request_id"), f"{path}.policy_request_id", findings)
+    if expect_string(node.get("citation_verifier_status"), f"{path}.citation_verifier_status", findings):
+        if node["citation_verifier_status"] != "pass":
+            add_error(findings, f"{path}.citation_verifier_status: expected 'pass', got {node['citation_verifier_status']!r}")
     expect_string(node.get("input_digest"), f"{path}.input_digest", findings)
-    expect_string(node.get("output_text"), f"{path}.output_text", findings)
+    expect_string(node.get("output_digest"), f"{path}.output_digest", findings)
+    if "output_text" in node and node["output_text"] is not None:
+        expect_string(node.get("output_text"), f"{path}.output_text", findings)
     if not expect_array(node.get("source_span_ids"), f"{path}.source_span_ids", findings, min_items=1):
         return
     for idx, span_id in enumerate(node["source_span_ids"]):

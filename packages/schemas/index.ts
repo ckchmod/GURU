@@ -60,6 +60,8 @@ export type TaskType = "review" | "extract" | "update" | "validate" | "triage" |
 
 export type ReviewDecisionValue = "accept" | "revise" | "reject" | "defer";
 
+export type ModelTraceStatus = "executed" | "rejected" | "approval_pending" | "quota_exceeded" | "abstained";
+
 export type RelationType =
   | "has_version"
   | "has_recommendation"
@@ -209,9 +211,14 @@ export interface ModelTraceNode extends BaseNode {
   node_type: "ModelTrace";
   model_name: string;
   model_version: string;
+  model_class: string;
+  trace_status: ModelTraceStatus;
+  policy_request_id: string;
+  citation_verifier_status: "pass";
   /** Checksum or stable hash of the model input. */
   input_digest: string;
-  output_text: string;
+  output_digest: string;
+  output_text?: string;
   /** MANDATORY. A ModelTrace without source spans is not a valid claim. */
   source_span_ids: string[];
   gpu_seconds?: number;

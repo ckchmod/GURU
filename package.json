@@ -14,7 +14,7 @@
     "test:api": "pytest services/api",
     "test:baseline": "npm run test:api && npm run test:web && npm run lint:web && npm run typecheck:web && npm run test:e2e:web && npm run test:schemas && npm run test:safety && python scripts/validate-resource-registry.py",
     "smoke:api": "python -m services.api.scripts.smoke_health",
-    "test:schemas": "python scripts/validate-graph-schemas.py tests/fixtures/graph-provenance/synthetic-graph.json && ! python scripts/validate-graph-schemas.py tests/fixtures/graph-provenance/recommendation-missing-source-span.json",
+    "test:schemas": "python scripts/validate-graph-schemas.py tests/fixtures/graph-provenance/synthetic-graph.json && ! python scripts/validate-graph-schemas.py tests/fixtures/graph-provenance/recommendation-missing-source-span.json && ! python scripts/validate-graph-schemas.py tests/fixtures/graph-provenance/model-trace-missing-provenance.json",
     "test:safety": "python scripts/validate-safety-boundaries.py",
     "test:schemas:invalid": "python scripts/validate-graph-schemas.py tests/fixtures/graph-provenance/recommendation-missing-source-span.json"
   }

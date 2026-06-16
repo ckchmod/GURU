@@ -350,11 +350,16 @@
       }
     },
     "modelTraceFields": {
-      "required": ["model_name", "model_version", "input_digest", "output_text", "source_span_ids"],
+      "required": ["model_name", "model_version", "model_class", "trace_status", "policy_request_id", "citation_verifier_status", "input_digest", "output_digest", "source_span_ids"],
       "properties": {
         "model_name": { "type": "string", "minLength": 1 },
         "model_version": { "type": "string", "minLength": 1 },
+        "model_class": { "type": "string", "minLength": 1 },
+        "trace_status": { "type": "string", "enum": ["executed", "rejected", "approval_pending", "quota_exceeded", "abstained"] },
+        "policy_request_id": { "type": "string", "minLength": 1 },
+        "citation_verifier_status": { "type": "string", "const": "pass" },
         "input_digest": { "type": "string", "minLength": 1, "description": "Checksum or stable hash of the model input." },
+        "output_digest": { "type": "string", "minLength": 1, "description": "Checksum or stable hash of the model output." },
         "output_text": { "type": "string", "minLength": 1 },
         "source_span_ids": {
           "type": "array",

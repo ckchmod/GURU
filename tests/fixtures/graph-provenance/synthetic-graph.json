@@ -218,8 +218,12 @@
       },
       "model_name": "synthetic-model",
       "model_version": "0.0.0",
+      "model_class": "local_open_weight_fixture",
+      "trace_status": "executed",
+      "policy_request_id": "policy.demo.001",
+      "citation_verifier_status": "pass",
       "input_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
-      "output_text": "Synthetic model output referencing the demo source span.",
+      "output_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
       "source_span_ids": ["span.demo.001"],
       "gpu_seconds": 0.0,
       "cost_ledger_id": "ledger.demo.001"

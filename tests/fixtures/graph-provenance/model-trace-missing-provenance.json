@@ -1,0 +1,82 @@
+{
+  "graph_version": "0.1.0",
+  "generated_at": "2026-06-16T12:00:00Z",
+  "nodes": [
+    {
+      "id": "source.trace.bad.001",
+      "node_type": "SourceDocument",
+      "label": "Invalid Trace Source Document",
+      "status": "draft",
+      "created_at": "2026-06-16T12:00:00Z",
+      "updated_at": "2026-06-16T12:00:00Z",
+      "provenance": {
+        "source_span_ids": [],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-16T12:00:00Z"
+      },
+      "title": "Synthetic Trace Source Document",
+      "owner": "Synthetic Owner",
+      "access_date": "2026-06-16",
+      "access_path": "synthetic://trace/source-001",
+      "license_status": "public_domain",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "span.trace.bad.001",
+      "node_type": "SourceSpan",
+      "label": "Invalid trace source span",
+      "status": "draft",
+      "created_at": "2026-06-16T12:00:00Z",
+      "updated_at": "2026-06-16T12:00:00Z",
+      "provenance": {
+        "source_span_ids": [],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-16T12:00:00Z"
+      },
+      "span_id": "span.trace.bad.001",
+      "source_document_id": "source.trace.bad.001",
+      "access_date": "2026-06-16",
+      "stable_locator": "Trace Fixture, Paragraph 1",
+      "quoted_span": "This synthetic span records only non-clinical validation metadata.",
+      "excerpt_checksum": "2222222222222222222222222222222222222222222222222222222222222222",
+      "prompt_or_model_version": "fixture-v0",
+      "reviewer": "synthetic-reviewer",
+      "review_status": "unreviewed",
+      "timestamp": "2026-06-16T12:00:00Z",
+      "output_status": "draft"
+    },
+    {
+      "id": "trace.bad.001",
+      "node_type": "ModelTrace",
+      "label": "Invalid model trace missing provenance",
+      "status": "draft",
+      "created_at": "2026-06-16T12:00:00Z",
+      "updated_at": "2026-06-16T12:00:00Z",
+      "provenance": {
+        "source_span_ids": [],
+        "generated_by": "synthetic-fixture-agent",
+        "model_version": "fixture-v0",
+        "reviewer": "synthetic-reviewer",
+        "review_status": "unreviewed",
+        "output_status": "draft",
+        "timestamp": "2026-06-16T12:00:00Z"
+      },
+      "model_name": "synthetic-model",
+      "model_version": "0.0.0",
+      "model_class": "local_open_weight_fixture",
+      "trace_status": "executed",
+      "policy_request_id": "policy.bad.001",
+      "citation_verifier_status": "fail",
+      "input_digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+      "output_digest": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+      "source_span_ids": [],
+      "gpu_seconds": 0.0,
+      "cost_ledger_id": "ledger.bad.001"
+    }
+  ],
+  "edges": [
+    { "id": "edge.trace.bad.001", "source": "source.trace.bad.001", "target": "span.trace.bad.001", "relation": "has_source_span" }
+  ]
+}
