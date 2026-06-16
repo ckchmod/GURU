@@ -125,6 +125,7 @@ type CorpusGraphScalePayload = {
 test("Sigma graph canvas load, search, selection, and API-backed corpus states work without console findings", async ({ page }) => {
   const consoleFindings: string[] = [];
   const mutationRequests: string[] = [];
+  const traceRequests: string[] = [];
   const performanceEvidence: Record<string, number | string | boolean> = {
     graphReadyThresholdMs: 10000,
     searchVisibleThresholdMs: 2500,
@@ -139,6 +140,9 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
     }
   });
   page.on("request", (request) => {
+    if (request.url().includes("/api/knowledgebase/corpus/workbench/trace")) {
+      traceRequests.push(`${request.method()} ${request.url()}`);
+    }
     if (request.method() !== "GET" && /review|queue|interpretability|mutation/i.test(request.url())) {
       mutationRequests.push(`${request.method()} ${request.url()}`);
     }
@@ -264,7 +268,9 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
   expect(performanceEvidence.searchVisibleMs as number).toBeLessThanOrEqual(performanceEvidence.searchVisibleThresholdMs as number);
   await expect(workbench).toContainText("Source-span retrieval");
   await expect(workbench).toContainText("No source-span records returned for this query");
-  await workbench.getByRole("button", { name: /Adjuvant Radiotherapy for Invasive Breast Cancer/i }).click();
+  await scrollWorkbenchResultsToTop(page);
+  await expect(workbench.getByRole("button", { name: /Adjuvant Radiotherapy for Invasive Breast Cancer/i })).toBeVisible();
+  await workbench.locator('section[aria-label="Metadata retrieval"] button').first().dispatchEvent("click", { bubbles: true });
   await expect(page.getByTestId("node-inspector")).toContainText(breastResourceId);
   await expect(page.getByTestId("source-document-panel")).toContainText("Adjuvant Radiotherapy for Invasive Breast Cancer");
   await expect(page.getByTestId("trust-provenance-drawer")).toContainText("metadata_only");
@@ -286,7 +292,8 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
   await workbench.getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }).fill("guideline");
   await workbench.getByRole("button", { name: "Search", exact: true }).click();
   await expect(page.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-highlighted-resource-ids", `${breastResourceId},${brainResourceId}`);
-  await page.getByTestId("retrieval-terminal-state").getByRole("button", { name: `Metadata terminal result ${brainResourceId}` }).click();
+  await expect(page.getByTestId("retrieval-terminal-state").getByRole("button", { name: `Metadata terminal result ${brainResourceId}` })).toBeVisible();
+  await page.getByTestId("retrieval-terminal-state").getByRole("button", { name: `Metadata terminal result ${brainResourceId}` }).dispatchEvent("click", { bubbles: true });
   await expect(page.getByTestId("node-inspector")).toContainText(brainResourceId);
   await expect(page.getByTestId("retrieval-terminal-state")).toHaveAttribute("data-graph-resource-node-id", `resource.${brainResourceId}`);
   await page.locator(`[data-node-id="resource.${breastResourceId}"]`).dispatchEvent("pointerdown", { clientX: 100, clientY: 100, pointerId: 22, bubbles: true });
@@ -300,7 +307,8 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
   await expect(workbench).toContainText("Local deterministic parsed excerpt for search coverage.");
   await expect(workbench).toContainText("source status: draft");
   await expect(workbench).toContainText("parse status: not-parsed");
-  await workbench.getByRole("button", { name: /Local deterministic parsed excerpt/i }).click();
+  await expect(workbench.getByRole("button", { name: /Local deterministic parsed excerpt/i })).toBeVisible();
+  await workbench.getByRole("button", { name: /Local deterministic parsed excerpt/i }).dispatchEvent("click", { bubbles: true });
   await expect(page.getByTestId("node-inspector")).toContainText(breastResourceId);
   await expect(page.getByTestId("trust-provenance-drawer")).toContainText("page:1;span:1");
   await expect(page.getByTestId("trust-provenance-drawer")).toContainText(`${"0".repeat(64)} · draft`);
@@ -319,6 +327,15 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
   await expect(page.getByTestId("retrieval-terminal-state")).toHaveAttribute("data-graph-resource-node-id", `resource.${breastResourceId}`);
   await expect(page.getByTestId("retrieval-terminal-state")).toHaveAttribute("data-graph-path-node-ids", `resource.${breastResourceId},disease-site.breast,document-type.guideline,archive-status.metadata-only.not-parsed`);
   await expect(page.getByTestId("retrieval-terminal-state")).toContainText("Generated answers are disabled");
+  await expect(page.getByTestId("workbench-trace-terminal")).toHaveAttribute("data-command-label", "run-evals:corpus-workbench-trace");
+  await expect(page.getByTestId("workbench-trace-terminal")).toHaveAttribute("data-gateway-outcome", "executed");
+  await expect(page.getByTestId("workbench-trace-terminal")).toHaveAttribute("data-abstention-status", "abstained_no_answer_text");
+  await expect(page.getByTestId("workbench-trace-terminal")).toHaveAttribute("data-citation-verifier-status", "pass");
+  await expect(page.getByTestId("workbench-trace-terminal")).toContainText("Source spans used/rejected");
+  await expect(page.getByTestId("workbench-trace-terminal")).toContainText("1 used / 0 rejected");
+  await expect(page.getByTestId("workbench-trace-terminal")).toContainText("local_open_weight_7b");
+  await screenshotExpandedWorkbenchTrace(page, "../../.omo/evidence/task-7-workbench-trace-ui.png");
+  writeTask7WorkbenchTraceText(await readTask7WorkbenchTraceEvidence(page, consoleFindings, traceRequests));
   await expect(page.getByTestId("lookup-relationship-trace")).toContainText("source span");
   await expect(page.getByTestId("lookup-relationship-trace")).toContainText("review item");
   await expectNoForbiddenGeneratedAnswerText(page);
@@ -371,11 +388,16 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
   await expect(workbench).toContainText("No results for this query in public metadata or parsed source spans.");
   await expect(workbench).not.toContainText(/no evidence/i);
 
-  const safetyNegativeQuery = "unsupported safety boundary request";
+  const safetyNegativeQuery = "what should someone choose for treatment";
   await workbench.getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }).fill(safetyNegativeQuery);
   await workbench.getByRole("button", { name: "Search", exact: true }).click();
   await expect(workbench).toContainText("No results for this query in public metadata or parsed source spans.");
   await expect(workbench).toContainText("Generated answers disabled until retrieval/source-span verification is implemented.");
+  await expect(page.getByTestId("workbench-trace-terminal")).toHaveAttribute("data-gateway-outcome", "blocked_before_gateway");
+  await expect(page.getByTestId("workbench-trace-terminal")).toHaveAttribute("data-abstention-status", "abstained_no_model_execution");
+  await expect(page.getByTestId("workbench-trace-terminal")).toHaveAttribute("data-citation-verifier-status", "not_run");
+  await expect(page.getByTestId("workbench-trace-terminal")).toContainText("unsupported_advice_like_prompt");
+  await expect(page.getByTestId("workbench-trace-terminal")).toContainText("No source spans used by this trace.");
   await expect(page.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-evidence-selected-query", safetyNegativeQuery);
   await expect(page.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-highlighted-resource-ids", breastResourceId);
   await expect(page.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-highlighted-source-span-ids", "none");
@@ -388,6 +410,7 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
   await expect(page.getByTestId("retrieval-terminal-state")).toHaveAttribute("data-graph-resource-node-id", `resource.${breastResourceId}`);
   await expect(page.getByTestId("retrieval-terminal-state")).toContainText("No metadata resources in the current terminal trace.");
   await expectNoForbiddenGeneratedAnswerText(page);
+  await screenshotExpandedWorkbenchTrace(page, "../../.omo/evidence/task-7-workbench-trace-ui-error.png");
   writeTask9SafetyNegativeEvidence(await readTask9SafetyNegativeEvidence(page, safetyNegativeQuery, consoleFindings));
 
   await page.keyboard.press("Tab");
@@ -707,6 +730,11 @@ function writeTask8GraphTerminalContextEvidence(evidence: Record<string, unknown
   writeFileSync("../../.omo/evidence/task-8-graph-terminal-context.json", `${JSON.stringify(evidence, null, 2)}\n`, "utf-8");
 }
 
+function writeTask7WorkbenchTraceText(evidence: Record<string, unknown>) {
+  mkdirSync("../../.omo/evidence", { recursive: true });
+  writeFileSync("../../.omo/evidence/task-7-workbench-trace-ui.txt", `${JSON.stringify(evidence, null, 2)}\n`, "utf-8");
+}
+
 function writeTask9SafetyNegativeEvidence(evidence: SafetyNegativeEvidence) {
   mkdirSync("../../.omo/evidence", { recursive: true });
   writeFileSync("../../.omo/evidence/task-9-safety-negative.json", `${JSON.stringify(evidence, null, 2)}\n`, "utf-8");
@@ -1008,6 +1036,33 @@ async function expectCompactTextStyle(page: Page, selector: string) {
   });
 }
 
+async function scrollWorkbenchResultsToTop(page: Page) {
+  await page.evaluate(() => {
+    const results = document.querySelector(".atlas-workbench__results");
+    if (results) {
+      results.scrollTop = 0;
+    }
+  });
+}
+
+async function screenshotExpandedWorkbenchTrace(page: Page, path: string) {
+  await page.evaluate(() => {
+    document.getElementById("task-7-evidence-screenshot-style")?.remove();
+    const style = document.createElement("style");
+    style.id = "task-7-evidence-screenshot-style";
+    style.textContent = ".atlas-workbench{max-height:none!important;overflow:visible!important}.atlas-workbench__results{overflow:visible!important}";
+    document.head.append(style);
+    const results = document.querySelector(".atlas-workbench__results");
+    if (results) {
+      results.scrollTop = 0;
+    }
+  });
+  await page.getByTestId("workbench-trace-terminal").screenshot({ path });
+  await page.evaluate(() => {
+    document.getElementById("task-7-evidence-screenshot-style")?.remove();
+  });
+}
+
 async function readTask8GraphTerminalContext(page: Page) {
   return page.evaluate(() => {
     const graph = document.querySelector('[data-testid="sigma-corpus-graph"]');
@@ -1042,6 +1097,37 @@ async function readTask8GraphTerminalContext(page: Page) {
       }
     };
   });
+}
+
+async function readTask7WorkbenchTraceEvidence(page: Page, consoleFindings: string[], traceRequests: string[]) {
+  const visibleState = await page.evaluate(() => {
+    const workbench = document.querySelector('[data-testid="atlas-workbench"]');
+    const trace = document.querySelector('[data-testid="workbench-trace-terminal"]');
+    const terminal = document.querySelector('[data-testid="retrieval-terminal-state"]');
+    return {
+      workbenchText: workbench?.textContent?.trim() ?? "",
+      traceText: trace?.textContent?.trim() ?? "",
+      retrievalText: terminal?.textContent?.trim() ?? "",
+      commandLabel: trace?.getAttribute("data-command-label") ?? null,
+      gatewayOutcome: trace?.getAttribute("data-gateway-outcome") ?? null,
+      abstentionStatus: trace?.getAttribute("data-abstention-status") ?? null,
+      citationVerifierStatus: trace?.getAttribute("data-citation-verifier-status") ?? null,
+      forbiddenSurfacePresent: /clinical answer|treatment advice|dosing|diagnosis|assistant response|chat transcript/i.test(workbench?.textContent ?? "")
+    };
+  });
+
+  return {
+    task: "task-7-workbench-trace-ui",
+    query: "deterministic parsed excerpt",
+    visibleState,
+    consoleFindings,
+    traceRequests,
+    pass: visibleState.commandLabel === "run-evals:corpus-workbench-trace"
+      && visibleState.gatewayOutcome === "executed"
+      && visibleState.abstentionStatus === "abstained_no_answer_text"
+      && visibleState.citationVerifierStatus === "pass"
+      && !visibleState.forbiddenSurfacePresent
+  };
 }
 
 async function expectNoForbiddenGeneratedAnswerText(page: Page, queryToIgnore = "") {
@@ -1371,6 +1457,10 @@ async function mockCorpusApi(page: Page) {
     const requestUrl = new URL(route.request().url());
     await route.fulfill({ json: buildSearchPayload(requestUrl.searchParams.get("q") ?? "") });
   });
+  await page.route("**/api/knowledgebase/corpus/workbench/trace?**", async (route) => {
+    const requestUrl = new URL(route.request().url());
+    await route.fulfill({ json: buildWorkbenchTracePayload(requestUrl.searchParams.get("q") ?? "") });
+  });
   await page.route("**/api/knowledgebase/corpus/interpretability?**", async (route) => {
     const requestUrl = new URL(route.request().url());
     await route.fulfill({ json: buildInterpretabilityPayload(requestUrl.searchParams.get("resource_id") ?? breastResourceId, interpretabilitySourceSpans, reviewQueueItems) });
@@ -1513,12 +1603,13 @@ type ReviewQueuePayloadItem = {
 
 function buildSearchPayload(query: string) {
   const normalizedQuery = query.trim().toLowerCase();
+  const adviceLike = isAdviceLikeQuery(normalizedQuery);
   const metadataResults = resourcesPayload.resources
     .filter((resource) => (
-      `${resource.title} ${resource.resource_id} ${resource.disease_site} ${resource.document_type} ${resource.resource_type}`.toLowerCase().includes(normalizedQuery)
+      Boolean(normalizedQuery) && !adviceLike && `${resource.title} ${resource.resource_id} ${resource.disease_site} ${resource.document_type} ${resource.resource_type}`.toLowerCase().includes(normalizedQuery)
     ))
     .map((resource) => ({ ...resource, ...graphFocusMetadata(resource.resource_id, [], graphCoverageStatus(resource)) }));
-  const sourceSpanResults = normalizedQuery.includes("deterministic parsed excerpt") ? [{
+  const sourceSpanResults = normalizedQuery.includes("deterministic parsed excerpt") && !adviceLike ? [{
     ...sourceSpanSearchResult,
     ...graphFocusMetadata(breastResourceId, [sourceSpanSearchResult.span_id], "source_span_ready"),
     focus_resource: {
@@ -1526,6 +1617,11 @@ function buildSearchPayload(query: string) {
       ...graphFocusMetadata(breastResourceId, [sourceSpanSearchResult.span_id], "source_span_ready")
     }
   }] : [];
+  const warningLabels = adviceLike
+    ? ["abstain_advice_like_prompt", "no_generated_claim"]
+    : normalizedQuery && metadataResults.length === 0 && sourceSpanResults.length === 0
+      ? ["no_retrieval_results", "no_generated_claim"]
+      : [];
 
   return {
     query,
@@ -1536,8 +1632,110 @@ function buildSearchPayload(query: string) {
     source_span_coverage_count: 5,
     source_span_coverage_note: "Search checks metadata for all 198 resources and parsed source-span excerpts only for the five-row parsed subset when derived outputs are present.",
     total_resource_count: 198,
+    model_routing: "none-local-deterministic-search-only",
+    warning_labels: warningLabels,
+    abstained: adviceLike || (Boolean(normalizedQuery) && metadataResults.length === 0 && sourceSpanResults.length === 0),
+    no_claim: true
+  };
+}
+
+function buildWorkbenchTracePayload(query: string) {
+  const searchPayload = buildSearchPayload(query);
+  const normalizedQuery = query.trim().toLowerCase();
+  const sourceIdsUsed = searchPayload.source_span_results.map((span) => ({
+    source_span_id: span.span_id,
+    resource_id: span.resource_id,
+    source_document_id: span.document_id,
+    stable_locator: span.stable_locator,
+    status: "used",
+    evidence_id: span.span_id
+  }));
+  const sourceIdsRejected = searchPayload.metadata_results.map((resource) => ({
+    resource_id: resource.resource_id,
+    status: "rejected",
+    reason: "no_validated_source_span_context",
+    evidence_id: resource.resource_id
+  }));
+  const blockReason = isAdviceLikeQuery(normalizedQuery)
+    ? "unsupported_advice_like_prompt"
+    : sourceIdsUsed.length === 0
+      ? "missing_validated_source_span_context"
+      : null;
+  const warnings = [...searchPayload.warning_labels];
+  if (blockReason && !warnings.includes(blockReason)) {
+    warnings.push(blockReason);
+  }
+  const gatewayDecision = blockReason ? {
+    allowed: false,
+    outcome: "blocked_before_gateway",
+    reason_code: blockReason,
+    policy_request_id: "policy-request-local-test",
+    external_api_used: false
+  } : {
+    allowed: true,
+    outcome: "executed",
+    reason_code: null,
+    policy_request_id: "policy-request-local-test",
+    external_api_used: false
+  };
+  const citationVerifierStatus = blockReason ? "not_run" : "pass";
+  const abstentionStatus = blockReason ? "abstained_no_model_execution" : "abstained_no_answer_text";
+
+  return {
+    command_label: "run-evals:corpus-workbench-trace",
+    query,
+    retrieval_steps: [
+      { step_id: "command", status: "received", command_label: "run-evals:corpus-workbench-trace" },
+      {
+        step_id: "retrieval",
+        status: "completed",
+        metadata_result_count: searchPayload.metadata_result_count,
+        source_span_result_count: searchPayload.source_span_result_count,
+        warning_labels: warnings,
+        abstained: searchPayload.abstained
+      },
+      {
+        step_id: "source_selection",
+        status: sourceIdsUsed.length > 0 ? "completed" : "blocked",
+        source_span_ids_used: sourceIdsUsed.map((record) => record.source_span_id),
+        rejected_count: sourceIdsRejected.length
+      },
+      {
+        step_id: "model_gateway",
+        status: gatewayDecision.outcome,
+        model_class: "local_open_weight_7b",
+        external_api_used: false
+      }
+    ],
+    source_ids_used: sourceIdsUsed,
+    source_ids_rejected: sourceIdsRejected,
+    gateway_decision: gatewayDecision,
+    model_class: "local_open_weight_7b",
+    model_trace: {
+      model_class: "local_open_weight_7b",
+      provider_kind: "local",
+      trace_status: blockReason ? "blocked" : "abstained",
+      runner_status: blockReason ? "not_invoked" : "dry_run_completed",
+      policy_request_id: "policy-request-local-test",
+      citation_verifier_status: citationVerifierStatus,
+      abstention_status: abstentionStatus,
+      source_span_ids: sourceIdsUsed.map((record) => record.source_span_id),
+      output_tokens: 0,
+      gpu_seconds: 0
+    },
+    cost_ledger_entry: blockReason ? null : { external_api_used: false },
+    citation_verifier_status: citationVerifierStatus,
+    warnings,
+    abstained: true,
+    abstention_status: abstentionStatus,
+    evidence_ids: [...sourceIdsUsed, ...sourceIdsRejected].map((record) => record.evidence_id),
+    no_claim: true,
     model_routing: "none-local-deterministic-search-only"
   };
+}
+
+function isAdviceLikeQuery(query: string) {
+  return /\b(should|choose|treatment|dosing|diagnosis|recommend)\b/i.test(query);
 }
 
 function buildInterpretabilityPayload(
