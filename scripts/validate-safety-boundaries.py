@@ -99,6 +99,7 @@ BLOCKED_PLACEHOLDER_LABELS = re.compile(
     re.IGNORECASE,
 )
 RAW_PUBLIC_DIR = ROOT / "resources" / "raw" / "ahs-guru-public"
+README_PATH = ROOT / "README.md"
 COMMITTED_ALL_PUBLIC_MANIFEST = ROOT / "resources" / "manifests" / "ahs-guru-public" / "manifest-20260615T000000Z-no-network-status.json"
 VALIDATED_ALL_PUBLIC_MANIFEST = ROOT / "resources" / "manifests" / "ahs-guru-public" / "manifest-20260616T053200Z.json"
 PARSE_SUBSET_REGISTRY = ROOT / "resources" / "registry" / "ahs-guru-parse-subset.json"
@@ -131,6 +132,16 @@ CANONICAL_SOURCE_SPAN_FIELDS = {
     "output_status",
 }
 DETERMINISTIC_MODEL_VERSION = "none-local-deterministic-parser"
+EXPECTED_README_TITLE = "# GURU"
+BLOCKED_README_TITLE = "# Source-backed Evidence Atlas Workbench v2"
+EXPECTED_README_TAGLINE = "A local-first guideline knowledge graph and evidence atlas for source-backed cancer guideline exploration."
+README_REQUIRED_SAFETY_PATTERNS = [
+    ("no PHI", re.compile(r"\bNo PHI\b", re.IGNORECASE)),
+    ("no patient-specific advice", re.compile(r"\bNo patient-specific\b", re.IGNORECASE)),
+    ("no clinical claim without source span", re.compile(r"\bNo clinical claim without (?:a cited )?source span\b", re.IGNORECASE)),
+    ("no default external LLM routing", re.compile(r"\bNo default external LLM routing\b", re.IGNORECASE)),
+    ("generated answers disabled", re.compile(r"\bGenerated answers remain disabled\b", re.IGNORECASE)),
+]
 
 
 def iter_existing_paths(paths: list[Path]) -> list[Path]:
@@ -335,6 +346,24 @@ def validate_real_corpus_counts() -> list[str]:
     return errors
 
 
+def validate_readme_docs_identity() -> list[str]:
+    errors: list[str] = []
+    lines = read_lines(README_PATH)
+    title = lines[0].strip() if lines else ""
+    body = "\n".join(lines)
+
+    if not title.startswith(EXPECTED_README_TITLE):
+        errors.append(f"README title must start with {EXPECTED_README_TITLE!r}, found {title!r}")
+    if title == BLOCKED_README_TITLE:
+        errors.append(f"README title must not use milestone/workbench name {BLOCKED_README_TITLE!r}")
+    if EXPECTED_README_TAGLINE not in body:
+        errors.append("README tagline must identify GURU as a local-first guideline knowledge graph and evidence atlas")
+    for label, pattern in README_REQUIRED_SAFETY_PATTERNS:
+        if not pattern.search(body):
+            errors.append(f"README safety boundary missing: {label}")
+    return errors
+
+
 def validate_corpus_runtime_labels() -> list[str]:
     from services.api.app.corpus_graph import build_public_corpus_graph
     from services.api.app.knowledgebase import _corpus_resources, get_corpus_source_spans, search_corpus
@@ -470,6 +499,10 @@ def main() -> int:
         print_findings("external LLM usage", llm_findings)
         findings.extend(llm_findings)
 
+    docs_errors = validate_readme_docs_identity()
+    for message in docs_errors:
+        error(message)
+
     real_corpus_errors: list[str] = []
     if not args.skip_real_corpus:
         real_corpus_errors.extend(validate_real_corpus_counts())
@@ -481,8 +514,8 @@ def main() -> int:
         for message in real_corpus_errors:
             error(message)
 
-    if findings or real_corpus_errors:
-        total = len(findings) + len(real_corpus_errors)
+    if findings or docs_errors or real_corpus_errors:
+        total = len(findings) + len(docs_errors) + len(real_corpus_errors)
         print(f"Safety boundary validation failed: {total} finding(s)", file=sys.stderr)
         return 1
 
