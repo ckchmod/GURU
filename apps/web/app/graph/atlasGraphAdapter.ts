@@ -1,5 +1,12 @@
 import Graph from "graphology";
 
+export {
+  assertFiniteAtlasLayoutCoordinates,
+  computeDeterministicForceAtlasLayout,
+  type AtlasForceLayoutMetrics,
+  type AtlasForceLayoutOptions
+} from "./atlasForceLayout";
+
 export type AtlasApiNode = {
   id: string;
   type: string;
@@ -30,6 +37,8 @@ export type AtlasGraphNodeAttributes = {
   resourceId?: string;
   x: number;
   y: number;
+  radius?: number;
+  cluster?: string;
 };
 
 export type AtlasGraphEdgeAttributes = {
