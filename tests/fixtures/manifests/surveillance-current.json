@@ -1,0 +1,54 @@
+{
+  "manifest_version": "1.0.0",
+  "rows": [
+    {
+      "byte_size": 18,
+      "file_path": "resources/raw/ahs-guru-public/added.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "fixture-added-resource",
+      "retrieved_at": "2026-06-16T00:00:00Z",
+      "sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+      "status": "downloaded",
+      "url": "https://example.invalid/added.pdf"
+    },
+    {
+      "byte_size": 20,
+      "file_path": "resources/raw/ahs-guru-public/changed-status.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "fixture-changed-status",
+      "retrieved_at": "2026-06-16T00:00:00Z",
+      "sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+      "status": "downloaded",
+      "url": "https://example.invalid/changed-status.pdf"
+    },
+    {
+      "byte_size": 12,
+      "file_path": "resources/raw/ahs-guru-public/checksum.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "fixture-checksum-changed",
+      "retrieved_at": "2026-06-16T00:00:00Z",
+      "sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+      "status": "downloaded",
+      "url": "https://example.invalid/checksum.pdf"
+    },
+    {
+      "failure_reason": "local snapshot marks resource unavailable",
+      "file_path": "resources/raw/ahs-guru-public/missing.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "fixture-missing-resource",
+      "retrieved_at": "2026-06-16T00:00:00Z",
+      "status": "failed",
+      "url": "https://example.invalid/missing.pdf"
+    },
+    {
+      "byte_size": 16,
+      "file_path": "resources/raw/ahs-guru-public/unchanged.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "fixture-unchanged-resource",
+      "retrieved_at": "2026-06-16T00:00:00Z",
+      "sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+      "status": "downloaded",
+      "url": "https://example.invalid/unchanged.pdf"
+    }
+  ]
+}

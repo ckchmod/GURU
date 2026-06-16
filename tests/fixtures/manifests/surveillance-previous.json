@@ -1,0 +1,53 @@
+{
+  "manifest_version": "1.0.0",
+  "rows": [
+    {
+      "file_path": "resources/raw/ahs-guru-public/changed-status.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "fixture-changed-status",
+      "retrieved_at": "2026-06-15T00:00:00Z",
+      "status": "failed",
+      "url": "https://example.invalid/changed-status.pdf"
+    },
+    {
+      "byte_size": 12,
+      "file_path": "resources/raw/ahs-guru-public/checksum.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "fixture-checksum-changed",
+      "retrieved_at": "2026-06-15T00:00:00Z",
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "status": "downloaded",
+      "url": "https://example.invalid/checksum.pdf"
+    },
+    {
+      "byte_size": 10,
+      "file_path": "resources/raw/ahs-guru-public/missing.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "fixture-missing-resource",
+      "retrieved_at": "2026-06-15T00:00:00Z",
+      "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "status": "downloaded",
+      "url": "https://example.invalid/missing.pdf"
+    },
+    {
+      "byte_size": 14,
+      "file_path": "resources/raw/ahs-guru-public/removed.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "fixture-removed-resource",
+      "retrieved_at": "2026-06-15T00:00:00Z",
+      "sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "status": "downloaded",
+      "url": "https://example.invalid/removed.pdf"
+    },
+    {
+      "byte_size": 16,
+      "file_path": "resources/raw/ahs-guru-public/unchanged.pdf",
+      "media_type": "application/pdf",
+      "resource_id": "fixture-unchanged-resource",
+      "retrieved_at": "2026-06-15T00:00:00Z",
+      "sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+      "status": "downloaded",
+      "url": "https://example.invalid/unchanged.pdf"
+    }
+  ]
+}
