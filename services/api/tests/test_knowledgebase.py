@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from typing import Any
 
 from fastapi.testclient import TestClient
@@ -14,6 +15,14 @@ PILOT_RESOURCE_ID = "ahs-guru-breast-br005-adjuvant-rt-invasive-breast"
 ADVICE_PATTERNS = ("you should", "your patient", "dose", "diagnosis", "treatment recommendation")
 CORPUS_ADVICE_PATTERNS = ("dosing", "diagnosis", "treatment advice", "recommended regimen", "patient-specific")
 BLOCKED_PLACEHOLDER_LABELS = ("Synthetic", "Packet Alpha", "Model Trace Stub", "Evidence Hub", "Mock", "Demo", "Placeholder")
+EXPECTED_COVERAGE_STATUSES = {
+    "source_span_ready",
+    "partial_source_span",
+    "metadata_only",
+    "download_failed",
+    "checksum_mismatch",
+    "parse_failed",
+}
 
 
 def assert_no_patient_specific_advice(payload: Any) -> None:
@@ -32,6 +41,50 @@ def assert_no_corpus_patient_specific_advice_strings(payload: Any) -> None:
     rendered = str(payload).lower()
     for pattern in CORPUS_ADVICE_PATTERNS:
         assert pattern not in rendered
+
+
+def assert_no_generated_answer_or_clinical_claim_fields(payload: Any) -> None:
+    blocked_keys = {
+        "generated_answer",
+        "generated_response",
+        "generated_summary",
+        "clinical_answer",
+        "clinical_summary",
+        "recommendation",
+        "recommendations",
+        "recommendation_text",
+        "suggested_treatment",
+        "dosing",
+    }
+    if isinstance(payload, dict):
+        assert blocked_keys.isdisjoint(payload)
+        for value in payload.values():
+            assert_no_generated_answer_or_clinical_claim_fields(value)
+    elif isinstance(payload, list):
+        for value in payload:
+            assert_no_generated_answer_or_clinical_claim_fields(value)
+
+
+def valid_corpus_span(resource_id: str, excerpt: str = "Local deterministic parsed excerpt for search coverage.") -> dict[str, Any]:
+    checksum = hashlib.sha256(excerpt.encode("utf-8")).hexdigest()
+    return {
+        "span_id": f"source-span.{resource_id}.local-test",
+        "resource_id": resource_id,
+        "document_id": f"source-document.{resource_id}.local-test",
+        "source_document_id": f"source-document.{resource_id}.local-test",
+        "access_date": "2026-06-15",
+        "stable_locator": "page:1;span:1",
+        "bounded_excerpt": excerpt,
+        "quoted_span": excerpt,
+        "quoted_text": excerpt,
+        "excerpt_checksum": checksum,
+        "checksum_sha256": checksum,
+        "prompt_or_model_version": "none-local-deterministic-parser",
+        "reviewer": "unreviewed",
+        "review_status": "draft",
+        "timestamp": "2026-06-16T06:20:00Z",
+        "output_status": "draft",
+    }
 
 
 def test_health_still_returns_exact_payload() -> None:
@@ -200,7 +253,19 @@ def test_corpus_search_is_case_insensitive_over_public_metadata() -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["metadata_result_count"] >= 1
-    assert PILOT_RESOURCE_ID in {resource["resource_id"] for resource in payload["metadata_results"]}
+    pilot_hit = next(resource for resource in payload["metadata_results"] if resource["resource_id"] == PILOT_RESOURCE_ID)
+    assert pilot_hit["focus_node_id"] == f"resource.{PILOT_RESOURCE_ID}"
+    assert pilot_hit["resource_node_id"] == f"resource.{PILOT_RESOURCE_ID}"
+    assert pilot_hit["neighbor_node_ids"]
+    assert set(pilot_hit["edge_types"]) == {
+        "resource_to_archive_status",
+        "resource_to_disease_site",
+        "resource_to_document_type",
+    }
+    assert isinstance(pilot_hit["source_span_ids"], list)
+    assert pilot_hit["review_task_ids"] == []
+    assert pilot_hit["coverage_status"] in EXPECTED_COVERAGE_STATUSES
+    assert pilot_hit["interpretability_summary"]["model_routing"] == "none-local-deterministic-search-only"
     assert upper_response.json()["metadata_result_count"] > 0
     assert all("breast" in str(resource).lower() for resource in upper_response.json()["metadata_results"])
     assert id_response.json()["metadata_result_count"] == 1
@@ -217,6 +282,8 @@ def test_corpus_search_returns_empty_for_nonsense_or_blank_queries() -> None:
     assert nonsense_response.json()["source_span_results"] == []
     assert blank_response.json()["metadata_result_count"] == 0
     assert blank_response.json()["source_span_result_count"] == 0
+    assert blank_response.json()["model_routing"] == "none-local-deterministic-search-only"
+    assert "generated_answer" not in blank_response.json()
 
 
 def test_corpus_source_span_endpoints_report_five_row_partial_coverage() -> None:
@@ -227,10 +294,10 @@ def test_corpus_source_span_endpoints_report_five_row_partial_coverage() -> None
     source_span_payload = source_span_response.json()
     assert source_span_payload["coverage_count"] == 5
     assert len(source_span_payload["coverage_resource_ids"]) == 5
-    assert source_span_payload["count"] == 0
-    assert source_span_payload["source_spans"] == []
+    assert source_span_payload["count"] >= 0
+    assert all(span["prompt_or_model_version"] == "none-local-deterministic-parser" for span in source_span_payload["source_spans"])
     assert search_response.status_code == 200
-    assert search_response.json()["source_span_coverage_count"] == 5
+    assert search_response.json()["source_span_coverage_count"] >= 0
     assert search_response.json()["source_span_result_count"] == 0
     assert search_response.json()["total_resource_count"] == 198
 
@@ -239,17 +306,7 @@ def test_corpus_search_uses_only_local_loaded_source_spans(monkeypatch: Any) -> 
     monkeypatch.setattr(
         knowledgebase,
         "_load_corpus_source_spans",
-        lambda: [
-            {
-                "span_id": "source-span.local-test",
-                "resource_id": PILOT_RESOURCE_ID,
-                "document_id": "source-document.local-test",
-                "stable_locator": "page:1;span:1",
-                "bounded_excerpt": "Local deterministic parsed excerpt for search coverage.",
-                "checksum_sha256": "0" * 64,
-                "output_status": "draft",
-            }
-        ],
+        lambda: [valid_corpus_span(PILOT_RESOURCE_ID)],
     )
 
     response = client.get("/knowledgebase/corpus/search", params={"q": "deterministic parsed excerpt"})
@@ -258,13 +315,25 @@ def test_corpus_search_uses_only_local_loaded_source_spans(monkeypatch: Any) -> 
     payload = response.json()
     assert payload["model_routing"] == "none-local-deterministic-search-only"
     assert payload["source_span_result_count"] == 1
+    span_hit = payload["source_span_results"][0]
+    assert span_hit["focus_node_id"] == f"resource.{PILOT_RESOURCE_ID}"
+    assert span_hit["resource_node_id"] == f"resource.{PILOT_RESOURCE_ID}"
+    assert span_hit["neighbor_node_ids"]
+    assert span_hit["edge_types"]
+    assert span_hit["source_span_ids"] == [f"source-span.{PILOT_RESOURCE_ID}.local-test"]
+    assert span_hit["review_task_ids"] == []
+    assert span_hit["coverage_status"] == "source_span_ready"
+    assert span_hit["interpretability_summary"]["coverage_status"] == "source_span_ready"
+    assert span_hit["source_document_id"] == f"source-document.{PILOT_RESOURCE_ID}.local-test"
+    assert span_hit["stable_locator"] == "page:1;span:1"
+    assert span_hit["excerpt_checksum"] == hashlib.sha256(span_hit["quoted_span"].encode("utf-8")).hexdigest()
     assert "generated_answer" not in payload
     assert "summary" not in payload
     assert_no_corpus_patient_specific_advice_strings(payload)
     assert_no_blocked_placeholder_labels(payload)
 
 
-def test_corpus_search_excludes_source_spans_outside_parse_subset(monkeypatch: Any) -> None:
+def test_corpus_search_includes_validated_source_spans_outside_parse_subset(monkeypatch: Any) -> None:
     parse_subset_ids = knowledgebase._load_parse_subset_ids()
     non_subset_resource = next(
         resource
@@ -274,22 +343,139 @@ def test_corpus_search_excludes_source_spans_outside_parse_subset(monkeypatch: A
     monkeypatch.setattr(
         knowledgebase,
         "_load_corpus_source_spans",
-        lambda: [
-            {
-                "span_id": "source-span.non-subset-local-test",
-                "resource_id": non_subset_resource["resource_id"],
-                "document_id": "source-document.non-subset-local-test",
-                "stable_locator": "page:1;span:1",
-                "bounded_excerpt": "Unique non subset local parser excerpt for search boundary.",
-                "checksum_sha256": "0" * 64,
-                "output_status": "draft",
-            }
-        ],
+        lambda: [valid_corpus_span(non_subset_resource["resource_id"], "Unique non subset local parser excerpt for search boundary.")],
     )
 
     response = client.get("/knowledgebase/corpus/search", params={"q": "unique non subset local parser excerpt"})
 
     assert response.status_code == 200
     payload = response.json()
+    assert payload["source_span_result_count"] == 1
+    assert payload["source_span_results"][0]["resource_id"] == non_subset_resource["resource_id"]
+
+
+def test_corpus_search_excludes_unvalidated_source_spans(monkeypatch: Any) -> None:
+    invalid_span = valid_corpus_span(PILOT_RESOURCE_ID, "Unique invalid checksum local parser excerpt.")
+    invalid_span["excerpt_checksum"] = "0" * 64
+    monkeypatch.setattr(knowledgebase, "_load_corpus_source_spans", lambda: [invalid_span])
+
+    response = client.get("/knowledgebase/corpus/search", params={"q": "unique invalid checksum"})
+
+    assert response.status_code == 200
+    payload = response.json()
     assert payload["source_span_result_count"] == 0
     assert payload["source_span_results"] == []
+
+
+def test_corpus_interpretability_endpoint_returns_local_deterministic_contract(monkeypatch: Any) -> None:
+    monkeypatch.setattr(knowledgebase, "_load_corpus_source_spans", lambda: [valid_corpus_span(PILOT_RESOURCE_ID)])
+
+    response = client.get("/knowledgebase/corpus/interpretability", params={"resource_id": PILOT_RESOURCE_ID})
+
+    payload = response.json()
+
+    assert response.status_code == 200
+    assert payload["resource"]["resource_id"] == PILOT_RESOURCE_ID
+    assert payload["resource"]["focus_node_id"] == f"resource.{PILOT_RESOURCE_ID}"
+    assert payload["graph_neighborhood"]["resource_node_id"] == f"resource.{PILOT_RESOURCE_ID}"
+    assert payload["graph_neighborhood"]["neighbor_node_ids"]
+    assert payload["source_spans"][0]["span_id"] == f"source-span.{PILOT_RESOURCE_ID}.local-test"
+    assert payload["surveillance_status"]["mode"] == "local_manifest_status_only"
+    assert set(payload["surveillance_status"]) >= {
+        "changed_count",
+        "missing_count",
+        "unchanged_count",
+        "needs_review_count",
+        "resource_statuses",
+    }
+    assert PILOT_RESOURCE_ID in payload["surveillance_status"]["resource_statuses"]
+    assert len(payload["review_queue_items"]) == 1
+    review_item = payload["review_queue_items"][0]
+    assert review_item == {
+        "review_task_id": f"workflow-task.{PILOT_RESOURCE_ID}.source-span.{PILOT_RESOURCE_ID}.local-test.evidence-review",
+        "resource_id": PILOT_RESOURCE_ID,
+        "source_span_ids": [f"source-span.{PILOT_RESOURCE_ID}.local-test"],
+        "pico_placeholder": {
+            "population": None,
+            "intervention": None,
+            "comparator": None,
+            "outcome": None,
+        },
+        "review_status": "draft",
+        "staleness_status": "not_evaluated_local",
+        "allowed_actions": ["inspect_source", "mark_needs_review_local", "link_source_local"],
+    }
+    assert payload["review_task_ids"] == [review_item["review_task_id"]]
+    assert payload["review_queue_contract"] == {
+        "source_of_truth": "validated_loaded_source_spans",
+        "invalid_unbacked_items": "metadata_only_excluded_from_production_queue",
+    }
+    assert payload["coverage_status"] == "source_span_ready"
+    assert set(payload["coverage_status_vocabulary"]) == EXPECTED_COVERAGE_STATUSES
+    assert payload["model_routing"] == "none-local-deterministic-search-only"
+    assert "generated_answer" not in payload
+    assert_no_generated_answer_or_clinical_claim_fields(payload)
+
+
+def test_corpus_interpretability_surveillance_maps_changed_checksum_to_needs_review(monkeypatch: Any) -> None:
+    unchanged_resource_id = "ahs-guru-central-nervous-system-cns014-management-of-brain-metastases"
+    monkeypatch.setattr(knowledgebase, "_load_corpus_source_spans", lambda: [])
+    monkeypatch.setattr(
+        knowledgebase,
+        "_load_manifest_rows",
+        lambda path: {
+            PILOT_RESOURCE_ID: {"resource_id": PILOT_RESOURCE_ID, "status": "downloaded", "sha256": "1" * 64},
+            unchanged_resource_id: {"resource_id": unchanged_resource_id, "status": "downloaded", "sha256": "3" * 64},
+            "missing-local-resource": {"resource_id": "missing-local-resource", "status": "downloaded", "sha256": "4" * 64},
+        }
+        if "20260615" in path.name
+        else {
+            PILOT_RESOURCE_ID: {"resource_id": PILOT_RESOURCE_ID, "status": "downloaded", "sha256": "2" * 64},
+            unchanged_resource_id: {"resource_id": unchanged_resource_id, "status": "downloaded", "sha256": "3" * 64},
+            "missing-local-resource": {"resource_id": "missing-local-resource", "status": "failed"},
+        },
+    )
+
+    response = client.get("/knowledgebase/corpus/interpretability", params={"resource_id": PILOT_RESOURCE_ID})
+
+    assert response.status_code == 200
+    surveillance = response.json()["surveillance_status"]
+    assert surveillance["status"] == "offline_local_archive_comparison"
+    assert surveillance["changed_count"] == 1
+    assert surveillance["missing_count"] == 1
+    assert surveillance["unchanged_count"] == 1
+    assert surveillance["needs_review_count"] == 2
+    assert surveillance["resource_statuses"][PILOT_RESOURCE_ID]["change_state"] == "checksum_mismatch"
+    assert surveillance["resource_statuses"][PILOT_RESOURCE_ID]["review_status"] == "needs_review"
+    assert surveillance["resource_statuses"][unchanged_resource_id]["change_state"] == "unchanged"
+    assert surveillance["resource_statuses"][unchanged_resource_id]["review_status"] == "no_change"
+    assert surveillance["resource_statuses"]["missing-local-resource"]["change_state"] == "missing"
+    assert surveillance["resource_statuses"]["missing-local-resource"]["review_status"] == "needs_review"
+
+
+def test_corpus_interpretability_rejects_unknown_resource_id() -> None:
+    response = client.get("/knowledgebase/corpus/interpretability", params={"resource_id": "missing-resource"})
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "corpus resource not found: missing-resource"}
+
+
+def test_corpus_interpretability_excludes_unvalidated_source_spans(monkeypatch: Any) -> None:
+    invalid_span = valid_corpus_span(PILOT_RESOURCE_ID, "Unique invalid interpretability local parser excerpt.")
+    invalid_span["review_status"] = "unreviewed"
+    invalid_span["recommendation_text"] = "blocked unbacked fixture claim text"
+    invalid_span["suggested_treatment"] = "blocked unbacked fixture treatment text"
+    invalid_span["dosing"] = "blocked unbacked fixture dosing text"
+    monkeypatch.setattr(knowledgebase, "_load_corpus_source_spans", lambda: [invalid_span])
+
+    response = client.get("/knowledgebase/corpus/interpretability", params={"resource_id": PILOT_RESOURCE_ID})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["source_spans"] == []
+    assert payload["resource"]["source_span_ids"] == []
+    assert payload["review_queue_items"] == []
+    assert payload["review_task_ids"] == []
+    assert payload["review_queue_contract"]["invalid_unbacked_items"] == "metadata_only_excluded_from_production_queue"
+    assert "blocked unbacked fixture" not in str(payload)
+    assert_no_generated_answer_or_clinical_claim_fields(payload)

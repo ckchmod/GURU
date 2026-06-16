@@ -14,12 +14,33 @@ from services.api.app.corpus_graph import build_public_corpus_graph
 ROOT = Path(__file__).resolve().parents[3]
 PILOT_SUBSET_PATH = ROOT / "resources" / "registry" / "ahs-guru-pilot-subset.json"
 PARSE_SUBSET_PATH = ROOT / "resources" / "registry" / "ahs-guru-parse-subset.json"
+PREVIOUS_PUBLIC_MANIFEST_PATH = ROOT / "resources" / "manifests" / "ahs-guru-public" / "manifest-20260615T000000Z-no-network-status.json"
+CURRENT_PUBLIC_MANIFEST_PATH = ROOT / "resources" / "manifests" / "ahs-guru-public" / "manifest-20260616T053200Z.json"
 DERIVED_SOURCE_SPAN_DIR = ROOT / "resources" / "derived" / "source-spans"
 SYNTHETIC_SOURCE_PATH = ROOT / "tests" / "fixtures" / "source-documents" / "synthetic-guideline-note.txt"
 ACCESS_DATE = "2026-06-15"
 EXTRACTION_TIMESTAMP = "2026-06-15T12:00:00Z"
 PARSER_VERSION = "source-document-parser-skeleton-v1"
 SOURCE_SPAN_COVERAGE_COUNT = 5
+MODEL_ROUTING = "none-local-deterministic-search-only"
+DETERMINISTIC_PARSER_VERSION = "none-local-deterministic-parser"
+REVIEW_QUEUE_ALLOWED_ACTIONS = ("inspect_source", "mark_needs_review_local", "link_source_local")
+SURVEILLANCE_REVIEW_STATES = {"changed", "checksum_mismatch", "missing", "resource_added", "resource_removed"}
+COVERAGE_STATUS_VOCABULARY = {
+    "source_span_ready",
+    "partial_source_span",
+    "metadata_only",
+    "download_failed",
+    "checksum_mismatch",
+    "parse_failed",
+}
+PATIENT_ADVICE_LANGUAGE_PATTERNS = (
+    re.compile(r"\bdosing\b", re.IGNORECASE),
+    re.compile(r"\bdiagnosis\b", re.IGNORECASE),
+    re.compile(r"\btreatment advice\b", re.IGNORECASE),
+    re.compile(r"\brecommended regimen\b", re.IGNORECASE),
+    re.compile(r"\bpatient-specific\b", re.IGNORECASE),
+)
 RESPONSE_STATE_VOCABULARY = {
     "metadata_only": "Registry metadata exists, but no local parsed artifact is exposed.",
     "downloaded_unparsed": "A local raw archive state is recorded, but parser output is not available.",
@@ -75,6 +96,95 @@ def _load_parse_subset_ids() -> set[str]:
     return {row["resource_id"] for row in payload.get("rows", []) if isinstance(row, dict) and row.get("resource_id")}
 
 
+def _load_manifest_rows(path: Path) -> dict[str, dict[str, Any]]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    rows = payload.get("rows", []) if isinstance(payload, dict) else []
+    return {
+        row["resource_id"]: row
+        for row in rows
+        if isinstance(row, dict) and isinstance(row.get("resource_id"), str) and row.get("resource_id")
+    }
+
+
+def _manifest_row_status(row: dict[str, Any] | None) -> str | None:
+    if row is None:
+        return None
+    status = row.get("status")
+    return status if isinstance(status, str) else None
+
+
+def _manifest_row_checksum(row: dict[str, Any] | None) -> str | None:
+    if row is None:
+        return None
+    checksum = row.get("sha256")
+    return checksum if isinstance(checksum, str) else None
+
+
+def _manifest_change_state(previous: dict[str, Any] | None, current: dict[str, Any] | None) -> str:
+    if previous is None:
+        return "resource_added"
+    if current is None:
+        return "resource_removed"
+    previous_status = _manifest_row_status(previous)
+    current_status = _manifest_row_status(current)
+    previous_checksum = _manifest_row_checksum(previous)
+    current_checksum = _manifest_row_checksum(current)
+    if current_status == "failed" and previous_status != "failed":
+        return "missing"
+    if previous_status == current_status and previous_checksum == current_checksum:
+        return "unchanged"
+    if previous_status == "downloaded" and current_status == "downloaded" and previous_checksum != current_checksum:
+        return "checksum_mismatch"
+    return "changed"
+
+
+def _offline_surveillance_status() -> dict[str, Any]:
+    previous_rows = _load_manifest_rows(PREVIOUS_PUBLIC_MANIFEST_PATH)
+    current_rows = _load_manifest_rows(CURRENT_PUBLIC_MANIFEST_PATH)
+    resource_statuses: dict[str, dict[str, Any]] = {}
+    summary_counts = {
+        "changed": 0,
+        "checksum_mismatch": 0,
+        "missing": 0,
+        "resource_added": 0,
+        "resource_removed": 0,
+        "unchanged": 0,
+    }
+
+    for resource_id in sorted(set(previous_rows) | set(current_rows)):
+        previous = previous_rows.get(resource_id)
+        current = current_rows.get(resource_id)
+        change_state = _manifest_change_state(previous, current)
+        summary_counts[change_state] += 1
+        review_status = "needs_review" if change_state in SURVEILLANCE_REVIEW_STATES else "no_change"
+        resource_statuses[resource_id] = {
+            "resource_id": resource_id,
+            "status": review_status,
+            "change_state": change_state,
+            "review_status": review_status,
+            "previous_status": _manifest_row_status(previous),
+            "current_status": _manifest_row_status(current),
+            "previous_checksum_sha256": _manifest_row_checksum(previous),
+            "current_checksum_sha256": _manifest_row_checksum(current),
+        }
+
+    changed_count = summary_counts["changed"] + summary_counts["checksum_mismatch"] + summary_counts["resource_added"] + summary_counts["resource_removed"]
+    missing_count = summary_counts["missing"] + summary_counts["resource_removed"]
+    needs_review_count = sum(1 for status in resource_statuses.values() if status["review_status"] == "needs_review")
+    return {
+        "mode": "local_manifest_status_only",
+        "status": "offline_local_archive_comparison",
+        "review_status": "needs_review" if needs_review_count else "no_change",
+        "resource_count": len(resource_statuses),
+        "changed_count": changed_count,
+        "missing_count": missing_count,
+        "unchanged_count": summary_counts["unchanged"],
+        "needs_review_count": needs_review_count,
+        "summary_counts": summary_counts,
+        "resource_statuses": resource_statuses,
+    }
+
+
 def list_resources() -> list[dict[str, Any]]:
     return [
         {
@@ -100,6 +210,8 @@ def _load_json_records(directory: Path, key: str) -> list[dict[str, Any]]:
             records.extend(record for record in payload[key] if isinstance(record, dict))
         elif isinstance(payload, dict):
             records.append(payload)
+        elif isinstance(payload, list):
+            records.extend(record for record in payload if isinstance(record, dict))
     return records
 
 
@@ -219,22 +331,194 @@ def _metadata_search_match(resource: dict[str, Any], query: str) -> bool:
 
 def _source_span_search_results(query: str, allowed_resource_ids: set[str]) -> list[dict[str, Any]]:
     results: list[dict[str, Any]] = []
-    for span in _load_corpus_source_spans():
+    resource_lookup = {resource["resource_id"]: resource for resource in _corpus_resources()}
+    for span in _validated_corpus_source_spans(allowed_resource_ids):
         resource_id = span.get("resource_id")
         excerpt = span.get("bounded_excerpt", span.get("quoted_text", span.get("quoted_span", "")))
         if resource_id in allowed_resource_ids and _contains_query(excerpt, query):
-            results.append(
-                {
-                    "span_id": span.get("span_id"),
-                    "resource_id": resource_id,
-                    "document_id": span.get("document_id", span.get("source_document_id")),
-                    "stable_locator": span.get("stable_locator"),
-                    "excerpt": excerpt,
-                    "checksum_sha256": span.get("checksum_sha256", span.get("excerpt_checksum")),
-                    "output_status": span.get("output_status", span.get("status", "draft")),
-                }
-            )
+            resource = resource_lookup.get(resource_id)
+            if resource is not None:
+                results.append(_source_span_hit(span, resource))
     return results
+
+
+def _is_sha256(value: Any) -> bool:
+    return isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value) is not None
+
+
+def _is_validated_source_span(span: dict[str, Any], allowed_resource_ids: set[str]) -> bool:
+    resource_id = span.get("resource_id")
+    quoted_span = span.get("quoted_span")
+    excerpt_checksum = span.get("excerpt_checksum")
+    if resource_id not in allowed_resource_ids or not isinstance(quoted_span, str) or quoted_span == "":
+        return False
+    if any(pattern.search(quoted_span) for pattern in PATIENT_ADVICE_LANGUAGE_PATTERNS):
+        return False
+    required_text_fields = (
+        "span_id",
+        "source_document_id",
+        "access_date",
+        "stable_locator",
+        "prompt_or_model_version",
+        "reviewer",
+        "review_status",
+        "timestamp",
+        "output_status",
+    )
+    if any(not isinstance(span.get(field), str) or not span.get(field) for field in required_text_fields):
+        return False
+    if span.get("prompt_or_model_version") != DETERMINISTIC_PARSER_VERSION:
+        return False
+    if span.get("reviewer") != "unreviewed" or span.get("review_status") != "draft":
+        return False
+    if not _is_sha256(excerpt_checksum) or excerpt_checksum != _sha256_text(quoted_span):
+        return False
+    checksum_sha256 = span.get("checksum_sha256")
+    return checksum_sha256 in {None, excerpt_checksum}
+
+
+def _validated_corpus_source_spans(allowed_resource_ids: set[str] | None = None) -> list[dict[str, Any]]:
+    allowed_ids = allowed_resource_ids if allowed_resource_ids is not None else _load_parse_subset_ids()
+    return [span for span in _load_corpus_source_spans() if _is_validated_source_span(span, allowed_ids)]
+
+
+def _resource_graph_context(resource: dict[str, Any]) -> dict[str, Any]:
+    graph = build_public_corpus_graph()
+    resource_node_id = resource["node_id"]
+    edges = [edge for edge in graph["edges"] if edge.get("source") == resource_node_id or edge.get("target") == resource_node_id]
+    neighbor_node_ids = sorted(
+        {
+            edge["target"] if edge.get("source") == resource_node_id else edge["source"]
+            for edge in edges
+            if isinstance(edge.get("source"), str) and isinstance(edge.get("target"), str)
+        }
+    )
+    edge_types = sorted({edge["type"] for edge in edges if isinstance(edge.get("type"), str)})
+    node_lookup = {node["id"]: node for node in graph["nodes"] if isinstance(node.get("id"), str)}
+    return {
+        "resource_node_id": resource_node_id,
+        "neighbor_node_ids": neighbor_node_ids,
+        "edge_types": edge_types,
+        "neighbor_nodes": [node_lookup[node_id] for node_id in neighbor_node_ids if node_id in node_lookup],
+        "edges": edges,
+    }
+
+
+def _coverage_status(resource: dict[str, Any], source_spans: list[dict[str, Any]] | None = None) -> str:
+    archive_status = resource.get("archive_status")
+    parse_status = resource.get("parse_status")
+    spans = source_spans if source_spans is not None else _validated_corpus_source_spans({resource["resource_id"]})
+    if archive_status == "checksum_mismatch" or parse_status == "checksum_mismatch":
+        return "checksum_mismatch"
+    if archive_status == "download_missing" or parse_status == "download_missing":
+        return "download_failed"
+    if parse_status in {"parse_failed", "encrypted", "empty_text"}:
+        return "parse_failed"
+    if spans:
+        return "source_span_ready"
+    if parse_status in {"parsed", "partial_text"}:
+        return "partial_source_span"
+    return "metadata_only"
+
+
+def _interpretability_summary(coverage_status: str, source_span_count: int, neighbor_count: int) -> dict[str, Any]:
+    return {
+        "mode": "deterministic_metadata_and_source_span_lookup",
+        "coverage_status": coverage_status,
+        "source_span_count": source_span_count,
+        "graph_neighbor_count": neighbor_count,
+        "model_routing": MODEL_ROUTING,
+    }
+
+
+def _review_task_id(resource_id: str, span_id: str) -> str:
+    return f"workflow-task.{_safe_id_part(resource_id)}.{_safe_id_part(span_id)}.evidence-review"
+
+
+def _empty_pico_placeholder() -> dict[str, None]:
+    return {
+        "population": None,
+        "intervention": None,
+        "comparator": None,
+        "outcome": None,
+    }
+
+
+def _review_queue_item_from_span(span: dict[str, Any]) -> dict[str, Any]:
+    resource_id = span["resource_id"]
+    span_id = span["span_id"]
+    return {
+        "review_task_id": _review_task_id(resource_id, span_id),
+        "resource_id": resource_id,
+        "source_span_ids": [span_id],
+        "pico_placeholder": _empty_pico_placeholder(),
+        "review_status": "draft",
+        "staleness_status": "not_evaluated_local",
+        "allowed_actions": list(REVIEW_QUEUE_ALLOWED_ACTIONS),
+    }
+
+
+def _review_queue_items_from_source_spans(source_spans: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [_review_queue_item_from_span(span) for span in source_spans]
+
+
+def _resource_interpretability_fields(resource: dict[str, Any], source_spans: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    graph_context = _resource_graph_context(resource)
+    spans = source_spans if source_spans is not None else _validated_corpus_source_spans({resource["resource_id"]})
+    coverage_status = _coverage_status(resource, spans)
+    return {
+        "focus_node_id": resource["node_id"],
+        "resource_node_id": graph_context["resource_node_id"],
+        "neighbor_node_ids": graph_context["neighbor_node_ids"],
+        "edge_types": graph_context["edge_types"],
+        "source_span_ids": [span["span_id"] for span in spans],
+        "review_task_ids": [],
+        "coverage_status": coverage_status,
+        "interpretability_summary": _interpretability_summary(coverage_status, len(spans), len(graph_context["neighbor_node_ids"])),
+    }
+
+
+def _metadata_hit(resource: dict[str, Any]) -> dict[str, Any]:
+    return {**resource, **_resource_interpretability_fields(resource)}
+
+
+def _safe_source_span(span: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "span_id": span.get("span_id"),
+        "resource_id": span.get("resource_id"),
+        "document_id": span.get("document_id", span.get("source_document_id")),
+        "source_document_id": span.get("source_document_id"),
+        "access_date": span.get("access_date"),
+        "stable_locator": span.get("stable_locator"),
+        "excerpt": span.get("bounded_excerpt", span.get("quoted_text", span.get("quoted_span"))),
+        "quoted_span": span.get("quoted_span"),
+        "excerpt_checksum": span.get("excerpt_checksum"),
+        "checksum_sha256": span.get("checksum_sha256", span.get("excerpt_checksum")),
+        "prompt_or_model_version": span.get("prompt_or_model_version"),
+        "reviewer": span.get("reviewer"),
+        "review_status": span.get("review_status"),
+        "timestamp": span.get("timestamp"),
+        "output_status": span.get("output_status", span.get("status", "draft")),
+    }
+
+
+def _source_span_hit(span: dict[str, Any], resource: dict[str, Any]) -> dict[str, Any]:
+    safe_span = _safe_source_span(span)
+    fields = _resource_interpretability_fields(resource, [span])
+    return {
+        **safe_span,
+        **fields,
+        "focus_node_id": resource["node_id"],
+        "source_span_ids": [span["span_id"]],
+        "focus_resource": _metadata_hit(resource),
+    }
+
+
+def _get_corpus_resource(resource_id: str) -> dict[str, Any]:
+    for resource in _corpus_resources():
+        if resource["resource_id"] == resource_id:
+            return resource
+    raise HTTPException(status_code=404, detail=f"corpus resource not found: {resource_id}")
 
 
 def _document_id(resource_id: str, checksum: str) -> str:
@@ -400,8 +684,11 @@ def search_corpus(
         archive_status=archive_status,
         parse_status=parse_status,
     )
-    metadata_results = [resource for resource in filtered_resources if query and _metadata_search_match(resource, query)]
-    source_span_resource_ids = {resource["resource_id"] for resource in filtered_resources} & _load_parse_subset_ids()
+    metadata_results = [_metadata_hit(resource) for resource in filtered_resources if query and _metadata_search_match(resource, query)]
+    source_span_resource_ids = {resource["resource_id"] for resource in filtered_resources}
+    source_span_coverage_ids = {
+        span["resource_id"] for span in _validated_corpus_source_spans(source_span_resource_ids) if isinstance(span.get("resource_id"), str)
+    }
     source_span_results = _source_span_search_results(query, source_span_resource_ids) if query else []
     return {
         "query": q,
@@ -409,31 +696,51 @@ def search_corpus(
         "source_span_results": source_span_results,
         "metadata_result_count": len(metadata_results),
         "source_span_result_count": len(source_span_results),
-        "source_span_coverage_count": SOURCE_SPAN_COVERAGE_COUNT,
-        "source_span_coverage_note": "Search checks metadata for all 198 resources and parsed source-span excerpts only for the five-row parsed subset when derived outputs are present.",
+        "source_span_coverage_count": len(source_span_coverage_ids),
+        "source_span_coverage_note": "Search checks metadata for all 198 resources and canonical validated source-span excerpts for filtered resources; spans containing safety-blocked advice language are excluded.",
         "total_resource_count": len(_corpus_resources()),
-        "model_routing": "none-local-deterministic-search-only",
+        "model_routing": MODEL_ROUTING,
+    }
+
+
+@router.get("/corpus/interpretability")
+def get_corpus_interpretability(resource_id: str) -> dict[str, Any]:
+    resource = _get_corpus_resource(resource_id)
+    source_spans = _validated_corpus_source_spans({resource_id})
+    graph_context = _resource_graph_context(resource)
+    coverage_status = _coverage_status(resource, source_spans)
+    review_queue_items = _review_queue_items_from_source_spans(source_spans)
+    return {
+        "resource": _metadata_hit(resource),
+        "graph_neighborhood": {
+            "focus_node_id": resource["node_id"],
+            "resource_node_id": graph_context["resource_node_id"],
+            "neighbor_node_ids": graph_context["neighbor_node_ids"],
+            "edge_types": graph_context["edge_types"],
+            "neighbor_nodes": graph_context["neighbor_nodes"],
+            "edges": graph_context["edges"],
+        },
+        "source_spans": [_safe_source_span(span) for span in source_spans],
+        "surveillance_status": _offline_surveillance_status(),
+        "review_queue_items": review_queue_items,
+        "review_task_ids": [item["review_task_id"] for item in review_queue_items],
+        "review_queue_contract": {
+            "source_of_truth": "validated_loaded_source_spans",
+            "invalid_unbacked_items": "metadata_only_excluded_from_production_queue",
+        },
+        "coverage_status": coverage_status,
+        "coverage_status_vocabulary": sorted(COVERAGE_STATUS_VOCABULARY),
+        "model_routing": MODEL_ROUTING,
     }
 
 
 @router.get("/corpus/source-spans")
 def get_corpus_source_spans(resource_id: str | None = None) -> dict[str, Any]:
     parse_subset_ids = _load_parse_subset_ids()
-    spans = [span for span in _load_corpus_source_spans() if span.get("resource_id") in parse_subset_ids]
+    spans = _validated_corpus_source_spans(parse_subset_ids)
     if resource_id is not None:
         spans = [span for span in spans if span.get("resource_id") == resource_id]
-    safe_spans = [
-        {
-            "span_id": span.get("span_id"),
-            "resource_id": span.get("resource_id"),
-            "document_id": span.get("document_id", span.get("source_document_id")),
-            "stable_locator": span.get("stable_locator"),
-            "excerpt": span.get("bounded_excerpt", span.get("quoted_text", span.get("quoted_span"))),
-            "checksum_sha256": span.get("checksum_sha256", span.get("excerpt_checksum")),
-            "output_status": span.get("output_status", span.get("status", "draft")),
-        }
-        for span in spans
-    ]
+    safe_spans = [_safe_source_span(span) for span in spans]
     return {
         "source_spans": safe_spans,
         "count": len(safe_spans),
