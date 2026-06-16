@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import "@xyflow/react/dist/style.css";
+import "@react-sigma/core/lib/style.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "GURU Guideline Graph Workbench",
-  description: "Synthetic graph-first workbench scaffold for guideline maintenance."
+  description: "API-backed graph-first workbench scaffold for public guideline corpus maintenance."
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
