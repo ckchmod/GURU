@@ -10,7 +10,6 @@ export default function Home() {
           <span>/</span>
           <span>public-corpus-atlas.graph</span>
         </div>
-        <div className="ide-command-palette" aria-label="Command palette">⌘K Evidence Atlas</div>
         <div className="ide-status" aria-label="Safety status">
           <span>No PHI</span>
           <span>no clinical advice</span>
