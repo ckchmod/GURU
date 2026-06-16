@@ -1,0 +1,132 @@
+{
+  "registry_version": "1.0.0",
+  "last_updated": "2026-06-15",
+  "category": "AHS/GURU public corpus",
+  "rows": [
+    {
+      "resource_id": "ahs-guru-breast-br005-adjuvant-rt-invasive-breast",
+      "title": "Adjuvant Radiotherapy for Invasive Breast Cancer",
+      "source_owner": "Alberta Health Services / Cancer Care Alberta / GURU",
+      "source_url_or_access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br005-adjuvant-rt-invasive-breast.pdf",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "guideline",
+      "jurisdiction": "CA-AB",
+      "disease_site": "breast",
+      "document_status": "unknown",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "government_open",
+      "allowed_use": [
+        "link",
+        "view",
+        "metadata",
+        "derive_graph"
+      ],
+      "permission_required": false,
+      "permission_status": "not_applicable",
+      "local_storage_decision": "local raw archive",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Deterministic five-document parse subset row. Selected first because Task 2 live manifest evidence recorded status downloaded for this public PDF and it is one of the prior pilot rows. derive_graph is limited to bounded draft source-span extraction and draft graph-ready prototype records. No PDF, page body, guideline text, excerpt, recommendation, summary, embedding, approved clinical recommendation, PHI, dosing advice, diagnostic conclusion, or patient-specific advice is stored in this selector."
+    },
+    {
+      "resource_id": "ahs-guru-central-nervous-system-cns014-management-of-brain-metastases",
+      "title": "Brain Metastases",
+      "source_owner": "Alberta Health Services / Cancer Care Alberta / GURU",
+      "source_url_or_access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cns014-management-of-brain-metastases.pdf",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "guideline",
+      "jurisdiction": "CA-AB",
+      "disease_site": "central-nervous-system",
+      "document_status": "unknown",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "government_open",
+      "allowed_use": [
+        "link",
+        "view",
+        "metadata",
+        "derive_graph"
+      ],
+      "permission_required": false,
+      "permission_status": "not_applicable",
+      "local_storage_decision": "local raw archive",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Deterministic five-document parse subset row. Selected second because Task 2 live manifest evidence recorded status downloaded for this public PDF and it preserves the prior pilot's second disease site. derive_graph is limited to bounded draft source-span extraction and draft graph-ready prototype records. No PDF, page body, guideline text, excerpt, recommendation, summary, embedding, approved clinical recommendation, PHI, dosing advice, diagnostic conclusion, or patient-specific advice is stored in this selector."
+    },
+    {
+      "resource_id": "ahs-guru-cutaneous-cu015-evidence-table",
+      "title": "Evidence Table",
+      "source_owner": "Alberta Health Services / Cancer Care Alberta / GURU",
+      "source_url_or_access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cu015-evidence-table.pdf",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "evidence_table",
+      "jurisdiction": "CA-AB",
+      "disease_site": "cutaneous",
+      "document_status": "unknown",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "government_open",
+      "allowed_use": [
+        "link",
+        "view",
+        "metadata",
+        "derive_graph"
+      ],
+      "permission_required": false,
+      "permission_status": "not_applicable",
+      "local_storage_decision": "local raw archive",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Deterministic five-document parse subset row. Selected as the first public evidence_table row after the downloaded pilot rows to add a third disease site and a second document type. Task 2 live evidence did not record a failure for this resource; if a later live archive fails, replace it with the next public evidence_table from the same disease-site bucket when available, otherwise the next public evidence_table by corpus order. derive_graph is limited to bounded draft source-span extraction and draft graph-ready prototype records. No PDF, page body, guideline text, excerpt, recommendation, summary, embedding, approved clinical recommendation, PHI, dosing advice, diagnostic conclusion, or patient-specific advice is stored in this selector."
+    },
+    {
+      "resource_id": "ahs-guru-gynecologic-gyne008-algorithm-gtn",
+      "title": "Gestational Trophoblastic Neoplasia Algorithm",
+      "source_owner": "Alberta Health Services / Cancer Care Alberta / GURU",
+      "source_url_or_access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gyne008-algorithm-gtn.pdf",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "algorithm",
+      "jurisdiction": "CA-AB",
+      "disease_site": "gynecologic",
+      "document_status": "unknown",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "government_open",
+      "allowed_use": [
+        "link",
+        "view",
+        "metadata",
+        "derive_graph"
+      ],
+      "permission_required": false,
+      "permission_status": "not_applicable",
+      "local_storage_decision": "local raw archive",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Deterministic five-document parse subset row. Selected as the first public algorithm row after the downloaded pilot rows to widen document-type coverage while remaining in the 198-row public corpus. Task 2 live evidence did not record a failure for this resource; if a later live archive fails, replace it with the next public algorithm from the same disease-site bucket when available, otherwise the next public algorithm by corpus order. derive_graph is limited to bounded draft source-span extraction and draft graph-ready prototype records. No PDF, page body, guideline text, excerpt, recommendation, summary, embedding, approved clinical recommendation, PHI, dosing advice, diagnostic conclusion, or patient-specific advice is stored in this selector."
+    },
+    {
+      "resource_id": "ahs-guru-lung-lu-nsclc-summary",
+      "title": "NSCLC, SCLC, Mesothelioma",
+      "source_owner": "Alberta Health Services / Cancer Care Alberta / GURU",
+      "source_url_or_access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lu-nsclc-summary.pdf",
+      "access_method": "public_url",
+      "access_date": "2026-06-15",
+      "resource_type": "summary",
+      "jurisdiction": "CA-AB",
+      "disease_site": "lung",
+      "document_status": "unknown",
+      "version_or_date": "accessed 2026-06-15",
+      "license_status": "government_open",
+      "allowed_use": [
+        "link",
+        "view",
+        "metadata",
+        "derive_graph"
+      ],
+      "permission_required": false,
+      "permission_status": "not_applicable",
+      "local_storage_decision": "local raw archive",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "notes": "Deterministic five-document parse subset row. Selected as the first public summary row in a disease-site bucket not already represented by the four earlier selected rows. Task 2 live evidence did not record a failure for this resource; if a later live archive fails, replace it with the next public summary from the same disease-site bucket when available, otherwise the next public summary by corpus order. derive_graph is limited to bounded draft source-span extraction and draft graph-ready prototype records. No PDF, page body, guideline text, excerpt, recommendation, summary, embedding, approved clinical recommendation, PHI, dosing advice, diagnostic conclusion, or patient-specific advice is stored in this selector."
+    }
+  ]
+}
