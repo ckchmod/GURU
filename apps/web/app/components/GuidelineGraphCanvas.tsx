@@ -7,6 +7,7 @@ import {
   CorpusAtlasClientError,
   loadCorpusAtlas,
   loadCorpusInterpretability,
+  loadCorpusWorkbenchTrace,
   searchCorpus,
   type CompactAtlasGraphFocusMetadata,
   type CompactAtlasInterpretabilityModel,
@@ -18,7 +19,10 @@ import {
   type CompactAtlasSurveillanceStatus,
   type CorpusGraphNode,
   type CorpusAtlasModel,
-  type CorpusSourceSpan
+  type CorpusSourceSpan,
+  type CorpusWorkbenchTraceResponse,
+  type CorpusWorkbenchTraceSourceRecord,
+  type CorpusWorkbenchTraceStep
 } from "../../lib/corpusAtlas";
 import type { SigmaCorpusGraphProps } from "./SigmaCorpusGraph";
 
@@ -112,6 +116,13 @@ type InterpretabilityLoadState = {
   message: string;
 };
 
+type WorkbenchTraceState = {
+  status: SearchStatus;
+  query: string;
+  response: CorpusWorkbenchTraceResponse | null;
+  message: string;
+};
+
 type LookupSelection = {
   kind: "metadata" | "source_span";
   resourceId: string;
@@ -144,6 +155,13 @@ const initialInterpretabilityState: InterpretabilityLoadState = {
   message: "Select a resource or search result to load local deterministic graph provenance."
 };
 
+const initialWorkbenchTraceState: WorkbenchTraceState = {
+  status: "idle",
+  query: "",
+  response: null,
+  message: "Run a retrieval query to inspect the local workbench trace."
+};
+
 const modelDisabledNote = "Generated answers disabled until retrieval/source-span verification is implemented.";
 
 const groupLabels: Record<AtlasNodeGroup, string> = {
@@ -170,6 +188,7 @@ export function GuidelineGraphCanvas() {
   const [searchQuery, setSearchQuery] = useState("");
   const [workbenchQuery, setWorkbenchQuery] = useState("");
   const [workbenchSearchState, setWorkbenchSearchState] = useState<WorkbenchSearchState>(initialWorkbenchSearchState);
+  const [workbenchTraceState, setWorkbenchTraceState] = useState<WorkbenchTraceState>(initialWorkbenchTraceState);
   const [interpretabilityState, setInterpretabilityState] = useState<InterpretabilityLoadState>(initialInterpretabilityState);
   const [lookupSelection, setLookupSelection] = useState<LookupSelection | null>(null);
   const [reviewQueueLocalAction, setReviewQueueLocalAction] = useState<ReviewQueueLocalAction | null>(null);
@@ -390,18 +409,25 @@ export function GuidelineGraphCanvas() {
 
     if (!submittedQuery) {
       setWorkbenchSearchState(initialWorkbenchSearchState);
+      setWorkbenchTraceState(initialWorkbenchTraceState);
       return;
     }
 
     setWorkbenchSearchState({ status: "loading", query: submittedQuery, response: null, message: "Searching local public corpus metadata and parsed source spans." });
+    setWorkbenchTraceState({ status: "loading", query: submittedQuery, response: null, message: "Loading local workbench trace metadata." });
     try {
-      const response = await searchCorpus(submittedQuery);
-      setWorkbenchSearchState({ status: "success", query: submittedQuery, response, message: "Search completed through the local deterministic corpus API." });
+      const [searchResponse, traceResponse] = await Promise.all([
+        searchCorpus(submittedQuery),
+        loadCorpusWorkbenchTrace(submittedQuery)
+      ]);
+      setWorkbenchSearchState({ status: "success", query: submittedQuery, response: searchResponse, message: "Search completed through the local deterministic corpus API." });
+      setWorkbenchTraceState({ status: "success", query: submittedQuery, response: traceResponse, message: "Workbench trace completed through the local deterministic corpus API." });
     } catch (error: unknown) {
       const message = error instanceof CorpusAtlasClientError
         ? error.message
         : "Corpus search API unavailable.";
       setWorkbenchSearchState({ status: "error", query: submittedQuery, response: null, message });
+      setWorkbenchTraceState({ status: "error", query: submittedQuery, response: null, message });
     }
   }, [workbenchQuery]);
 
@@ -559,6 +585,7 @@ export function GuidelineGraphCanvas() {
         retrievalEvidence={retrievalGraphEvidence}
         query={workbenchQuery}
         searchState={workbenchSearchState}
+        traceState={workbenchTraceState}
         onQueryChange={handleWorkbenchQueryChange}
         onSearchSubmit={handleWorkbenchSearchSubmit}
         onMetadataSelect={handleMetadataSearchSelect}
@@ -724,6 +751,7 @@ function BottomCorpusSearchWorkbench({
   retrievalEvidence,
   query,
   searchState,
+  traceState,
   onQueryChange,
   onSearchSubmit,
   onMetadataSelect,
@@ -736,12 +764,14 @@ function BottomCorpusSearchWorkbench({
   retrievalEvidence: RetrievalGraphEvidenceState | null;
   query: string;
   searchState: WorkbenchSearchState;
+  traceState: WorkbenchTraceState;
   onQueryChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onSearchSubmit: (event: WorkbenchSearchSubmitEvent) => void;
   onMetadataSelect: (result: CompactAtlasMetadataSearchResult) => void;
   onSourceSpanSelect: (result: CompactAtlasSourceSpanSearchResult) => void;
 }) {
   const response = searchState.response;
+  const resultsRef = React.useRef<HTMLElement | null>(null);
   const hasSearched = searchState.status === "success" && Boolean(response);
   const hasResults = Boolean(response && (response.metadataResults.length > 0 || response.sourceSpanResults.length > 0));
   const resourceById = useMemo(() => new Map((model?.resources ?? []).map((resource) => [resource.id, resource])), [model]);
@@ -749,6 +779,12 @@ function BottomCorpusSearchWorkbench({
     () => buildRetrievalTerminalState(response, lookupSelection, selectedResource, retrievalEvidence),
     [lookupSelection, response, retrievalEvidence, selectedResource]
   );
+
+  useEffect(() => {
+    if (resultsRef.current) {
+      resultsRef.current.scrollTop = 0;
+    }
+  }, [response?.query, searchState.status]);
 
   return (
     <footer className="atlas-workbench" aria-label="Corpus search workbench" data-testid="atlas-workbench">
@@ -778,7 +814,7 @@ function BottomCorpusSearchWorkbench({
         <p className="atlas-workbench__model-note">{modelDisabledNote} Local-only deterministic mode; no external large-language-model routing or approved guidance text is shown.</p>
       </section>
 
-      <section className="atlas-workbench__results" aria-live="polite" aria-label="Graph-RAG retrieval trace">
+      <section ref={resultsRef} className="atlas-workbench__results" aria-live="polite" aria-label="Graph-RAG retrieval trace">
         <div className="atlas-workbench__status">
           <span>Graph-RAG retrieval trace</span>
           <span>{searchState.status === "loading" ? "searching local API" : searchState.message}</span>
@@ -827,6 +863,7 @@ function BottomCorpusSearchWorkbench({
         ) : null}
 
         {terminalState ? <RetrievalTerminalState state={terminalState} onMetadataSelect={onMetadataSelect} onSourceSpanSelect={onSourceSpanSelect} /> : null}
+        <WorkbenchTraceTerminal traceState={traceState} retrievalEvidence={retrievalEvidence} />
       </section>
     </footer>
   );
@@ -913,6 +950,103 @@ function RetrievalTerminalState({
         <pre className="wrap-anywhere">{JSON.stringify(state.rawTrace, null, 2)}</pre>
       </details>
     </section>
+  );
+}
+
+function WorkbenchTraceTerminal({
+  traceState,
+  retrievalEvidence
+}: {
+  traceState: WorkbenchTraceState;
+  retrievalEvidence: RetrievalGraphEvidenceState | null;
+}) {
+  const trace = traceState.response;
+  const warningLabels = trace?.warnings ?? [];
+
+  return (
+    <section
+      className="atlas-workbench-group atlas-workbench-trace"
+      aria-label="Task 6 workbench trace"
+      data-testid="workbench-trace-terminal"
+      data-trace-status={traceState.status}
+      data-command-label={trace?.command_label ?? "none"}
+      data-gateway-outcome={trace?.gateway_decision.outcome ?? "none"}
+      data-abstention-status={trace?.abstention_status ?? "none"}
+      data-citation-verifier-status={trace?.citation_verifier_status ?? "none"}
+    >
+      <div className="atlas-workbench-group__title">
+        <strong>Workbench trace</strong>
+        <span>{traceState.status === "loading" ? "loading" : trace?.model_routing ?? traceState.message}</span>
+      </div>
+      {traceState.status === "error" ? <p className="atlas-workbench__empty">{traceState.message}</p> : null}
+      {trace ? (
+        <>
+          <dl className="atlas-workbench__context" aria-label="Workbench trace fields">
+            <div><dt>Command label</dt><dd className="wrap-anywhere">{trace.command_label}</dd></div>
+            <div><dt>Trace query</dt><dd className="wrap-anywhere">{trace.query || "empty query"}</dd></div>
+            <div><dt>Graph focus</dt><dd className="wrap-anywhere">Focus: {retrievalEvidence?.graphFocusNodeId ?? "no focus"}; resource: {retrievalEvidence?.graphResourceNodeId ?? "no resource"}; mode: {retrievalEvidence?.focusMode ?? "no retrieval focus"}</dd></div>
+            <div><dt>Graph context</dt><dd className="wrap-anywhere">{retrievalEvidence?.graphPathNodeIds.join(", ") || "no graph path nodes"}</dd></div>
+            <div><dt>Source spans used/rejected</dt><dd>{trace.source_ids_used.length} used / {trace.source_ids_rejected.length} rejected</dd></div>
+            <div><dt>Gateway decision</dt><dd className="wrap-anywhere">{trace.gateway_decision.outcome}; allowed: {String(trace.gateway_decision.allowed)}; reason: {trace.gateway_decision.reason_code ?? "none"}; external API used: {String(trace.gateway_decision.external_api_used)}</dd></div>
+            <div><dt>Model class</dt><dd>{trace.model_class}</dd></div>
+            <div><dt>Citation verifier status</dt><dd>{trace.citation_verifier_status}</dd></div>
+            <div><dt>Warnings</dt><dd>{warningLabels.length > 0 ? warningLabels.join(", ") : "none"}</dd></div>
+            <div><dt>Abstention</dt><dd>{String(trace.abstained)} · {trace.abstention_status} · no claim: {String(trace.no_claim)}</dd></div>
+          </dl>
+          <p className="atlas-workbench__model-note">Generated answers disabled until retrieval/source-span verification is implemented.</p>
+          <div className="atlas-workbench-trace__grid">
+            <TraceRecordGroup title="Retrieval steps" count={trace.retrieval_steps.length}>
+              {trace.retrieval_steps.map((step) => <TraceStepRow key={step.step_id} step={step} />)}
+            </TraceRecordGroup>
+            <TraceRecordGroup title="Source spans used" count={trace.source_ids_used.length}>
+              {trace.source_ids_used.length > 0 ? trace.source_ids_used.map((record) => <TraceSourceRecordRow key={record.evidence_id} record={record} />) : <p className="atlas-workbench__empty">No source spans used by this trace.</p>}
+            </TraceRecordGroup>
+            <TraceRecordGroup title="Source spans rejected" count={trace.source_ids_rejected.length}>
+              {trace.source_ids_rejected.length > 0 ? trace.source_ids_rejected.map((record) => <TraceSourceRecordRow key={record.evidence_id} record={record} />) : <p className="atlas-workbench__empty">No rejected source-span or metadata context records.</p>}
+            </TraceRecordGroup>
+          </div>
+          <details className="inspector-details">
+            <summary>Raw local workbench trace JSON</summary>
+            <pre className="wrap-anywhere">{JSON.stringify(trace, null, 2)}</pre>
+          </details>
+        </>
+      ) : traceState.status === "idle" ? (
+        <p className="atlas-workbench__empty">{traceState.message}</p>
+      ) : null}
+    </section>
+  );
+}
+
+function TraceRecordGroup({ title, count, children }: { title: "Retrieval steps" | "Source spans used" | "Source spans rejected"; count: number; children: React.ReactNode }) {
+  return (
+    <section className="atlas-workbench-group" aria-label={title}>
+      <div className="atlas-workbench-group__title">
+        <strong>{title}</strong>
+        <span>{count}</span>
+      </div>
+      <div className="atlas-workbench-group__body">
+        {children}
+      </div>
+    </section>
+  );
+}
+
+function TraceStepRow({ step }: { step: CorpusWorkbenchTraceStep }) {
+  return (
+    <article className="atlas-workbench-trace-row">
+      <span>{step.step_id}</span>
+      <small className="wrap-anywhere">{traceStepSummary(step)}</small>
+    </article>
+  );
+}
+
+function TraceSourceRecordRow({ record }: { record: CorpusWorkbenchTraceSourceRecord }) {
+  return (
+    <article className="atlas-workbench-trace-row">
+      <span>{record.source_span_id ?? record.resource_id ?? record.evidence_id}</span>
+      <small className="wrap-anywhere">{record.status} · {record.reason ?? "accepted"} · {record.stable_locator ?? "stable locator unavailable"}</small>
+      <small className="wrap-anywhere">Evidence ID: {record.evidence_id}</small>
+    </article>
   );
 }
 
@@ -1572,6 +1706,23 @@ function optionalRankScore(result: CompactAtlasMetadataSearchResult | CompactAtl
   const rank = rankedResult.rank ?? index + 1;
   const score = rankedResult.score;
   return score === undefined ? `rank ${rank}` : `rank ${rank} · score ${score}`;
+}
+
+function traceStepSummary(step: CorpusWorkbenchTraceStep) {
+  const fields = [
+    `status: ${step.status}`,
+    step.command_label ? `command: ${step.command_label}` : null,
+    step.metadata_result_count !== undefined ? `metadata: ${step.metadata_result_count}` : null,
+    step.source_span_result_count !== undefined ? `source spans: ${step.source_span_result_count}` : null,
+    step.warning_labels && step.warning_labels.length > 0 ? `warnings: ${step.warning_labels.join(", ")}` : null,
+    step.abstained !== undefined ? `abstained: ${String(step.abstained)}` : null,
+    step.source_span_ids_used ? `used: ${step.source_span_ids_used.join(", ") || "none"}` : null,
+    step.rejected_count !== undefined ? `rejected: ${step.rejected_count}` : null,
+    step.model_class ? `model: ${step.model_class}` : null,
+    step.external_api_used !== undefined ? `external API used: ${String(step.external_api_used)}` : null
+  ].filter(Boolean);
+
+  return fields.join("; ");
 }
 
 function relationshipSummaryFromFocus(focus: CompactAtlasGraphFocusMetadata) {

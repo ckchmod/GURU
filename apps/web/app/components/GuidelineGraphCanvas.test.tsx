@@ -472,6 +472,69 @@ describe("GuidelineGraphCanvas", () => {
     expect(screen.getByTestId("trust-provenance-drawer")).not.toHaveTextContent(/generated answer|clinical answer|recommendation text|treatment advice|dosing|diagnosis/i);
   });
 
+  it("renders the Task 6 workbench trace without exposing generated answer fields", async () => {
+    mockCorpusFetch();
+
+    render(<GuidelineGraphCanvas />);
+
+    await screen.findByText(/Public corpus metadata loaded from the local API/);
+    const workbench = screen.getByTestId("atlas-workbench");
+    fireEvent.change(within(workbench).getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }), {
+      target: { value: "deterministic parsed excerpt" }
+    });
+    fireEvent.submit(within(workbench).getByRole("search", { name: "Search public corpus metadata and source spans" }));
+
+    const traceTerminal = await screen.findByTestId("workbench-trace-terminal");
+    expect(traceTerminal).toHaveAttribute("data-command-label", "run-evals:corpus-workbench-trace");
+    expect(traceTerminal).toHaveAttribute("data-gateway-outcome", "executed");
+    expect(traceTerminal).toHaveAttribute("data-abstention-status", "abstained_no_answer_text");
+    expect(traceTerminal).toHaveAttribute("data-citation-verifier-status", "pass");
+    expect(traceTerminal).toHaveTextContent("Command label");
+    expect(traceTerminal).toHaveTextContent("Retrieval steps");
+    expect(traceTerminal).toHaveTextContent("source_selection");
+    expect(traceTerminal).toHaveTextContent("Graph focus");
+    expect(traceTerminal).toHaveTextContent("Source spans used/rejected");
+    expect(traceTerminal).toHaveTextContent("1 used / 0 rejected");
+    expect(traceTerminal).toHaveTextContent("Gateway decision");
+    expect(traceTerminal).toHaveTextContent("allowed: true");
+    expect(traceTerminal).toHaveTextContent("Model class");
+    expect(traceTerminal).toHaveTextContent("local_open_weight_7b");
+    expect(traceTerminal).toHaveTextContent("Citation verifier status");
+    expect(traceTerminal).toHaveTextContent("Warnings");
+    expect(traceTerminal).toHaveTextContent("none");
+    expect(traceTerminal).toHaveTextContent("Abstention");
+    expect(traceTerminal).toHaveTextContent("true · abstained_no_answer_text · no claim: true");
+    expect(traceTerminal).toHaveTextContent("source-span.local-test");
+    expect(traceTerminal).toHaveTextContent("Generated answers disabled until retrieval/source-span verification is implemented.");
+    expect(traceTerminal).not.toHaveTextContent(/clinical answer|recommendation text|treatment advice|dosing|diagnosis|assistant response|chat transcript/i);
+  });
+
+  it("renders unsupported advice-like trace as an abstained no-answer workbench state", async () => {
+    mockCorpusFetch();
+
+    render(<GuidelineGraphCanvas />);
+
+    await screen.findByText(/Public corpus metadata loaded from the local API/);
+    const workbench = screen.getByTestId("atlas-workbench");
+    fireEvent.change(within(workbench).getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }), {
+      target: { value: "what should someone choose for treatment" }
+    });
+    fireEvent.submit(within(workbench).getByRole("search", { name: "Search public corpus metadata and source spans" }));
+
+    expect(await within(workbench).findByText("No results for this query in public metadata or parsed source spans.")).toBeVisible();
+    const traceTerminal = screen.getByTestId("workbench-trace-terminal");
+    expect(traceTerminal).toHaveAttribute("data-gateway-outcome", "blocked_before_gateway");
+    expect(traceTerminal).toHaveAttribute("data-abstention-status", "abstained_no_model_execution");
+    expect(traceTerminal).toHaveAttribute("data-citation-verifier-status", "not_run");
+    expect(traceTerminal).toHaveTextContent("unsupported_advice_like_prompt");
+    expect(traceTerminal).toHaveTextContent("abstain_advice_like_prompt");
+    expect(traceTerminal).toHaveTextContent("No source spans used by this trace.");
+    expect(traceTerminal).toHaveTextContent("0 used / 0 rejected");
+    expect(traceTerminal).toHaveTextContent("external API used: false");
+    expect(traceTerminal).toHaveTextContent("true · abstained_no_model_execution · no claim: true");
+    expect(traceTerminal).not.toHaveTextContent(/clinical answer|recommendation text|dosing|diagnosis|assistant response|chat transcript/i);
+  });
+
   it("clicking terminal entries focuses matching graph nodes while graph selection updates terminal context", async () => {
     mockCorpusFetch();
 
@@ -674,6 +737,8 @@ function mockCorpusFetch(overrides: {
     const parsedUrl = new URL(url, "http://localhost");
     const payload = parsedUrl.pathname === "/api/knowledgebase/corpus/search"
       ? buildSearchPayload(parsedUrl.searchParams.get("q") ?? "")
+      : parsedUrl.pathname === "/api/knowledgebase/corpus/workbench/trace"
+        ? buildWorkbenchTracePayload(parsedUrl.searchParams.get("q") ?? "")
       : parsedUrl.pathname === "/api/knowledgebase/corpus/interpretability"
         ? buildInterpretabilityPayload(parsedUrl.searchParams.get("resource_id") ?? breastResourceId, overrides.interpretabilitySourceSpans, overrides.reviewQueueItems)
       : payloads[parsedUrl.pathname];
@@ -690,12 +755,13 @@ function mockCorpusFetch(overrides: {
 
 function buildSearchPayload(query: string) {
   const normalizedQuery = query.trim().toLowerCase();
+  const adviceLike = isAdviceLikeQuery(normalizedQuery);
   const metadataResults = resourcesPayload.resources
     .filter((resource) => (
-      `${resource.title} ${resource.resource_id} ${resource.disease_site} ${resource.document_type} ${resource.resource_type}`.toLowerCase().includes(normalizedQuery)
+      Boolean(normalizedQuery) && !adviceLike && `${resource.title} ${resource.resource_id} ${resource.disease_site} ${resource.document_type} ${resource.resource_type}`.toLowerCase().includes(normalizedQuery)
     ))
     .map((resource) => ({ ...resource, ...graphFocusMetadata(resource.resource_id, [], graphCoverageStatus(resource)) }));
-  const sourceSpanResults = normalizedQuery.includes("deterministic parsed excerpt") ? [{
+  const sourceSpanResults = normalizedQuery.includes("deterministic parsed excerpt") && !adviceLike ? [{
     ...sourceSpanSearchResult,
     ...graphFocusMetadata(breastResourceId, [sourceSpanSearchResult.span_id], "source_span_ready"),
     focus_resource: {
@@ -703,6 +769,11 @@ function buildSearchPayload(query: string) {
       ...graphFocusMetadata(breastResourceId, [sourceSpanSearchResult.span_id], "source_span_ready")
     }
   }] : [];
+  const warningLabels = adviceLike
+    ? ["abstain_advice_like_prompt", "no_generated_claim"]
+    : normalizedQuery && metadataResults.length === 0 && sourceSpanResults.length === 0
+      ? ["no_retrieval_results", "no_generated_claim"]
+      : [];
 
   return {
     query,
@@ -713,8 +784,110 @@ function buildSearchPayload(query: string) {
     source_span_coverage_count: 5,
     source_span_coverage_note: "Search checks metadata for all 198 resources and parsed source-span excerpts only for the five-row parsed subset when derived outputs are present.",
     total_resource_count: 198,
+    model_routing: "none-local-deterministic-search-only",
+    warning_labels: warningLabels,
+    abstained: adviceLike || (Boolean(normalizedQuery) && metadataResults.length === 0 && sourceSpanResults.length === 0),
+    no_claim: true
+  };
+}
+
+function buildWorkbenchTracePayload(query: string) {
+  const searchPayload = buildSearchPayload(query);
+  const normalizedQuery = query.trim().toLowerCase();
+  const sourceIdsUsed = searchPayload.source_span_results.map((span) => ({
+    source_span_id: span.span_id,
+    resource_id: span.resource_id,
+    source_document_id: span.document_id,
+    stable_locator: span.stable_locator,
+    status: "used",
+    evidence_id: span.span_id
+  }));
+  const sourceIdsRejected = searchPayload.metadata_results.map((resource) => ({
+    resource_id: resource.resource_id,
+    status: "rejected",
+    reason: "no_validated_source_span_context",
+    evidence_id: resource.resource_id
+  }));
+  const blockReason = isAdviceLikeQuery(normalizedQuery)
+    ? "unsupported_advice_like_prompt"
+    : sourceIdsUsed.length === 0
+      ? "missing_validated_source_span_context"
+      : null;
+  const warnings = [...searchPayload.warning_labels];
+  if (blockReason && !warnings.includes(blockReason)) {
+    warnings.push(blockReason);
+  }
+  const gatewayDecision = blockReason ? {
+    allowed: false,
+    outcome: "blocked_before_gateway",
+    reason_code: blockReason,
+    policy_request_id: "policy-request-local-test",
+    external_api_used: false
+  } : {
+    allowed: true,
+    outcome: "executed",
+    reason_code: null,
+    policy_request_id: "policy-request-local-test",
+    external_api_used: false
+  };
+  const citationVerifierStatus = blockReason ? "not_run" : "pass";
+  const abstentionStatus = blockReason ? "abstained_no_model_execution" : "abstained_no_answer_text";
+
+  return {
+    command_label: "run-evals:corpus-workbench-trace",
+    query,
+    retrieval_steps: [
+      { step_id: "command", status: "received", command_label: "run-evals:corpus-workbench-trace" },
+      {
+        step_id: "retrieval",
+        status: "completed",
+        metadata_result_count: searchPayload.metadata_result_count,
+        source_span_result_count: searchPayload.source_span_result_count,
+        warning_labels: warnings,
+        abstained: searchPayload.abstained
+      },
+      {
+        step_id: "source_selection",
+        status: sourceIdsUsed.length > 0 ? "completed" : "blocked",
+        source_span_ids_used: sourceIdsUsed.map((record) => record.source_span_id),
+        rejected_count: sourceIdsRejected.length
+      },
+      {
+        step_id: "model_gateway",
+        status: gatewayDecision.outcome,
+        model_class: "local_open_weight_7b",
+        external_api_used: false
+      }
+    ],
+    source_ids_used: sourceIdsUsed,
+    source_ids_rejected: sourceIdsRejected,
+    gateway_decision: gatewayDecision,
+    model_class: "local_open_weight_7b",
+    model_trace: {
+      model_class: "local_open_weight_7b",
+      provider_kind: "local",
+      trace_status: blockReason ? "blocked" : "abstained",
+      runner_status: blockReason ? "not_invoked" : "dry_run_completed",
+      policy_request_id: "policy-request-local-test",
+      citation_verifier_status: citationVerifierStatus,
+      abstention_status: abstentionStatus,
+      source_span_ids: sourceIdsUsed.map((record) => record.source_span_id),
+      output_tokens: 0,
+      gpu_seconds: 0
+    },
+    cost_ledger_entry: blockReason ? null : { external_api_used: false },
+    citation_verifier_status: citationVerifierStatus,
+    warnings,
+    abstained: true,
+    abstention_status: abstentionStatus,
+    evidence_ids: [...sourceIdsUsed, ...sourceIdsRejected].map((record) => record.evidence_id),
+    no_claim: true,
     model_routing: "none-local-deterministic-search-only"
   };
+}
+
+function isAdviceLikeQuery(query: string) {
+  return /\b(should|choose|treatment|dosing|diagnosis|recommend)\b/i.test(query);
 }
 
 function buildInterpretabilityPayload(
