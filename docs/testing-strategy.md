@@ -21,7 +21,7 @@ Maintain a full test baseline from the start. Every significant milestone must p
 
 ### 3. End-to-end tests
 
-- Playwright for critical frontend flows, including the graph canvas.
+- Playwright for critical frontend flows, including the Sigma/Graphology atlas graph, compact inspector, metadata/source-span search shell, and performance smoke checks.
 - Smoke tests for the full stack startup.
 
 ### 4. Governance and compliance tests
@@ -66,6 +66,9 @@ npm run test:e2e:web
 # Graph/provenance schema validation (valid synthetic graph)
 npm run test:schemas
 
+# Safety, real-corpus, placeholder, parser/search LLM, raw-PDF, and performance smoke gates
+npm run test:safety
+
 # Graph/provenance schema validation (expected failure: missing source spans)
 npm run test:schemas:invalid || true
 
@@ -92,6 +95,7 @@ npm run test:e2e:web      # Playwright tests in apps/web
 npm run lint:web          # eslint in apps/web
 npm run typecheck:web     # tsc --noEmit in apps/web
 npm run test:schemas      # valid graph fixture
+npm run test:safety       # real corpus safety gates, parser/search LLM scans, raw PDF ignore checks, performance smoke coverage
 npm run test:schemas:invalid  # invalid graph fixture (expected to fail)
 ```
 

@@ -13,11 +13,12 @@ Graph-first, retrieval-backed, bounded-agent-assisted guideline lifecycle platfo
 The current buildout covers:
 
 - Project governance, resource registry, storage policy, and security/privacy gates.
-- Next.js frontend (`apps/web`) with an Evidence Atlas IDE and React Flow graph canvas.
+- Next.js frontend (`apps/web`) with an Evidence Atlas IDE using Sigma.js and Graphology as the default atlas graph.
 - FastAPI backend (`services/api`) with health checks, knowledgebase routes, and pytest coverage.
 - Seed graph and provenance schemas (`packages/schemas/`) with validation scripts.
 - A preserved resource registry (`resources/registry/`) with 235 rows, including 198 public AHS/GURU corpus metadata rows.
-- A public guideline knowledgebase buildout that may use public AHS/GURU resources for prototype download manifests, parsing, source-document records, source spans, graph-ready records, backend API responses, and Evidence Atlas browsing.
+- A real public corpus atlas milestone using exactly 198 public AHS/GURU metadata rows for graph, API, search, and archive-status metadata scope.
+- A bounded parse path limited to a deterministic 5-document subset for local source-document and source-span extraction when approved raw files exist.
 - A local-first model gateway policy (`docs/model-gateway.md`).
 - A secret-free CI baseline (`.github/workflows/ci.yml`).
 
@@ -58,9 +59,15 @@ The graph schema enforces `source_span_ids` on claim-like node types: `Recommend
 
 Evaluation harnesses include retrospective benchmarks, gold-labeled screening sets, expert-adjudicated extraction sets, a guideline QA test bank, clinical vignettes, and red-team hallucination tests.
 
-## Public guideline knowledgebase buildout
+## Real public corpus atlas milestone
 
-The active milestone moves from the preserved metadata catalogue to a public guideline knowledgebase prototype. Public AHS/GURU resources from the AHS cancer guideline page may be used for prototype acquisition, local raw downloads, manifests, checksums, parser outputs, source-document records, source spans, graph-ready records, backend routes, and Evidence Atlas views.
+The active milestone moves from the preserved metadata catalogue to a real public corpus atlas. Its graph, API, and metadata/source-span search scope is exactly 198 public AHS/GURU metadata rows from `resources/registry/ahs-guru-public-corpus.json`. Registry metadata may create resource, disease-site, document-type, and archive/status navigation records. It does not create clinical recommendations, generated summaries, embeddings, model answers, or full RAG behavior.
+
+Raw PDFs from public AHS/GURU URLs are local ignored source archive artifacts under `resources/raw/ahs-guru-public/`. They are not committed to Git and must not be copied into prompts, logs, evidence files, or external model calls. The committed audit path is the manifest and checksum record under `resources/manifests/ahs-guru-public/`: every planned row keeps status fields, checksum data when available, and failure reasons when acquisition fails.
+
+Parsing is bounded to a deterministic 5-document subset selected in `resources/registry/ahs-guru-parse-subset.json`. Source-document and source-span records are shown only when deterministic local parser outputs produce them. The atlas must not fabricate excerpts, infer clinical claims from metadata, or imply all 198 PDFs have been parsed.
+
+The Evidence Atlas UI now uses Sigma.js with Graphology as the default graph model. The interface includes a compact inspector and a bottom metadata/source-span search shell for public corpus browsing. It remains an atlas and provenance browser, not a patient-facing answer engine.
 
 Remaining safeguards are not optional: no PHI, no patient-specific advice, source-span provenance for every clinical claim-like record, and no default external LLM routing. Raw public guideline downloads stay out of normal Git history by default; committed artifacts should be manifests, checksums, schemas, safe fixtures, and bounded derived records.
 
@@ -118,7 +125,7 @@ The full local baseline is:
 npm run test:baseline
 ```
 
-This runs backend pytest, frontend Vitest, lint, typecheck, Playwright E2E, graph/provenance schema validation, and resource registry validation. See [`docs/testing-strategy.md`](./testing-strategy.md) for the complete command sequence, including expected-failure fixture diagnostics.
+This runs backend pytest, frontend Vitest, lint, typecheck, Playwright E2E, graph/provenance schema validation, resource registry validation, real-corpus safety gates, parser/search external-LLM scans, raw PDF ignore checks, and performance smoke coverage. See [`docs/testing-strategy.md`](./testing-strategy.md) for the complete command sequence, including expected-failure fixture diagnostics.
 
 ## Document separation
 

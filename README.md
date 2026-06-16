@@ -4,24 +4,26 @@ A local-first, graph-centered workbench for maintaining, exploring, and updating
 
 ## What this is
 
-The workbench treats guidelines as structured graphs: recommendations, evidence, citations, source spans, and update triage are nodes and edges with provenance, not loose text. The current buildout moves the preserved public AHS/GURU metadata catalogue into a prototype knowledgebase with manifests, parser records, source spans, graph-ready records, backend routes, and Evidence Atlas browsing.
+The workbench treats guidelines as structured graphs: recommendations, evidence, citations, source spans, and update triage are nodes and edges with provenance, not loose text. The current buildout turns exactly 198 public AHS/GURU metadata rows into a real corpus atlas for graph, API, search, and archive-status browsing, with parsing limited to a deterministic 5-document subset.
 
 ## What this is not
 
 - Not a generic RAG chatbot.
+- Not a full 198-PDF parser or generated-answer system.
 - Not a source of patient-specific treatment advice.
+- Not a source of approved clinical recommendations.
 - Not a repository for PHI, real patient records, or raw public guideline downloads in normal Git history.
 - Not a default consumer of external LLM APIs.
 - Not a replacement for expert methodologists, working groups, or approval chains.
 
 ## Current scaffold
 
-- **`apps/web`**: Next.js frontend with an Evidence Atlas IDE around a React Flow graph canvas, synthetic fixtures, and smoke-tested E2E coverage.
-- **`services/api`**: FastAPI backend with `/health`, knowledgebase fixture routes, and pytest tests.
+- **`apps/web`**: Next.js frontend with an Evidence Atlas IDE using Sigma.js and Graphology as the default real-corpus graph, plus a compact inspector and bottom metadata/source-span search shell.
+- **`services/api`**: FastAPI backend with `/health`, `/knowledgebase/corpus/*` routes, and pytest tests.
 - **`packages/schemas`**: Seed graph/provenance JSON Schema and TypeScript types enforcing the "no source span, no claim" rule.
-- **`resources/registry/`**: Preserved registry metadata, including the public AHS/GURU corpus catalogue and bounded pilot selector.
-- **`resources/manifests/ahs-guru-public/`**: Trackable manifest and checksum location for public prototype acquisition runs.
-- **`resources/derived/`**: Safe, bounded derived source-document, source-span, and graph-ready records when they pass project safeguards.
+- **`resources/registry/`**: Preserved registry metadata, including exactly 198 public AHS/GURU corpus rows and the deterministic 5-document parse subset.
+- **`resources/manifests/ahs-guru-public/`**: Trackable manifest and checksum location for public acquisition runs, including per-row status and failure reasons.
+- **`resources/derived/`**: Safe, bounded derived source-document, source-span, and graph-ready records when deterministic local parser outputs pass project safeguards.
 - **`docs/model-gateway.md`**: Local-first model gateway and subsidy firewall policy; external LLM APIs are off by default.
 - **`docs/research/public-guideline-acquisition.md`**: Concrete layout for public AHS/GURU prototype downloads, manifests, source spans, and graph-ready records.
 - **`docs/milestone-protocol.md`**: Auditable milestone sequence: update docs/memory, run tests, inspect git status/diff, commit, push only if remote configured.
@@ -67,7 +69,13 @@ scripts/                     # Validation, migration, and utility scripts
 
 ## Current buildout and roadmap
 
-Public AHS/GURU resources may be used for the prototype knowledgebase buildout: download manifests, checksums, parsing, source-document records, source spans, graph-ready records, backend API responses, and Evidence Atlas browsing. Raw downloads stay out of normal Git history by default.
+Public AHS/GURU resources may be used for the real corpus atlas: exactly 198 metadata rows support graph/API/search metadata scope, local archive status, and Evidence Atlas browsing. Raw PDFs live only as ignored local source archive artifacts under `resources/raw/ahs-guru-public/`; they stay out of normal Git history by default.
+
+The committed audit path is manifest and checksum data under `resources/manifests/ahs-guru-public/`. Manifest rows keep planned resource IDs, URLs, retrieval state, byte counts and SHA-256 checksums when available, and failure status fields when archive attempts fail.
+
+Only the deterministic 5-document parse subset is parse-eligible for this milestone. Source spans and exact excerpts are shown only when produced by deterministic local parser outputs. The atlas must not imply that all 198 PDFs were parsed or that metadata rows produce clinical claims.
+
+The Evidence Atlas UI uses Sigma.js and Graphology by default, with a compact inspector and bottom metadata/source-span search shell for corpus navigation.
 
 The remaining safeguards are no PHI, no patient-specific advice, source-span provenance for clinical claim-like records, and no default external LLM routing.
 
@@ -86,7 +94,7 @@ Roadmap families after the knowledgebase foundation:
 npm run test:baseline
 ```
 
-See [`docs/testing-strategy.md`](./docs/testing-strategy.md) for the full command sequence, including expected-failure fixture diagnostics.
+See [`docs/testing-strategy.md`](./docs/testing-strategy.md) for the full command sequence, including real-corpus safety gates, raw PDF ignore checks, parser/search external-LLM scans, performance smoke coverage, and expected-failure fixture diagnostics.
 
 ## Milestone protocol
 
