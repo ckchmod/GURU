@@ -1,16 +1,16 @@
-# Source-backed Evidence Atlas Workbench v2
+# GURU
 
-A local-first, graph-centered workbench for clinician-facing interpretability over cancer care guideline documents. The project starts from the CCA GURU initiative and emphasizes source-span provenance, public guideline corpus navigation, and bounded agent assistance over generic chat or unbounded LLM usage.
+A local-first guideline knowledge graph and evidence atlas for source-backed cancer guideline exploration.
 
 ## What this is
 
-The workbench treats guidelines as structured graphs: resources, disease sites, document types, archive states, source spans, review metadata, and future claim-like records are nodes and edges with provenance, not loose text. The current buildout is a graph-first Evidence Atlas for clinician interpretability. It uses the 198-row public AHS/GURU corpus manifest for graph, API, search, and archive-status browsing, while source-backed interpretation appears only where validated local source spans exist.
+GURU treats guideline resources as a structured knowledge graph: resources, disease sites, document types, archive states, source spans, review metadata, and future claim-like records are nodes and edges with provenance, not loose text. The current buildout is a graph-first Evidence Atlas for guideline exploration. It uses the 198-row public AHS/GURU corpus manifest for graph, API, retrieval, and archive-status browsing, while source-backed interpretation appears only where validated local source spans exist.
 
 ## What this is not
 
-- Not a generic RAG chatbot.
+- Not a generic chatbot or generated-answer RAG system.
 - Not a full 198-PDF parser or generated-answer system.
-- Not a generated clinical summary system. Generated answers remain disabled until retrieval and source-span verification are implemented and approved.
+- Not a generated clinical summary system. Generated answers remain disabled.
 - Not a source of patient-specific treatment advice.
 - Not a source of approved clinical recommendations.
 - Not a repository for PHI, real patient records, or raw public guideline downloads in normal Git history.
@@ -19,7 +19,7 @@ The workbench treats guidelines as structured graphs: resources, disease sites, 
 
 ## Current scaffold
 
-- **`apps/web`**: Next.js frontend with an Evidence Atlas IDE using Sigma.js and Graphology as the default real-corpus graph, plus a compact inspector, trust/provenance drawer, offline surveillance chips, non-mutating review queue shell, and bottom metadata/source-span search shell.
+- **`apps/web`**: Next.js frontend with an Evidence Atlas IDE using Sigma.js and Graphology as the default real-corpus graph, plus a compact inspector, trust/provenance drawer, offline status chips, non-mutating review queue shell, and bottom metadata/source-span retrieval terminal.
 - **`services/api`**: FastAPI backend with `/health`, `/knowledgebase/corpus/*` routes, and pytest tests.
 - **`packages/schemas`**: Seed graph/provenance JSON Schema and TypeScript types enforcing the "no source span, no claim" rule.
 - **`resources/registry/`**: Preserved registry metadata, including exactly 198 public AHS/GURU corpus rows and the deterministic 5-document parse subset.
@@ -70,19 +70,21 @@ scripts/                     # Validation, migration, and utility scripts
 
 ## Current buildout and roadmap
 
-Public AHS/GURU resources may be used for the real corpus atlas: the 198 metadata rows support graph/API/search metadata scope, local archive status, and Evidence Atlas browsing. This is best-effort and manifest-accounted, not a guarantee that all 198 public rows were downloaded, parsed, or converted into source-backed interpretation. Raw PDFs live only as ignored local source archive artifacts under `resources/raw/ahs-guru-public/`; they stay out of normal Git history by default.
+Public AHS/GURU resources may be used for the real corpus atlas: the 198 metadata rows support graph, API, retrieval metadata scope, local archive status, and Evidence Atlas browsing. This is best-effort and manifest-accounted, not a guarantee that all 198 public rows were downloaded, parsed, or converted into source-backed interpretation. Raw PDFs live only as ignored local source archive artifacts under `resources/raw/ahs-guru-public/`; they stay out of normal Git history by default.
 
 The committed audit path is manifest and checksum data under `resources/manifests/ahs-guru-public/`. The current all-public acquisition manifest is `resources/manifests/ahs-guru-public/manifest-20260616T053200Z.json`: 198 rows are accounted for, 197 downloaded, and 1 failed row is retained with its failure reason rather than hidden or counted as parsed coverage.
 
-Only validated local source spans can back clinician-facing graph/search interpretation. The parser keeps an exact-five `--registry` gate and a separate manifest-driven parse mode; neither should be described as guaranteed all-198 parsed coverage. Recent manifest parse output accounted for download and parse states, including `download_missing=1`, `parse_failed=2`, `parsed=144`, and `partial_text=51`, while public API exposure stays bounded by safety and provenance filters.
+Only validated local source spans can back graph-linked retrieval and interpretation. The parser keeps an exact-five `--registry` gate and a separate manifest-driven parse mode; neither should be described as guaranteed all-198 parsed coverage. Recent manifest parse output accounted for download and parse states, including `download_missing=1`, `parse_failed=2`, `parsed=144`, and `partial_text=51`, while public API exposure stays bounded by safety and provenance filters.
 
-The Evidence Atlas UI uses Sigma.js and Graphology by default, with a compact inspector, source provenance drawer, offline/local manifest surveillance chips, non-mutating evidence-review shell, and bottom metadata/source-span search shell for corpus navigation. The review shell is draft workflow metadata only unless a card is backed by validated `source_span_ids`; blocked or unbacked cards carry no claim text.
+The Evidence Atlas UI uses Sigma.js and Graphology by default. Its deterministic ForceAtlas and noverlap layout is an implementation detail of the current graph surface, not a clinical feature claim. The delivered retrieval terminal is retrieval, provenance, and trace evidence only: query results can focus and highlight graph resources, source spans, path/context nodes, and provenance fields. When the graph does not contain a source-span node, source-span hits fall back to the parent resource while keeping source-span IDs, stable locators, checksum/status fields, and reviewer metadata visible where available.
+
+The non-mutating evidence-review shell is draft workflow metadata only unless a card is backed by validated `source_span_ids`; blocked or unbacked cards carry no claim text.
 
 Surveillance in this milestone is an offline/local manifest scaffold. It compares committed local manifest files and surfaces archive status chips; it does not crawl live sources, check live reachability, infer practice impact, or run recommendation-impact diff.
 
-Generated answers remain disabled. The current product is a graph/search interpretability surface for clinicians and reviewers, source-backed only where validated source spans exist.
+Generated answers remain disabled. The current product is a graph-linked retrieval and provenance surface for guideline exploration, source-backed only where validated source spans exist.
 
-The remaining safeguards are no PHI, no patient-specific advice, source-span provenance for clinical claim-like records, and no default external LLM routing.
+The remaining safeguards are no PHI, no patient-specific advice, no clinical claim without a source span, and no default external LLM routing.
 
 Roadmap families after the knowledgebase foundation, not delivered in this milestone:
 

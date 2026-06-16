@@ -21,7 +21,7 @@ Maintain a full test baseline from the start. Every significant milestone must p
 
 ### 3. End-to-end tests
 
-- Playwright for critical frontend flows, including the Sigma/Graphology atlas graph, compact inspector, metadata/source-span search shell, and performance smoke checks.
+- Playwright for critical frontend flows, including the Sigma/Graphology atlas graph, compact inspector, metadata/source-span retrieval terminal, graph highlight/focus/path coupling, source-span parent fallback, and performance smoke checks.
 - Smoke tests for the full stack startup.
 
 ### 4. Governance and compliance tests
@@ -30,7 +30,7 @@ Maintain a full test baseline from the start. Every significant milestone must p
 - Grep assertions for PHI, secrets, and restricted file patterns.
 - Provenance metadata checks on generated graph nodes.
 - Git status checks to confirm no raw large files or credentials are staged.
-- Documentation grep checks for generated answers disabled, source-backed graph/search interpretability, best-effort manifest-accounted acquisition, offline/local surveillance, and draft/non-claim evidence-review wording.
+- Documentation grep checks for generated answers disabled, source-backed graph-linked retrieval, best-effort manifest-accounted acquisition, offline/local surveillance, source-span parent fallback, and draft/non-claim evidence-review wording.
 - Documentation grep checks that overclaiming phrases are absent or explicitly scoped as disabled, excluded, blocked, local-only, or future-roadmap work.
 
 ## Commands
@@ -114,14 +114,16 @@ npm run smoke:api
 npm run dev:web
 ```
 
-### Docs-only interpretability milestone checks
+### Docs-only GURU identity and interpretability checks
 
-For docs-only tasks that synchronize Source-backed Evidence Atlas Workbench v2 language, do not run browser tests. Use focused read and grep checks over the changed docs instead. The checks should prove that these statements are present:
+For docs-only tasks that synchronize GURU identity and current Evidence Atlas language, do not run browser tests unless UI behavior changed. Use focused read and grep checks over the changed docs instead. The checks should prove that these statements are present:
 
 - Generated answers remain disabled.
-- Graph/search interpretability is clinician-facing and source-backed only where validated source spans exist.
+- Graph-linked retrieval is retrieval, provenance, and trace evidence only, source-backed where validated source spans exist.
 - All-public acquisition is best-effort and manifest-accounted, not guaranteed all-198 parsed coverage.
 - Surveillance is an offline/local manifest scaffold only.
+- Retrieval query results can focus and highlight graph resources, source spans, path/context nodes, and provenance fields.
+- Source-span retrieval hits fall back to the parent resource when the graph lacks source-span nodes.
 - The evidence-review shell is draft/non-claim unless source-span-backed.
 
 The same docs-only check should search for overclaims such as full RAG answers, generated clinical summaries, recommendation-impact diff, guaranteed all-198 parsing, approved recommendations, patient-specific advice, live surveillance, crawler behavior, or clinical inference. Matches are acceptable only when the surrounding text says the capability is disabled, excluded, blocked, local-only, or future-roadmap work.
@@ -154,4 +156,4 @@ to `main`/`master`. The workflow:
 
 ## Evidence
 
-Every task must produce evidence in `.agent-artifacts/evidence/task-{N}-{slug}.{ext}`. Evidence files are not a replacement for tests; they document the verification steps that were run.
+Every task must produce evidence in the requested evidence directory, such as `.omo/evidence/task-{N}-{slug}.{ext}` for OMO tasks or `.agent-artifacts/evidence/task-{N}-{slug}.{ext}` for agent-artifact tasks. Evidence files are not a replacement for tests; they document the verification steps that were run.
