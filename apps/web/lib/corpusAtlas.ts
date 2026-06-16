@@ -253,6 +253,14 @@ export type CompactAtlasSourceSpanSearchResult = CompactAtlasSearchResult & {
   excerpt?: string;
   checksumSha256?: string;
   outputStatus: string;
+  sourceDocumentId?: string;
+  quotedSpan?: string;
+  excerptChecksum?: string;
+  promptOrModelVersion?: string;
+  reviewer?: string;
+  reviewStatus?: string;
+  timestamp?: string;
+  focusResource: CompactAtlasMetadataSearchResult;
 } & CompactAtlasGraphFocusMetadata;
 
 export type CompactAtlasSearchResponse = {
@@ -469,7 +477,54 @@ export function adaptResourcesResponse(resourcesPayload: CorpusResourcesResponse
 }
 
 export function adaptSearchResponse(payload: CorpusSearchResponse): CompactAtlasSearchResponse {
-  const metadataResults = payload.metadata_results.map((resource) => ({
+  const metadataResults = payload.metadata_results.map(adaptSearchResource);
+  const sourceSpanResults = payload.source_span_results.map(adaptSearchSourceSpan);
+
+  return {
+    query: payload.query,
+    metadataResults,
+    sourceSpanResults,
+    metadataResultCount: payload.metadata_result_count,
+    sourceSpanResultCount: payload.source_span_result_count,
+    sourceSpanCoverageCount: payload.source_span_coverage_count,
+    sourceSpanCoverageNote: payload.source_span_coverage_note,
+    totalResourceCount: payload.total_resource_count,
+    modelRouting: payload.model_routing
+  };
+}
+
+function adaptSearchSourceSpan(span: CorpusSearchSourceSpanResult): CompactAtlasSourceSpanSearchResult {
+  const result = {
+    id: span.span_id,
+    title: span.resource_id,
+    resultType: "source_span" as const,
+    locator: span.stable_locator,
+    spanId: span.span_id,
+    resourceId: span.resource_id,
+    documentId: span.document_id,
+    stableLocator: span.stable_locator,
+    excerpt: span.excerpt,
+    checksumSha256: span.checksum_sha256,
+    outputStatus: span.output_status,
+    ...adaptGraphFocusMetadata(span)
+  } as CompactAtlasSourceSpanSearchResult;
+
+  Object.defineProperties(result, {
+    sourceDocumentId: { value: span.source_document_id, enumerable: false },
+    quotedSpan: { value: span.quoted_span, enumerable: false },
+    excerptChecksum: { value: span.excerpt_checksum, enumerable: false },
+    promptOrModelVersion: { value: span.prompt_or_model_version, enumerable: false },
+    reviewer: { value: span.reviewer, enumerable: false },
+    reviewStatus: { value: span.review_status, enumerable: false },
+    timestamp: { value: span.timestamp, enumerable: false },
+    focusResource: { value: adaptSearchResource(span.focus_resource), enumerable: false }
+  });
+
+  return result;
+}
+
+function adaptSearchResource(resource: CorpusSearchMetadataResource): CompactAtlasMetadataSearchResult {
+  return {
     id: resource.resource_id,
     title: resource.title,
     resultType: "metadata" as const,
@@ -483,32 +538,6 @@ export function adaptSearchResponse(payload: CorpusSearchResponse): CompactAtlas
     parseStatus: resource.parse_status,
     url: resource.url,
     ...adaptGraphFocusMetadata(resource)
-  }));
-  const sourceSpanResults = payload.source_span_results.map((span) => ({
-    id: span.span_id,
-    title: span.resource_id,
-    resultType: "source_span" as const,
-    locator: span.stable_locator,
-    spanId: span.span_id,
-    resourceId: span.resource_id,
-    documentId: span.document_id,
-    stableLocator: span.stable_locator,
-    excerpt: span.excerpt,
-    checksumSha256: span.checksum_sha256,
-    outputStatus: span.output_status,
-    ...adaptGraphFocusMetadata(span)
-  }));
-
-  return {
-    query: payload.query,
-    metadataResults,
-    sourceSpanResults,
-    metadataResultCount: payload.metadata_result_count,
-    sourceSpanResultCount: payload.source_span_result_count,
-    sourceSpanCoverageCount: payload.source_span_coverage_count,
-    sourceSpanCoverageNote: payload.source_span_coverage_note,
-    totalResourceCount: payload.total_resource_count,
-    modelRouting: payload.model_routing
   };
 }
 

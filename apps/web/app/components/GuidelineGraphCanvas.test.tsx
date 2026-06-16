@@ -8,9 +8,44 @@ vi.mock("sigma/rendering", () => ({
 
 vi.mock("@react-sigma/core", async () => {
   const ReactModule = await import("react");
-  const MockSigmaContainer = ({ children, className }: { children?: React.ReactNode; className?: string }) => (
-    <div data-testid="mock-sigma-container" className={className}>{children}</div>
-  );
+  type MockGraphAttributes = Record<string, unknown> & { x: number; y: number; size: number };
+  type MockGraphLike = {
+    forEachNode?: (callback: (nodeId: string, attributes: MockGraphAttributes) => void) => void;
+    extremities: (edgeId: string) => string[];
+    getNodeAttributes: (nodeId: string) => MockGraphAttributes;
+    hasNode: (nodeId: string) => boolean;
+    neighbors: (nodeId: string) => string[];
+  };
+  const graphRef: { current: MockGraphLike | null } = { current: null };
+  const camera = { on: vi.fn(), off: vi.fn(), getState: () => ({ x: 0, y: 0, angle: 0, ratio: 1 }) };
+  const sigmaEvents = { on: vi.fn(), off: vi.fn() };
+  const fallbackGraph: MockGraphLike = {
+    forEachNode: () => undefined,
+    extremities: () => [],
+    getNodeAttributes: () => ({ x: 0, y: 0, size: 1, kind: "resource" }),
+    hasNode: () => true,
+    neighbors: () => []
+  };
+  const sigmaInstance = {
+    ...sigmaEvents,
+    framedGraphToViewport: (point: { x: number; y: number }) => ({ x: point.x + 400, y: point.y + 260 }),
+    getBBox: () => ({ x: [0, 1], y: [0, 1] }),
+    getCamera: () => camera,
+    getCustomBBox: () => null,
+    getGraph: () => graphRef.current ?? fallbackGraph,
+    getNodeDisplayData: (nodeId: string) => {
+      const graph = graphRef.current ?? fallbackGraph;
+      return graph.hasNode(nodeId) ? graph.getNodeAttributes(nodeId) : undefined;
+    },
+    graphToViewport: (point: { x: number; y: number }) => ({ x: point.x + 400, y: point.y + 260 }),
+    refresh: vi.fn(),
+    scaleSize: (size: number) => size,
+    setCustomBBox: vi.fn()
+  };
+  const MockSigmaContainer = ({ children, className, graph }: { children?: React.ReactNode; className?: string; graph?: MockGraphLike }) => {
+    graphRef.current = graph ?? null;
+    return <div data-testid="mock-sigma-container" className={className}>{children}</div>;
+  };
   const MockControlsContainer = ({ children, className }: { children?: React.ReactNode; className?: string }) => (
     <div className={className}>{children}</div>
   );
@@ -29,15 +64,7 @@ vi.mock("@react-sigma/core", async () => {
     useCamera: () => ({ gotoNode: vi.fn(), reset: vi.fn(), zoomIn: vi.fn(), zoomOut: vi.fn(), goto: vi.fn() }),
     useRegisterEvents: () => vi.fn(),
     useSetSettings: () => vi.fn(),
-    useSigma: () => ({
-      getGraph: () => ({
-        extremities: () => [],
-        getNodeAttributes: () => ({ x: 0, y: 0, kind: "resource" }),
-        hasNode: () => true,
-        neighbors: () => []
-      }),
-      refresh: vi.fn()
-    }),
+    useSigma: () => sigmaInstance,
     __esModule: true,
     default: ReactModule
   };
@@ -194,24 +221,31 @@ describe("GuidelineGraphCanvas", () => {
     expect(screen.getAllByText("Adjuvant Radiotherapy for Invasive Breast Cancer").length).toBeGreaterThan(0);
     expect(screen.getByTestId("guideline-graph-canvas")).toBeVisible();
     expect(await screen.findByTestId("sigma-corpus-graph")).toHaveAttribute("data-node-count", "6");
-    expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-layout-mode", "semantic-neighborhoods");
+    expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-layout-mode", "deterministic-force-atlas");
+    expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-layout-settled", "true");
+    expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-layout-iterations", "120");
+    expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-layout-overlap-count", "0");
+    expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-layout-seed", "atlas-force-layout-task-4-v1");
     expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-label-mode", "sparse-focus");
     expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-interaction-mode", "hover-click-drag");
-    expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-drag-policy", "sigma-node-drag-session-positions-with-neighbor-tension");
-    expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-tension-policy", "edge-weighted-neighbor-pull");
-    expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-document-layout-policy", "centroid-integrated-classification-pockets");
+    expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-drag-policy", "sigma-node-drag-session-pin-release-reset");
+    expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-pin-policy", "frontend-session-only-no-backend-mutation");
+    expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-document-layout-policy", "force-layout-type-encoded-labels");
     expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-dragging-node", "none");
-    expect(screen.getByTestId("sigma-constellation-map")).toBeInTheDocument();
-    expect(screen.getByTestId("sigma-relationship-overlay")).toBeInTheDocument();
-    expect(screen.getByLabelText("Sigma atlas visual policy")).toHaveTextContent("drag affordances");
-    expect(screen.getByLabelText("Sigma atlas visual policy")).toHaveTextContent("edge-weighted neighbor tension");
-    expect(screen.getByLabelText("Sigma atlas visual policy")).toHaveTextContent("centroid-integrated classification pockets");
-    expect(screen.getByLabelText("Graph purpose and edge semantics")).toHaveTextContent("maps each public resource to the metadata buckets");
-    expect(screen.getByLabelText("Graph purpose and edge semantics")).toHaveTextContent("site");
-    expect(screen.getByLabelText("Graph purpose and edge semantics")).toHaveTextContent("archive");
+    expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-pinned-node-count", "0");
+    expect(screen.getByRole("button", { name: "Release focus pin" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Reset session pins" })).toBeDisabled();
+    expect(screen.getByTestId("sigma-camera-node-layer")).toBeInTheDocument();
+    expect(screen.getByLabelText("Sigma atlas visual policy")).toHaveTextContent("smooth Sigma camera focus");
+    expect(screen.getByLabelText("Sigma atlas visual policy")).toHaveTextContent("ForceAtlas layout");
+    expect(screen.getByLabelText("Sigma atlas visual policy")).toHaveTextContent("frontend-only session pinning");
+    expect(screen.getByLabelText("Graph corpus context")).toHaveTextContent("Resources");
+    expect(screen.getByLabelText("Graph corpus context")).toHaveTextContent("Source-span nodes");
+    expect(screen.getByLabelText("Graph corpus context")).toHaveTextContent("Selected");
     const documentNode = document.querySelector('[data-node-id="document-type.guideline"]');
     expect(documentNode).not.toBeNull();
-    expect(Number(documentNode?.getAttribute("data-layout-y"))).toBeGreaterThan(-130);
+    expect(Number.isFinite(Number(documentNode?.getAttribute("data-layout-y")))).toBe(true);
+    expect(Number(documentNode?.getAttribute("data-viewport-y"))).toBeGreaterThan(0);
     expect(await screen.findByTestId("mock-sigma-container")).toBeVisible();
     expect(screen.getByTestId("atlas-workbench")).toHaveTextContent("198 public resources");
     expect(screen.getByTestId("source-document-panel")).toHaveTextContent("5 parsed-subset coverage");
@@ -227,6 +261,13 @@ describe("GuidelineGraphCanvas", () => {
     expect(screen.getByTestId("source-span-details")).not.toHaveAttribute("open");
     expect(screen.getByText("No clinical advice")).toBeVisible();
     expect(document.querySelector(".ide-window-controls")).toBeNull();
+    expect(document.querySelector(".sigma-interaction-cue")).toBeNull();
+    expect(document.body).not.toHaveTextContent(/Hover|Click to inspect|Drag to pin|detail labels visible|map labels sparse|Zoom detail|Graph filter toggles|⌘K Evidence Atlas/);
+    expect(screen.getByTestId("atlas-workbench")).toHaveTextContent("Retrieval query");
+    expect(screen.getByTestId("atlas-workbench")).toHaveTextContent("Selected resource context");
+    expect(screen.getByTestId("atlas-workbench")).toHaveTextContent("Graph focus / trust path");
+    expect(screen.getByTestId("atlas-workbench")).toHaveTextContent("Graph-RAG retrieval trace");
+    expect(screen.getByTestId("atlas-workbench")).toHaveTextContent("Generated answers disabled");
     expect(document.body).not.toHaveTextContent(/Synthetic|Packet Alpha|Model Trace Stub|Evidence Hub|Mock|Demo|Placeholder/);
   });
 
@@ -240,7 +281,7 @@ describe("GuidelineGraphCanvas", () => {
     expect(screen.getByRole("button", { name: "Fit View" })).toBeVisible();
     expect(screen.getByTestId("node-inspector")).toHaveTextContent("6 nodes · 6 edges");
     expect(screen.getByRole("searchbox", { name: "Search public corpus graph nodes" })).toBeVisible();
-    expect(screen.getByRole("contentinfo", { name: "Corpus search workbench" })).toHaveTextContent("Model answers disabled until retrieval/source-span verification is implemented.");
+    expect(screen.getByRole("contentinfo", { name: "Corpus search workbench" })).toHaveTextContent("Generated answers disabled until retrieval/source-span verification is implemented.");
   });
 
   it("truncates Sigma labels by grapheme clusters for mixed CJK and emoji labels", () => {
@@ -259,6 +300,7 @@ describe("GuidelineGraphCanvas", () => {
 
     expect(await screen.findByTestId("app-shell")).toBeVisible();
     expect(document.querySelector(".ide-window-controls")).toBeNull();
+    expect(document.body).not.toHaveTextContent("⌘K Evidence Atlas");
     expect(screen.getByLabelText("Current workspace path")).toHaveTextContent("GURU/public-corpus-atlas.graph");
   });
 
@@ -347,12 +389,17 @@ describe("GuidelineGraphCanvas", () => {
     });
     fireEvent.submit(within(workbench).getByRole("search", { name: "Search public corpus metadata and source spans" }));
 
-    expect(await within(workbench).findByText("Metadata results")).toBeVisible();
-    expect(within(workbench).getByText("Source span results")).toBeVisible();
+    expect(await within(workbench).findByText("Metadata retrieval")).toBeVisible();
+    expect(within(workbench).getByText("Source-span retrieval")).toBeVisible();
     expect(within(workbench).getByText("No source-span records returned for this query. Search is scoped to the five-document parsed subset when derived source-span records exist.")).toBeVisible();
     fireEvent.click(within(workbench).getByRole("button", { name: /Adjuvant Radiotherapy for Invasive Breast Cancer/i }));
 
     await waitFor(() => expect(screen.getByTestId("node-inspector")).toHaveTextContent(breastResourceId));
+    expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-evidence-selected-query", "Adjuvant Radiotherapy for Invasive Breast Cancer");
+    expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-highlighted-resource-ids", breastResourceId);
+    expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-evidence-focus-mode", "metadata-only-blocked");
+    expect(document.querySelector(`[data-node-id="resource.${breastResourceId}"]`)).toHaveAttribute("data-evidence-role", "metadata-blocked");
+    expect(screen.getByTestId("retrieval-terminal-state")).toHaveAttribute("data-graph-focus-node-id", `resource.${breastResourceId}`);
     expect(screen.getByTestId("source-document-panel")).toHaveTextContent("Adjuvant Radiotherapy for Invasive Breast Cancer");
     expect(screen.getByTestId("trust-provenance-drawer")).toHaveTextContent("metadata_only");
     expect(screen.getByTestId("trust-provenance-drawer")).toHaveTextContent("Metadata-only coverage: source spans are unavailable/not parsed");
@@ -361,7 +408,7 @@ describe("GuidelineGraphCanvas", () => {
     expect(screen.getByTestId("lookup-relationship-trace")).toHaveTextContent("document type");
     expect(screen.getByTestId("lookup-relationship-trace")).toHaveTextContent("archive");
     expect(workbench).toHaveTextContent("none-local-deterministic-search-only");
-    expect(workbench).toHaveTextContent("Model answers disabled until retrieval/source-span verification is implemented.");
+    expect(workbench).toHaveTextContent("Generated answers disabled until retrieval/source-span verification is implemented.");
   });
 
   it("groups source-span results with bounded excerpt and provenance-like status", async () => {
@@ -376,7 +423,7 @@ describe("GuidelineGraphCanvas", () => {
     });
     fireEvent.submit(within(workbench).getByRole("search", { name: "Search public corpus metadata and source spans" }));
 
-    expect(await within(workbench).findByText("Source span results")).toBeVisible();
+    expect(await within(workbench).findByText("Source-span retrieval")).toBeVisible();
     expect(workbench).toHaveTextContent("page:1;span:1");
     expect(workbench).toHaveTextContent("Local deterministic parsed excerpt for search coverage.");
     expect(workbench).toHaveTextContent("source status: draft");
@@ -390,6 +437,92 @@ describe("GuidelineGraphCanvas", () => {
     expect(screen.getByTestId("trust-provenance-drawer")).toHaveTextContent("Parent resource");
     expect(screen.getByTestId("lookup-relationship-trace")).toHaveTextContent("source span");
     expect(screen.getByTestId("lookup-relationship-trace")).toHaveTextContent("review item");
+    expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-evidence-focus-mode", "source-span-parent-fallback");
+    expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-highlighted-source-span-ids", "source-span.local-test");
+    expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-represented-source-span-node-ids", "none");
+    expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-graph-focus-node-id", `resource.${breastResourceId}`);
+    expect(screen.getByTestId("retrieval-terminal-state")).toHaveAttribute("data-focus-mode", "source-span-parent-fallback");
+  });
+
+  it("defines retrieval terminal graph-coupling state for source-span hits", async () => {
+    mockCorpusFetch();
+
+    render(<GuidelineGraphCanvas />);
+
+    await screen.findByText(/Public corpus metadata loaded from the local API/);
+    const workbench = screen.getByTestId("atlas-workbench");
+    fireEvent.change(within(workbench).getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }), {
+      target: { value: "deterministic parsed excerpt" }
+    });
+    fireEvent.submit(within(workbench).getByRole("search", { name: "Search public corpus metadata and source spans" }));
+
+    expect(await within(workbench).findByText("Source-span retrieval")).toBeVisible();
+    fireEvent.click(within(workbench).getByRole("button", { name: /Local deterministic parsed excerpt/i }));
+
+    await waitFor(() => expect(screen.getByTestId("trust-provenance-drawer")).toHaveTextContent("page:1;span:1"));
+    expect(workbench).toHaveTextContent("Retrieval terminal state");
+    expect(workbench).toHaveTextContent(`Highlighted resources: ${breastResourceId}`);
+    expect(workbench).toHaveTextContent("Highlighted source spans: source-span.local-test");
+    expect(workbench).toHaveTextContent(`Selected graph path: resource.${breastResourceId} -> source-span.local-test -> review.local-test`);
+    expect(workbench).toHaveTextContent(`Path/context IDs: resource.${breastResourceId}, disease-site.breast, document-type.guideline, archive-status.metadata-only.not-parsed`);
+    expect(workbench).toHaveTextContent("source-span-parent-fallback");
+    expect(workbench).toHaveTextContent("Retrieval trace entries: metadata result, source-span result, provenance drawer focus");
+    expect(screen.getByTestId("trust-provenance-drawer")).toHaveTextContent("Source document ID: source-document.local-test");
+    expect(screen.getByTestId("trust-provenance-drawer")).toHaveTextContent("Prompt/model version: none-local-deterministic-parser");
+    expect(screen.getByTestId("trust-provenance-drawer")).toHaveTextContent("Reviewer: unreviewed · draft · 2026-06-15T12:00:00Z");
+    expect(screen.getByTestId("trust-provenance-drawer")).not.toHaveTextContent(/generated answer|clinical answer|recommendation text|treatment advice|dosing|diagnosis/i);
+  });
+
+  it("clicking terminal entries focuses matching graph nodes while graph selection updates terminal context", async () => {
+    mockCorpusFetch();
+
+    render(<GuidelineGraphCanvas />);
+
+    await screen.findByText(/Public corpus metadata loaded from the local API/);
+    const workbench = screen.getByTestId("atlas-workbench");
+    fireEvent.change(within(workbench).getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }), {
+      target: { value: "guideline" }
+    });
+    fireEvent.submit(within(workbench).getByRole("search", { name: "Search public corpus metadata and source spans" }));
+    expect(await within(workbench).findByText("Metadata retrieval")).toBeVisible();
+    expect(screen.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-highlighted-resource-ids", `${breastResourceId},${brainResourceId}`);
+
+    fireEvent.click(within(screen.getByTestId("retrieval-terminal-state")).getByRole("button", { name: `Metadata terminal result ${brainResourceId}` }));
+    await waitFor(() => expect(screen.getByTestId("node-inspector")).toHaveTextContent(brainResourceId));
+    expect(screen.getByTestId("retrieval-terminal-state")).toHaveAttribute("data-graph-resource-node-id", `resource.${brainResourceId}`);
+    expect(document.querySelector(`[data-node-id="resource.${brainResourceId}"]`)).toHaveAttribute("data-evidence-role", "metadata-blocked");
+
+    const breastProbe = document.querySelector(`[data-node-id="resource.${breastResourceId}"]`);
+    expect(breastProbe).not.toBeNull();
+    fireEvent.pointerDown(breastProbe as Element, { clientX: 100, clientY: 100, pointerId: 12 });
+    fireEvent.pointerUp(breastProbe as Element, { clientX: 100, clientY: 100, pointerId: 12 });
+    await waitFor(() => expect(screen.getByTestId("node-inspector")).toHaveTextContent(breastResourceId));
+    expect(screen.getByTestId("retrieval-terminal-state")).toHaveAttribute("data-graph-resource-node-id", `resource.${breastResourceId}`);
+    expect(screen.getByTestId("retrieval-terminal-state")).toHaveTextContent("Generated answers are disabled");
+    expect(screen.getByTestId("retrieval-terminal-state")).not.toHaveTextContent(/generated answer prose|clinical answer|treatment advice|dosing|diagnosis/i);
+  });
+
+  it("defines metadata-only retrieval terminal state as blocked instead of claim-like evidence", async () => {
+    mockCorpusFetch();
+
+    render(<GuidelineGraphCanvas />);
+
+    await screen.findByText(/Public corpus metadata loaded from the local API/);
+    const workbench = screen.getByTestId("atlas-workbench");
+    fireEvent.change(within(workbench).getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }), {
+      target: { value: "Adjuvant Radiotherapy for Invasive Breast Cancer" }
+    });
+    fireEvent.submit(within(workbench).getByRole("search", { name: "Search public corpus metadata and source spans" }));
+    fireEvent.click(await within(workbench).findByRole("button", { name: /Adjuvant Radiotherapy for Invasive Breast Cancer/i }));
+
+    await waitFor(() => expect(screen.getByTestId("trust-provenance-drawer")).toHaveTextContent("metadata_only"));
+    expect(workbench).toHaveTextContent("Retrieval terminal state");
+    expect(workbench).toHaveTextContent(`Highlighted resources: ${breastResourceId}`);
+    expect(workbench).toHaveTextContent("Selected source-span context: metadata-only / blocked");
+    expect(workbench).toHaveTextContent("Blocked evidence label: metadata-only, no source span returned");
+    expect(workbench).toHaveTextContent("Retrieval trace entries: metadata result, blocked source-span context, provenance drawer focus");
+    expect(screen.getByTestId("trust-provenance-drawer")).toHaveTextContent("metadata-only blocked: no clinical claim rendered");
+    expect(screen.getByTestId("trust-provenance-drawer")).not.toHaveTextContent(/evidence conclusion|generated answer|clinical summary|recommended regimen|patient-specific/i);
   });
 
   it("renders source-backed review queue cards with local-only actions and focus behavior", async () => {
@@ -496,7 +629,7 @@ describe("GuidelineGraphCanvas", () => {
 
     expect(await within(workbench).findByText("No results for this query in public metadata or parsed source spans.")).toBeVisible();
     expect(workbench).not.toHaveTextContent(/no evidence/i);
-    expect(document.body).not.toHaveTextContent(/chat transcript|assistant response|generated answer|external llm/i);
+    expect(document.body).not.toHaveTextContent(/chat transcript|assistant response|external llm/i);
     expect(document.body).not.toHaveTextContent(/Synthetic|Packet Alpha|Model Trace Stub|Evidence Hub|Mock|Demo|Placeholder/);
   });
 
@@ -506,7 +639,7 @@ describe("GuidelineGraphCanvas", () => {
     render(<GuidelineGraphCanvas />);
 
     expect(await screen.findByText("Corpus API unavailable")).toBeVisible();
-    expect(screen.getAllByText(/Model answers disabled until retrieval\/source-span verification is implemented/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Generated answers disabled until retrieval\/source-span verification is implemented/).length).toBeGreaterThan(0);
     expect(screen.getByTestId("node-inspector")).toHaveTextContent("error");
   });
 

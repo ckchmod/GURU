@@ -13,13 +13,15 @@ import {
   useSigma
 } from "@react-sigma/core";
 import type { CorpusAtlasModel } from "../../lib/corpusAtlas";
-import type { AtlasNodeView } from "./GuidelineGraphCanvas";
+import { buildAtlasGraph, computeDeterministicForceAtlasLayout, type AtlasForceLayoutMetrics } from "../graph/atlasGraphAdapter";
+import type { AtlasNodeView, RetrievalGraphEvidenceState } from "./GuidelineGraphCanvas";
 
 export type SigmaCorpusGraphProps = {
   model: CorpusAtlasModel;
   nodeViews: AtlasNodeView[];
   selectedNodeId: string | null;
   hoveredNodeId: string | null;
+  retrievalEvidence: RetrievalGraphEvidenceState | null;
   onNodeSelectAction: (nodeId: string) => void;
   onNodeHoverAction: (nodeId: string | null) => void;
   onZoomLevelChangeAction: (zoomLevel: number) => void;
@@ -34,7 +36,9 @@ type SigmaAtlasNodeAttributes = AtlasNodeView & {
   forceLabel?: boolean;
   highlighted?: boolean;
   isDragging?: boolean;
+  isPinned?: boolean;
   isClusterAnchor?: boolean;
+  evidenceRole?: GraphEvidenceRole;
   zIndex?: number;
 };
 
@@ -48,7 +52,10 @@ type SigmaAtlasEdgeAttributes = {
 type SigmaAtlasGraph = Graph<SigmaAtlasNodeAttributes, SigmaAtlasEdgeAttributes>;
 type AtlasLayoutPoint = { x: number; y: number };
 type AtlasEdgeView = CorpusAtlasModel["graphPayload"]["edges"][number];
-type DragTensionOrigin = { nodeId: string; origin: AtlasLayoutPoint; neighborOrigins: Record<string, AtlasLayoutPoint> };
+type AtlasLayoutState = {
+  positions: Record<string, AtlasLayoutPoint>;
+  metrics: AtlasForceLayoutMetrics;
+};
 type CanvasLabelNode = {
   label?: string | null;
   x: number;
@@ -59,52 +66,52 @@ type CanvasLabelNode = {
   group?: AtlasNodeView["group"];
   highlighted?: boolean;
   isDragging?: boolean;
+  isPinned?: boolean;
   isClusterAnchor?: boolean;
+  evidenceRole?: GraphEvidenceRole;
 };
 
-const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
-const archiveShelfY = 238;
-const diseaseNeighborhoodAnchors: AtlasLayoutPoint[] = [
-  { x: -130, y: -38 },
-  { x: 38, y: -40 },
-  { x: 206, y: -36 },
-  { x: -298, y: -28 },
-  { x: -214, y: 98 },
-  { x: -46, y: 105 },
-  { x: 124, y: 104 },
-  { x: 294, y: 98 },
-  { x: -214, y: -168 },
-  { x: -46, y: -172 },
-  { x: 124, y: -170 },
-  { x: 294, y: -164 },
-  { x: -382, y: 104 },
-  { x: 382, y: 104 },
-  { x: -382, y: -158 },
-  { x: 382, y: -154 },
-  { x: -130, y: 226 },
-  { x: 38, y: 232 },
-  { x: 206, y: 226 },
-  { x: -298, y: 226 }
-];
+type GraphEvidenceRole = "query-hit" | "selected-resource" | "path-context" | "source-span-hit" | "metadata-blocked";
+
+const FORCE_LAYOUT_SEED = "atlas-force-layout-task-4-v1";
+const FORCE_LAYOUT_SCALE = 230;
+const FORCE_LAYOUT_NODE_RADIUS = 9;
 
 export function SigmaCorpusGraph({
   model,
   nodeViews,
   selectedNodeId,
   hoveredNodeId,
+  retrievalEvidence,
   onNodeSelectAction,
   onNodeHoverAction,
   onZoomLevelChangeAction
 }: SigmaCorpusGraphProps) {
-  const [draggedPositions, setDraggedPositions] = useState<Record<string, AtlasLayoutPoint>>({});
   const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
-  const atlasLayout = useMemo(() => computeClusteredAtlasLayout(model, nodeViews), [model, nodeViews]);
-  const sessionLayout = useMemo(() => ({ ...atlasLayout, ...draggedPositions }), [atlasLayout, draggedPositions]);
-  const atlasGraph = useMemo(() => buildSigmaGraph(model, nodeViews, sessionLayout), [sessionLayout, model, nodeViews]);
+  const [pinnedNodePositions, setPinnedNodePositions] = useState<Record<string, AtlasLayoutPoint>>({});
+  const atlasLayout = useMemo(() => computeForceAtlasLayoutState(model, nodeViews), [model, nodeViews]);
+  const atlasGraph = useMemo(
+    () => buildSigmaGraph(model, nodeViews, atlasLayout.positions),
+    [atlasLayout.positions, model, nodeViews]
+  );
   const sigmaSettings = useMemo(() => buildSigmaSettings(), []);
-  const handleNodePositionsChange = useCallback((positions: Record<string, AtlasLayoutPoint>) => {
-    setDraggedPositions((current) => ({ ...current, ...positions }));
+  const pinnedNodeIds = useMemo(() => Object.keys(pinnedNodePositions).sort((left, right) => left.localeCompare(right)), [pinnedNodePositions]);
+  const selectedPinnedNodeId = selectedNodeId && pinnedNodePositions[selectedNodeId] ? selectedNodeId : pinnedNodeIds[0] ?? null;
+  const handleNodePinned = useCallback((nodeId: string, position: AtlasLayoutPoint) => {
+    setPinnedNodePositions((current) => ({ ...current, [nodeId]: roundPoint(position) }));
   }, []);
+  const handleReleasePinnedNode = useCallback(() => {
+    if (!selectedPinnedNodeId) {
+      return;
+    }
+
+    setPinnedNodePositions((current) => {
+      const nextPositions = { ...current };
+      delete nextPositions[selectedPinnedNodeId];
+      return nextPositions;
+    });
+  }, [selectedPinnedNodeId]);
+  const handleResetPinnedNodes = useCallback(() => setPinnedNodePositions({}), []);
 
   return (
     <div
@@ -112,15 +119,31 @@ export function SigmaCorpusGraph({
       data-testid="sigma-corpus-graph"
       data-node-count={model.graph.order}
       data-edge-count={model.graph.size}
-      data-layout-mode="semantic-neighborhoods"
+      data-layout-mode="deterministic-force-atlas"
+      data-layout-settled={String(atlasLayout.metrics.settled)}
+      data-layout-iterations={atlasLayout.metrics.iterations}
+      data-layout-overlap-count={atlasLayout.metrics.overlapCount}
+      data-layout-seed={atlasLayout.metrics.seed}
       data-label-mode="sparse-focus"
       data-interaction-mode="hover-click-drag"
-      data-drag-policy="sigma-node-drag-session-positions-with-neighbor-tension"
-      data-tension-policy="edge-weighted-neighbor-pull"
-      data-document-layout-policy="centroid-integrated-classification-pockets"
+      data-drag-policy="sigma-node-drag-session-pin-release-reset"
+      data-pin-policy="frontend-session-only-no-backend-mutation"
+      data-document-layout-policy="force-layout-type-encoded-labels"
       data-visual-theme="dark-evidence-vault"
       data-node-encoding-policy="color-ring-shape-label-chip"
       data-dragging-node={draggingNodeId ?? "none"}
+      data-pinned-node-count={pinnedNodeIds.length}
+      data-pinned-nodes={pinnedNodeIds.join(",") || "none"}
+      data-evidence-selected-query={retrievalEvidence?.query ?? "none"}
+      data-highlighted-resource-ids={retrievalEvidence?.highlightedResourceIds.join(",") || "none"}
+      data-highlighted-source-span-ids={retrievalEvidence?.highlightedSourceSpanIds.join(",") || "none"}
+      data-represented-source-span-node-ids={retrievalEvidence?.representedSourceSpanNodeIds.join(",") || "none"}
+      data-graph-focus-node-id={retrievalEvidence?.graphFocusNodeId ?? "none"}
+      data-graph-resource-node-id={retrievalEvidence?.graphResourceNodeId ?? "none"}
+      data-graph-context-node-ids={retrievalEvidence?.graphContextNodeIds.join(",") || "none"}
+      data-graph-path-node-ids={retrievalEvidence?.graphPathNodeIds.join(",") || "none"}
+      data-evidence-focus-mode={retrievalEvidence?.focusMode ?? "none"}
+      data-evidence-blocked-reason={retrievalEvidence?.blockedReason ?? "none"}
     >
       <SigmaContainer<SigmaAtlasNodeAttributes, SigmaAtlasEdgeAttributes>
         graph={atlasGraph}
@@ -130,207 +153,49 @@ export function SigmaCorpusGraph({
         <SigmaAtlasRuntime
           selectedNodeId={selectedNodeId}
           hoveredNodeId={hoveredNodeId}
+          retrievalEvidence={retrievalEvidence}
           draggingNodeId={draggingNodeId}
           onNodeSelectAction={onNodeSelectAction}
           onNodeHoverAction={onNodeHoverAction}
           onDraggingNodeChangeAction={setDraggingNodeId}
-          onNodePositionsChangeAction={handleNodePositionsChange}
+          onNodePinnedAction={handleNodePinned}
           onZoomLevelChangeAction={onZoomLevelChangeAction}
+        />
+        <SigmaPinnedNodeController layout={atlasLayout.positions} pinnedPositions={pinnedNodePositions} />
+        <SigmaCameraNodeLayer
+          nodeViews={nodeViews}
+          edges={model.graphPayload.edges}
+          selectedNodeId={selectedNodeId}
+          hoveredNodeId={hoveredNodeId}
+          retrievalEvidence={retrievalEvidence}
+          draggingNodeId={draggingNodeId}
+          pinnedNodeIds={pinnedNodeIds}
+          onNodeSelectAction={onNodeSelectAction}
+          onNodeHoverAction={onNodeHoverAction}
+          onDraggingNodeChangeAction={setDraggingNodeId}
+          onNodePinnedAction={handleNodePinned}
         />
         <ControlsContainer className="atlas-controls" position="bottom-left">
           <ZoomControl labels={{ zoomIn: "Zoom In", zoomOut: "Zoom Out", reset: "Fit View" }} />
+          <section aria-label="Session pin controls">
+            <span>Session pins: {pinnedNodeIds.length === 0 ? "none" : `${pinnedNodeIds.length} pinned`}</span>
+            <button type="button" onClick={handleReleasePinnedNode} disabled={!selectedPinnedNodeId}>
+              Release focus pin
+            </button>
+            <button type="button" onClick={handleResetPinnedNodes} disabled={pinnedNodeIds.length === 0}>
+              Reset session pins
+            </button>
+          </section>
         </ControlsContainer>
       </SigmaContainer>
-      <ConstellationOverlay
-        nodeViews={nodeViews}
-        model={model}
-        layout={sessionLayout}
-        selectedNodeId={selectedNodeId}
-        hoveredNodeId={hoveredNodeId}
-        draggingNodeId={draggingNodeId}
-        onNodeSelectAction={onNodeSelectAction}
-        onNodeHoverAction={onNodeHoverAction}
-        onDraggingNodeChangeAction={setDraggingNodeId}
-        onNodePositionsChangeAction={handleNodePositionsChange}
-      />
-      <div className="sigma-interaction-cue" aria-hidden="true">
-        <span>Hover</span>
-        <span>Click to inspect</span>
-        <span>Drag to pin</span>
-      </div>
       <ol className="sigma-node-index" aria-label="Rendered Sigma atlas nodes">
         {nodeViews.slice(0, 12).map((node) => (
           <li key={node.id}>{node.title} · {node.type} · {node.aggregateCount || 1}</li>
         ))}
       </ol>
       <p className="sigma-atlas-description" aria-label="Sigma atlas visual policy">
-        Deterministic semantic-neighborhood layout with sparse labels, drag affordances, and edge-weighted neighbor tension: disease sites anchor resource neighborhoods, document types sit in compact centroid-integrated classification pockets, and moved connected nodes keep session positions after drag.
+        Deterministic ForceAtlas layout with sparse labels, smooth Sigma camera focus, and frontend-only session pinning: resource, disease, document, archive, and source-span meaning remains visible through color, labels, inspector state, and release/reset pin controls without mutating backend data.
       </p>
-    </div>
-  );
-}
-
-function ConstellationOverlay({
-  nodeViews,
-  model,
-  layout,
-  selectedNodeId,
-  hoveredNodeId,
-  draggingNodeId,
-  onNodeSelectAction,
-  onNodeHoverAction,
-  onDraggingNodeChangeAction,
-  onNodePositionsChangeAction
-}: {
-  nodeViews: AtlasNodeView[];
-  model: CorpusAtlasModel;
-  layout: Record<string, AtlasLayoutPoint>;
-  selectedNodeId: string | null;
-  hoveredNodeId: string | null;
-  draggingNodeId: string | null;
-  onNodeSelectAction: (nodeId: string) => void;
-  onNodeHoverAction: (nodeId: string | null) => void;
-  onDraggingNodeChangeAction: (nodeId: string | null) => void;
-  onNodePositionsChangeAction: (positions: Record<string, AtlasLayoutPoint>) => void;
-}) {
-  const bounds = useMemo(() => computeLayoutBounds(layout), [layout]);
-  const activeNodeId = hoveredNodeId ?? selectedNodeId;
-  const activeEdgeNodeId = draggingNodeId ?? activeNodeId;
-  const activeEdges = useMemo(() => activeEdgeNodeId ? activeEdgesForNode(model.graphPayload.edges, activeEdgeNodeId) : [], [activeEdgeNodeId, model.graphPayload.edges]);
-  const activeNeighborIds = useMemo(() => new Set(activeEdges.flatMap((edge) => [edge.source, edge.target]).filter((nodeId) => nodeId !== activeEdgeNodeId)), [activeEdgeNodeId, activeEdges]);
-  const mapRef = useRef<HTMLDivElement | null>(null);
-  const overlayDragRef = useRef<string | null>(null);
-  const overlayDragOriginRef = useRef<DragTensionOrigin | null>(null);
-
-  const handlePointerMove = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
-    const draggedNode = overlayDragRef.current;
-    if (!draggedNode || !mapRef.current) {
-      return;
-    }
-
-    event.preventDefault();
-    const point = pointFromOverlayPointer(event, mapRef.current, bounds);
-    const dragOrigin = overlayDragOriginRef.current;
-    onNodePositionsChangeAction(buildTensionPositions(draggedNode, point, dragOrigin, model.graphPayload.edges));
-  }, [bounds, model.graphPayload.edges, onNodePositionsChangeAction]);
-
-  const finishOverlayDrag = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
-    const draggedNode = overlayDragRef.current;
-    if (!draggedNode) {
-      return;
-    }
-
-    overlayDragRef.current = null;
-    overlayDragOriginRef.current = null;
-    onDraggingNodeChangeAction(null);
-    onNodeHoverAction(draggedNode);
-    if (mapRef.current?.hasPointerCapture(event.pointerId)) {
-      mapRef.current.releasePointerCapture(event.pointerId);
-    }
-  }, [onDraggingNodeChangeAction, onNodeHoverAction]);
-
-  return (
-    <div
-      ref={mapRef}
-      className="sigma-constellation-map"
-      data-testid="sigma-constellation-map"
-      aria-hidden="true"
-      onPointerMove={handlePointerMove}
-      onPointerUp={finishOverlayDrag}
-      onPointerCancel={finishOverlayDrag}
-      onLostPointerCapture={finishOverlayDrag}
-    >
-      {activeEdges.length > 0 ? (
-        <svg className="sigma-relationship-overlay" data-testid="sigma-relationship-overlay" aria-hidden="true">
-          {activeEdges.map((edge) => {
-            const source = layout[edge.source];
-            const target = layout[edge.target];
-            if (!source || !target) {
-              return null;
-            }
-
-            const sourcePosition = toOverlayPosition(source, bounds);
-            const targetPosition = toOverlayPosition(target, bounds);
-            const labelPosition = {
-              left: (sourcePosition.left + targetPosition.left) / 2,
-              top: (sourcePosition.top + targetPosition.top) / 2
-            };
-
-            return (
-              <g key={edge.id ?? `${edge.source}-${edge.target}-${edge.type}`} data-edge-type={edge.type} data-edge-tone={edgeTypeShortLabel(edge.type)} data-active-edge="true">
-                <line
-                  x1={`${sourcePosition.left}%`}
-                  y1={`${sourcePosition.top}%`}
-                  x2={`${targetPosition.left}%`}
-                  y2={`${targetPosition.top}%`}
-                />
-                <text x={`${labelPosition.left}%`} y={`${labelPosition.top}%`}>{edgeTypeShortLabel(edge.type)}</text>
-              </g>
-            );
-          })}
-        </svg>
-      ) : null}
-      {nodeViews.map((node) => {
-        const point = layout[node.id];
-        if (!point) {
-          return null;
-        }
-
-        const position = toOverlayPosition(point, bounds);
-        const isActive = node.id === activeNodeId || node.id === draggingNodeId;
-        const isReacting = activeNeighborIds.has(node.id);
-        const showLabel = isActive || shouldShowPersistentLabel(node);
-
-        return (
-          <span
-            key={node.id}
-            className={`sigma-constellation-node sigma-constellation-node--${node.kind} sigma-constellation-node--${node.group}`}
-            data-active={isActive}
-            data-dragging={node.id === draggingNodeId}
-            data-reacting={isReacting}
-            data-node-id={node.id}
-            data-node-kind={node.kind}
-            data-node-group={node.group}
-            data-node-status={node.provenanceStatus}
-            data-node-type={node.type}
-            data-layout-x={point.x}
-            data-layout-y={point.y}
-            style={{ left: `${position.left}%`, top: `${position.top}%` }}
-            onPointerDown={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              overlayDragRef.current = node.id;
-              overlayDragOriginRef.current = {
-                nodeId: node.id,
-                origin: layout[node.id],
-                neighborOrigins: neighborOriginsForNode(node.id, layout, model.graphPayload.edges)
-              };
-              onDraggingNodeChangeAction(node.id);
-              onNodeHoverAction(node.id);
-              onNodeSelectAction(node.id);
-              mapRef.current?.setPointerCapture(event.pointerId);
-            }}
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              onNodeSelectAction(node.id);
-            }}
-            onPointerEnter={() => onNodeHoverAction(node.id)}
-            onPointerLeave={() => {
-              if (!overlayDragRef.current) {
-                onNodeHoverAction(null);
-              }
-            }}
-          >
-            {showLabel ? (
-              <span className="sigma-constellation-label">
-                <span className="sigma-constellation-label__chip">{nodeVisualLabel(node)}</span>
-                <span>{truncateLabel(node.title)}</span>
-              </span>
-            ) : null}
-          </span>
-        );
-      })}
     </div>
   );
 }
@@ -338,16 +203,17 @@ function ConstellationOverlay({
 function SigmaAtlasRuntime({
   selectedNodeId,
   hoveredNodeId,
+  retrievalEvidence,
   draggingNodeId,
   onNodeSelectAction,
   onNodeHoverAction,
   onDraggingNodeChangeAction,
-  onNodePositionsChangeAction,
+  onNodePinnedAction,
   onZoomLevelChangeAction
 }: Omit<SigmaCorpusGraphProps, "model" | "nodeViews"> & {
   draggingNodeId: string | null;
   onDraggingNodeChangeAction: (nodeId: string | null) => void;
-  onNodePositionsChangeAction: (positions: Record<string, AtlasLayoutPoint>) => void;
+  onNodePinnedAction: (nodeId: string, position: AtlasLayoutPoint) => void;
 }) {
   const sigma = useSigma<SigmaAtlasNodeAttributes, SigmaAtlasEdgeAttributes>();
   const registerEvents = useRegisterEvents();
@@ -355,7 +221,9 @@ function SigmaAtlasRuntime({
   const camera = useCamera({ duration: 260, factor: 1.45 });
   const draggedNodeRef = useRef<string | null>(null);
   const wasDraggedRef = useRef(false);
-  const dragOriginRef = useRef<DragTensionOrigin | null>(null);
+  const suppressNextClickRef = useRef(false);
+  const evidenceNodeRoles = useMemo(() => buildEvidenceNodeRoles(retrievalEvidence, sigma.getGraph()), [retrievalEvidence, sigma]);
+  const evidenceNodeIds = useMemo(() => new Set(evidenceNodeRoles.keys()), [evidenceNodeRoles]);
 
   const finishDragging = useCallback(() => {
     const draggedNode = draggedNodeRef.current;
@@ -364,29 +232,22 @@ function SigmaAtlasRuntime({
     }
 
     const graph = sigma.getGraph();
-    const changedPositions: Record<string, AtlasLayoutPoint> = {};
     if (graph.hasNode(draggedNode)) {
       const node = graph.getNodeAttributes(draggedNode);
       graph.setNodeAttribute(draggedNode, "isDragging", false);
       graph.setNodeAttribute(draggedNode, "highlighted", true);
-      changedPositions[draggedNode] = roundPoint({ x: node.x, y: node.y });
-      graph.neighbors(draggedNode).forEach((neighborId) => {
-        if (!graph.hasNode(neighborId)) {
-          return;
-        }
-        const neighbor = graph.getNodeAttributes(neighborId);
-        graph.setNodeAttribute(neighborId, "highlighted", true);
-        changedPositions[neighborId] = roundPoint({ x: neighbor.x, y: neighbor.y });
-      });
+      graph.setNodeAttribute(draggedNode, "isPinned", wasDraggedRef.current || node.isPinned);
+      if (wasDraggedRef.current) {
+        onNodePinnedAction(draggedNode, roundPoint({ x: node.x, y: node.y }));
+      }
     }
-    onNodePositionsChangeAction(changedPositions);
+    suppressNextClickRef.current = wasDraggedRef.current;
     sigma.setCustomBBox(null);
     sigma.refresh();
     draggedNodeRef.current = null;
-    dragOriginRef.current = null;
     wasDraggedRef.current = false;
     onDraggingNodeChangeAction(null);
-  }, [onDraggingNodeChangeAction, onNodePositionsChangeAction, sigma]);
+  }, [onDraggingNodeChangeAction, onNodePinnedAction, sigma]);
 
   useEffect(() => {
     registerEvents({
@@ -398,16 +259,6 @@ function SigmaAtlasRuntime({
         onNodeHoverAction(event.node);
         const graph = sigma.getGraph();
         if (graph.hasNode(event.node)) {
-          const node = graph.getNodeAttributes(event.node);
-          dragOriginRef.current = {
-            nodeId: event.node,
-            origin: { x: node.x, y: node.y },
-            neighborOrigins: graph.neighbors(event.node).reduce<Record<string, AtlasLayoutPoint>>((origins, neighborId) => {
-              const neighbor = graph.getNodeAttributes(neighborId);
-              origins[neighborId] = { x: neighbor.x, y: neighbor.y };
-              return origins;
-            }, {})
-          };
           graph.setNodeAttribute(event.node, "isDragging", true);
           graph.setNodeAttribute(event.node, "highlighted", true);
         }
@@ -431,7 +282,10 @@ function SigmaAtlasRuntime({
         }
 
         const position = sigma.viewportToGraph(event.event);
-        applyGraphTension(graph, draggedNode, roundPoint(position), dragOriginRef.current);
+        const pinnedPosition = roundPoint(position);
+        graph.setNodeAttribute(draggedNode, "x", pinnedPosition.x);
+        graph.setNodeAttribute(draggedNode, "y", pinnedPosition.y);
+        graph.setNodeAttribute(draggedNode, "isPinned", true);
         wasDraggedRef.current = true;
         sigma.refresh();
         event.preventSigmaDefault();
@@ -442,9 +296,11 @@ function SigmaAtlasRuntime({
       upNode: finishDragging,
       upStage: finishDragging,
       clickNode: (event) => {
-        if (!wasDraggedRef.current) {
-          onNodeSelectAction(event.node);
+        if (suppressNextClickRef.current) {
+          suppressNextClickRef.current = false;
+          return;
         }
+        onNodeSelectAction(event.node);
       },
       enterNode: (event) => onNodeHoverAction(event.node),
       leaveNode: () => onNodeHoverAction(null),
@@ -456,8 +312,12 @@ function SigmaAtlasRuntime({
   useEffect(() => {
     const activeNodeId = draggingNodeId ?? hoveredNodeId ?? selectedNodeId;
     setSettings({
+      defaultNodeType: "circle",
+      nodeProgramClasses: { circle: NodeCircleProgram },
       nodeReducer: (nodeId, data) => {
         const nextData = { ...data };
+        const evidenceRole = evidenceNodeRoles.get(nodeId);
+        nextData.evidenceRole = evidenceRole;
         if (nodeId === draggingNodeId) {
           nextData.isDragging = true;
           nextData.highlighted = true;
@@ -480,6 +340,18 @@ function SigmaAtlasRuntime({
           nextData.forceLabel = isActive || activeNode?.kind === "resource" || data.kind !== "resource";
           nextData.zIndex = isActive ? 3 : 2;
           nextData.size = isActive ? data.size * 1.7 : data.size * 1.18;
+          if (evidenceRole) {
+            nextData.color = toEvidenceNodeColor(evidenceRole, data.color);
+          }
+          return nextData;
+        }
+
+        if (evidenceRole) {
+          nextData.highlighted = true;
+          nextData.forceLabel = evidenceRole !== "query-hit" || data.kind !== "resource";
+          nextData.zIndex = evidenceRole === "selected-resource" || evidenceRole === "source-span-hit" ? 2 : 1;
+          nextData.size = data.size * evidenceNodeSizeFactor(evidenceRole);
+          nextData.color = toEvidenceNodeColor(evidenceRole, data.color);
           return nextData;
         }
 
@@ -491,28 +363,382 @@ function SigmaAtlasRuntime({
       edgeReducer: (edgeId, data) => {
         const nextData = { ...data };
         const graph = sigma.getGraph();
+        const [source, target] = graph.extremities(edgeId);
+        const isEvidenceEdge = evidenceNodeIds.has(source) && evidenceNodeIds.has(target);
         if (!activeNodeId || !graph.hasNode(activeNodeId)) {
+          if (isEvidenceEdge) {
+            nextData.color = toActiveSigmaEdgeColor(data.edgeType);
+            nextData.size = 1.8;
+          }
           return nextData;
         }
 
-        const isActiveEdge = graph.extremities(edgeId).includes(activeNodeId);
-        nextData.hidden = !isActiveEdge;
-        if (isActiveEdge) {
+        const isActiveEdge = source === activeNodeId || target === activeNodeId;
+        nextData.hidden = !(isActiveEdge || isEvidenceEdge);
+        if (isActiveEdge || isEvidenceEdge) {
           nextData.color = toActiveSigmaEdgeColor(data.edgeType);
-          nextData.size = 2.2;
+          nextData.size = isActiveEdge ? 2.2 : 1.8;
         }
         return nextData;
       }
     });
     sigma.refresh();
-  }, [draggingNodeId, hoveredNodeId, selectedNodeId, setSettings, sigma]);
+  }, [draggingNodeId, evidenceNodeIds, evidenceNodeRoles, hoveredNodeId, selectedNodeId, setSettings, sigma]);
 
   useEffect(() => {
     if (!draggingNodeId && selectedNodeId && sigma.getGraph().hasNode(selectedNodeId)) {
       const node = sigma.getGraph().getNodeAttributes(selectedNodeId);
-      camera.goto({ x: node.x, y: node.y, ratio: node.kind === "resource" ? 0.78 : 0.92 }, { duration: 320 });
+      const displayData = sigma.getNodeDisplayData(selectedNodeId);
+      if (!displayData) {
+        return;
+      }
+      camera.goto({ x: displayData.x, y: displayData.y, ratio: node.kind === "resource" ? 0.78 : 0.92 }, { duration: 420 });
     }
   }, [camera, draggingNodeId, selectedNodeId, sigma]);
+
+  return null;
+}
+
+type CameraNodeSnapshot = {
+  id: string;
+  title: string;
+  kind: AtlasNodeView["kind"];
+  group: AtlasNodeView["group"];
+  provenanceStatus: string;
+  type: string;
+  layoutX: number;
+  layoutY: number;
+  viewportX: number;
+  viewportY: number;
+  viewportSize: number;
+  coordinateSource: "display" | "graph";
+  active: boolean;
+  reacting: boolean;
+  dragging: boolean;
+  pinned: boolean;
+  evidenceRole: GraphEvidenceRole | "none";
+  queryHit: boolean;
+  pathContext: boolean;
+  sourceSpanHit: boolean;
+  metadataBlocked: boolean;
+};
+type StagePanState = { previousX: number; previousY: number };
+
+function SigmaCameraNodeLayer({
+  nodeViews,
+  edges,
+  selectedNodeId,
+  hoveredNodeId,
+  retrievalEvidence,
+  draggingNodeId,
+  pinnedNodeIds,
+  onNodeSelectAction,
+  onNodeHoverAction,
+  onDraggingNodeChangeAction,
+  onNodePinnedAction
+}: {
+  nodeViews: AtlasNodeView[];
+  edges: AtlasEdgeView[];
+  selectedNodeId: string | null;
+  hoveredNodeId: string | null;
+  retrievalEvidence: RetrievalGraphEvidenceState | null;
+  draggingNodeId: string | null;
+  pinnedNodeIds: string[];
+  onNodeSelectAction: (nodeId: string) => void;
+  onNodeHoverAction: (nodeId: string | null) => void;
+  onDraggingNodeChangeAction: (nodeId: string | null) => void;
+  onNodePinnedAction: (nodeId: string, position: AtlasLayoutPoint) => void;
+}) {
+  const sigma = useSigma<SigmaAtlasNodeAttributes, SigmaAtlasEdgeAttributes>();
+  const [nodes, setNodes] = useState<CameraNodeSnapshot[]>([]);
+  const probeDragRef = useRef<{ nodeId: string; moved: boolean } | null>(null);
+  const stagePanRef = useRef<StagePanState | null>(null);
+  const syncTimerRef = useRef<number | null>(null);
+  const activeNodeId = draggingNodeId ?? hoveredNodeId ?? selectedNodeId;
+  const activeNeighborIds = useMemo(() => new Set(edges
+    .filter((edge) => activeNodeId && (edge.source === activeNodeId || edge.target === activeNodeId))
+    .map((edge) => edge.source === activeNodeId ? edge.target : edge.source)), [activeNodeId, edges]);
+  const nodeViewById = useMemo(() => new Map(nodeViews.map((node) => [node.id, node])), [nodeViews]);
+  const evidenceNodeRoles = useMemo(() => buildEvidenceNodeRoles(retrievalEvidence, sigma.getGraph()), [retrievalEvidence, sigma]);
+
+  const syncNodes = useCallback(() => {
+    const graph = sigma.getGraph();
+    const nextNodes: CameraNodeSnapshot[] = [];
+    graph.forEachNode((nodeId, attributes) => {
+      const nodeView = nodeViewById.get(nodeId);
+      if (!nodeView) {
+        return;
+      }
+
+      const displayData = sigma.getNodeDisplayData(nodeId);
+      const viewport = sigma.graphToViewport({ x: attributes.x, y: attributes.y }, { cameraState: sigma.getCamera().getState() });
+      const scaledSize = Math.max(10, Math.round(sigma.scaleSize(displayData?.size ?? attributes.size) * 2));
+      const evidenceRole = evidenceNodeRoles.get(nodeId) ?? "none";
+      nextNodes.push({
+        id: nodeId,
+        title: nodeView.title,
+        kind: nodeView.kind,
+        group: nodeView.group,
+        provenanceStatus: nodeView.provenanceStatus,
+        type: nodeView.type,
+        layoutX: attributes.x,
+        layoutY: attributes.y,
+        viewportX: viewport.x,
+        viewportY: viewport.y,
+        viewportSize: scaledSize,
+        coordinateSource: "graph",
+        active: nodeId === activeNodeId,
+        reacting: activeNeighborIds.has(nodeId),
+        dragging: nodeId === draggingNodeId,
+        pinned: Boolean(attributes.isPinned),
+        evidenceRole,
+        queryHit: evidenceRole === "query-hit" || evidenceRole === "selected-resource" || evidenceRole === "metadata-blocked",
+        pathContext: evidenceRole === "path-context" || evidenceRole === "selected-resource" || evidenceRole === "source-span-hit",
+        sourceSpanHit: evidenceRole === "source-span-hit",
+        metadataBlocked: evidenceRole === "metadata-blocked"
+      });
+    });
+    setNodes(nextNodes.sort((left, right) => left.id.localeCompare(right.id)));
+  }, [activeNeighborIds, activeNodeId, draggingNodeId, evidenceNodeRoles, nodeViewById, sigma]);
+
+  const scheduleSyncNodes = useCallback(() => {
+    if (syncTimerRef.current !== null) {
+      return;
+    }
+
+    syncTimerRef.current = window.setTimeout(() => {
+      syncTimerRef.current = null;
+      syncNodes();
+    }, 80);
+  }, [syncNodes]);
+
+  useEffect(() => {
+    syncNodes();
+    const camera = sigma.getCamera();
+    sigma.on("afterRender", scheduleSyncNodes);
+    sigma.on("resize", syncNodes);
+    camera.on("updated", scheduleSyncNodes);
+
+    return () => {
+      sigma.off("afterRender", scheduleSyncNodes);
+      sigma.off("resize", syncNodes);
+      camera.off("updated", scheduleSyncNodes);
+      if (syncTimerRef.current !== null) {
+        window.clearTimeout(syncTimerRef.current);
+        syncTimerRef.current = null;
+      }
+    };
+  }, [pinnedNodeIds, scheduleSyncNodes, sigma, syncNodes]);
+
+  const finishProbeDrag = useCallback((event: React.PointerEvent<HTMLElement>) => {
+    const dragState = probeDragRef.current;
+    if (!dragState) {
+      return;
+    }
+
+    const graph = sigma.getGraph();
+    if (graph.hasNode(dragState.nodeId)) {
+      const node = graph.getNodeAttributes(dragState.nodeId);
+      graph.setNodeAttribute(dragState.nodeId, "isDragging", false);
+      graph.setNodeAttribute(dragState.nodeId, "highlighted", true);
+      graph.setNodeAttribute(dragState.nodeId, "isPinned", dragState.moved || node.isPinned);
+      if (dragState.moved) {
+        onNodePinnedAction(dragState.nodeId, roundPoint({ x: node.x, y: node.y }));
+      }
+    }
+
+    probeDragRef.current = null;
+    onDraggingNodeChangeAction(null);
+    onNodeHoverAction(dragState.nodeId);
+    sigma.setCustomBBox(null);
+    sigma.refresh();
+    scheduleSyncNodes();
+    releasePointer(event.currentTarget, event.pointerId);
+  }, [onDraggingNodeChangeAction, onNodeHoverAction, onNodePinnedAction, scheduleSyncNodes, sigma]);
+
+  const handleProbePointerDown = useCallback((nodeId: string, event: React.PointerEvent<HTMLElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const graph = sigma.getGraph();
+    if (!graph.hasNode(nodeId)) {
+      return;
+    }
+
+    probeDragRef.current = { nodeId, moved: false };
+    graph.setNodeAttribute(nodeId, "isDragging", true);
+    graph.setNodeAttribute(nodeId, "highlighted", true);
+    if (!sigma.getCustomBBox()) {
+      sigma.setCustomBBox(sigma.getBBox());
+    }
+    onDraggingNodeChangeAction(nodeId);
+    onNodeSelectAction(nodeId);
+    onNodeHoverAction(nodeId);
+    capturePointer(event.currentTarget, event.pointerId);
+    sigma.refresh();
+    scheduleSyncNodes();
+  }, [onDraggingNodeChangeAction, onNodeHoverAction, onNodeSelectAction, scheduleSyncNodes, sigma]);
+
+  const handleProbePointerMove = useCallback((event: React.PointerEvent<HTMLElement>) => {
+    const dragState = probeDragRef.current;
+    if (!dragState) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    const graph = sigma.getGraph();
+    if (!graph.hasNode(dragState.nodeId)) {
+      finishProbeDrag(event);
+      return;
+    }
+
+    const position = sigma.viewportToGraph({ x: event.clientX, y: event.clientY });
+    const pinnedPosition = roundPoint(position);
+    graph.setNodeAttribute(dragState.nodeId, "x", pinnedPosition.x);
+    graph.setNodeAttribute(dragState.nodeId, "y", pinnedPosition.y);
+    graph.setNodeAttribute(dragState.nodeId, "isPinned", true);
+    dragState.moved = true;
+    sigma.refresh();
+    scheduleSyncNodes();
+  }, [finishProbeDrag, scheduleSyncNodes, sigma]);
+
+  const handleStagePointerDown = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+
+    event.preventDefault();
+    stagePanRef.current = { previousX: event.clientX, previousY: event.clientY };
+    capturePointer(event.currentTarget, event.pointerId);
+  }, []);
+
+  const handleStagePointerMove = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    const panState = stagePanRef.current;
+    if (!panState || event.target !== event.currentTarget) {
+      return;
+    }
+
+    event.preventDefault();
+    const previousGraphPoint = sigma.viewportToFramedGraph({ x: panState.previousX, y: panState.previousY });
+    const currentGraphPoint = sigma.viewportToFramedGraph({ x: event.clientX, y: event.clientY });
+    const camera = sigma.getCamera();
+    const cameraState = camera.getState();
+    camera.setState({
+      ...cameraState,
+      x: cameraState.x + previousGraphPoint.x - currentGraphPoint.x,
+      y: cameraState.y + previousGraphPoint.y - currentGraphPoint.y
+    });
+    stagePanRef.current = { previousX: event.clientX, previousY: event.clientY };
+    sigma.refresh();
+    syncNodes();
+  }, [sigma, syncNodes]);
+
+  const finishStagePan = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    if (!stagePanRef.current) {
+      return;
+    }
+
+    stagePanRef.current = null;
+    releasePointer(event.currentTarget, event.pointerId);
+  }, []);
+
+  const handleStageWheel = useCallback((event: React.WheelEvent<HTMLDivElement>) => {
+    if (event.deltaY < 0) {
+      sigma.getCamera().animatedZoom({ duration: 120, factor: 1.35 });
+    } else {
+      sigma.getCamera().animatedUnzoom({ duration: 120, factor: 1.35 });
+    }
+    window.setTimeout(syncNodes, 130);
+  }, [sigma, syncNodes]);
+
+  return (
+    <div
+      className="sigma-camera-node-layer"
+      data-testid="sigma-camera-node-layer"
+      aria-hidden="true"
+      onPointerDown={handleStagePointerDown}
+      onPointerMove={handleStagePointerMove}
+      onPointerUp={finishStagePan}
+      onPointerCancel={finishStagePan}
+      onLostPointerCapture={finishStagePan}
+      onWheel={handleStageWheel}
+      style={{ pointerEvents: "auto" }}
+    >
+      {nodes.map((node) => (
+        <span
+          key={node.id}
+          className="sigma-camera-node-probe"
+          data-active={node.active}
+          data-dragging={node.dragging}
+          data-pinned={node.pinned}
+          data-reacting={node.reacting}
+          data-evidence-role={node.evidenceRole}
+          data-query-hit={node.queryHit}
+          data-path-context={node.pathContext}
+          data-source-span-hit={node.sourceSpanHit}
+          data-metadata-blocked={node.metadataBlocked}
+          data-node-id={node.id}
+          data-node-kind={node.kind}
+          data-node-group={node.group}
+          data-node-status={node.provenanceStatus}
+          data-node-type={node.type}
+          data-layout-x={node.layoutX}
+          data-layout-y={node.layoutY}
+          data-viewport-x={node.viewportX}
+          data-viewport-y={node.viewportY}
+          data-viewport-size={node.viewportSize}
+          data-coordinate-source={node.coordinateSource}
+          title={node.title}
+          onPointerDown={(event) => handleProbePointerDown(node.id, event)}
+          onPointerMove={handleProbePointerMove}
+          onPointerUp={finishProbeDrag}
+          onPointerCancel={finishProbeDrag}
+          onLostPointerCapture={finishProbeDrag}
+          onPointerEnter={() => onNodeHoverAction(node.id)}
+          onPointerLeave={() => {
+            if (!probeDragRef.current) {
+              onNodeHoverAction(null);
+            }
+          }}
+          style={{
+            left: `${node.viewportX}px`,
+            top: `${node.viewportY}px`,
+            width: `${node.viewportSize}px`,
+            height: `${node.viewportSize}px`,
+            cursor: node.dragging ? "grabbing" : "grab",
+            pointerEvents: "auto"
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function SigmaPinnedNodeController({
+  layout,
+  pinnedPositions
+}: {
+  layout: Record<string, AtlasLayoutPoint>;
+  pinnedPositions: Record<string, AtlasLayoutPoint>;
+}) {
+  const sigma = useSigma<SigmaAtlasNodeAttributes, SigmaAtlasEdgeAttributes>();
+
+  useEffect(() => {
+    const graph = sigma.getGraph();
+    Object.entries(layout).forEach(([nodeId, defaultPosition]) => {
+      if (!graph.hasNode(nodeId)) {
+        return;
+      }
+
+      const pinnedPosition = pinnedPositions[nodeId];
+      const nextPosition = pinnedPosition ?? defaultPosition;
+      graph.setNodeAttribute(nodeId, "x", nextPosition.x);
+      graph.setNodeAttribute(nodeId, "y", nextPosition.y);
+      graph.setNodeAttribute(nodeId, "isPinned", Boolean(pinnedPosition));
+      graph.setNodeAttribute(nodeId, "isDragging", false);
+    });
+    sigma.refresh();
+  }, [layout, pinnedPositions, sigma]);
 
   return null;
 }
@@ -534,6 +760,7 @@ function buildSigmaGraph(model: CorpusAtlasModel, nodeViews: AtlasNodeView[], la
       size: toSigmaNodeSize(node),
       color: toSigmaNodeColor(node),
       forceLabel: shouldShowPersistentLabel(node),
+      isPinned: false,
       isClusterAnchor: node.kind !== "resource",
       zIndex: node.kind === "resource" ? 0 : 1
     });
@@ -554,6 +781,28 @@ function buildSigmaGraph(model: CorpusAtlasModel, nodeViews: AtlasNodeView[], la
     });
 
   return graph;
+}
+
+function computeForceAtlasLayoutState(model: CorpusAtlasModel, nodeViews: AtlasNodeView[]): AtlasLayoutState {
+  const layoutGraph = computeDeterministicForceAtlasLayout(buildAtlasGraph(model.graphPayload), {
+    seed: FORCE_LAYOUT_SEED,
+    scale: FORCE_LAYOUT_SCALE,
+    nodeRadius: FORCE_LAYOUT_NODE_RADIUS
+  });
+  const positions: Record<string, AtlasLayoutPoint> = {};
+
+  nodeViews.forEach((node) => {
+    if (!layoutGraph.hasNode(node.id)) {
+      return;
+    }
+    const attributes = layoutGraph.getNodeAttributes(node.id);
+    positions[node.id] = roundPoint({ x: attributes.x, y: attributes.y });
+  });
+
+  return {
+    positions,
+    metrics: layoutGraph.getAttribute("layoutMetrics") as AtlasForceLayoutMetrics
+  };
 }
 
 function toSigmaNodeSize(node: AtlasNodeView) {
@@ -611,6 +860,65 @@ function toActiveSigmaEdgeColor(edgeType: string) {
   return readAtlasColorToken("--color-edge-label");
 }
 
+function buildEvidenceNodeRoles(evidence: RetrievalGraphEvidenceState | null, graph: SigmaAtlasGraph) {
+  const roles = new Map<string, GraphEvidenceRole>();
+  if (!evidence) {
+    return roles;
+  }
+
+  const setRole = (nodeId: string | null | undefined, role: GraphEvidenceRole) => {
+    if (nodeId && graph.hasNode(nodeId)) {
+      roles.set(nodeId, role);
+    }
+  };
+
+  evidence.highlightedResourceIds.forEach((resourceId) => {
+    const resourceNodeId = `resource.${resourceId}`;
+    setRole(resourceNodeId, "query-hit");
+    graph.forEachNode((nodeId, attributes) => {
+      if (attributes.resourceId === resourceId && !roles.has(nodeId)) {
+        roles.set(nodeId, "query-hit");
+      }
+    });
+  });
+  evidence.graphContextNodeIds.forEach((nodeId) => setRole(nodeId, "path-context"));
+  evidence.graphPathNodeIds.forEach((nodeId) => setRole(nodeId, "path-context"));
+  evidence.representedSourceSpanNodeIds.forEach((nodeId) => setRole(nodeId, "source-span-hit"));
+  setRole(evidence.graphResourceNodeId, evidence.focusMode === "metadata-only-blocked" ? "metadata-blocked" : "selected-resource");
+  setRole(evidence.graphFocusNodeId, evidence.focusMode === "source-span-node" ? "source-span-hit" : evidence.focusMode === "metadata-only-blocked" ? "metadata-blocked" : "selected-resource");
+
+  return roles;
+}
+
+function toEvidenceNodeColor(role: GraphEvidenceRole, fallbackColor: string) {
+  if (role === "source-span-hit") {
+    return readAtlasColorToken("--color-red");
+  }
+  if (role === "metadata-blocked") {
+    return readAtlasColorToken("--color-gold");
+  }
+  if (role === "path-context") {
+    return readAtlasColorToken("--color-edge-label");
+  }
+  if (role === "selected-resource") {
+    return readAtlasColorToken("--color-cyan");
+  }
+  return fallbackColor;
+}
+
+function evidenceNodeSizeFactor(role: GraphEvidenceRole) {
+  if (role === "selected-resource" || role === "source-span-hit") {
+    return 1.48;
+  }
+  if (role === "metadata-blocked") {
+    return 1.34;
+  }
+  if (role === "path-context") {
+    return 1.14;
+  }
+  return 1.1;
+}
+
 function buildSigmaSettings() {
   return {
     allowInvalidContainer: true,
@@ -635,305 +943,34 @@ function buildSigmaSettings() {
   };
 }
 
-function computeClusteredAtlasLayout(model: CorpusAtlasModel, nodeViews: AtlasNodeView[]): Record<string, AtlasLayoutPoint> {
-  const layout: Record<string, AtlasLayoutPoint> = {};
-  const nodeById = new Map(nodeViews.map((node) => [node.id, node]));
-  const diseaseClusters = nodeViews
-    .filter((node) => node.group === "diseaseSites")
-    .sort((left, right) => right.aggregateCount - left.aggregateCount || left.title.localeCompare(right.title));
-  const documentClusters = nodeViews
-    .filter((node) => node.group === "documents")
-    .sort((left, right) => right.aggregateCount - left.aggregateCount || left.title.localeCompare(right.title));
-  const archiveClusters = nodeViews
-    .filter((node) => node.group === "archive")
-    .sort((left, right) => right.aggregateCount - left.aggregateCount || left.title.localeCompare(right.title));
-  const resourcesByDiseaseCluster = new Map<string, string[]>();
-  const resourcesByDocumentCluster = new Map<string, string[]>();
-
-  diseaseClusters.forEach((node, index) => {
-    layout[node.id] = diseaseNeighborhoodAnchor(index, node.id);
-  });
-
-  model.graphPayload.edges
-    .filter((edge) => edge.type === "resource_to_disease_site" && nodeById.get(edge.source)?.kind === "resource")
-    .sort((left, right) => left.source.localeCompare(right.source))
-    .forEach((edge) => {
-      const resources = resourcesByDiseaseCluster.get(edge.target) ?? [];
-      resources.push(edge.source);
-      resourcesByDiseaseCluster.set(edge.target, resources);
-    });
-
-  model.graphPayload.edges
-    .filter((edge) => edge.type === "resource_to_document_type" && nodeById.get(edge.source)?.kind === "resource")
-    .sort((left, right) => left.source.localeCompare(right.source))
-    .forEach((edge) => {
-      const resources = resourcesByDocumentCluster.get(edge.target) ?? [];
-      resources.push(edge.source);
-      resourcesByDocumentCluster.set(edge.target, resources);
-    });
-
-  resourcesByDiseaseCluster.forEach((resources, diseaseClusterId) => {
-    const anchor = layout[diseaseClusterId] ?? { x: 0, y: 0 };
-    resources.sort((left, right) => left.localeCompare(right));
-    resources.forEach((resourceId, index) => {
-      layout[resourceId] = resourceNeighborhoodPoint(resourceId, anchor, index, resources.length);
-    });
-  });
-
-  documentClusters.forEach((node, index) => {
-    const resources = resourcesByDocumentCluster.get(node.id) ?? [];
-    const centroid = centroidForResources(resources, layout);
-    layout[node.id] = documentTypeAnchor(index, documentClusters.length, centroid);
-  });
-
-  archiveClusters.forEach((node, index) => {
-    layout[node.id] = archiveStatusAnchor(index, archiveClusters.length);
-  });
-
-  nodeViews.forEach((node, index) => {
-    if (!layout[node.id]) {
-      layout[node.id] = fallbackAnchor(node.id, index);
-    }
-  });
-
-  return layout;
-}
-
-function computeLayoutBounds(layout: Record<string, AtlasLayoutPoint>) {
-  const points = Object.values(layout);
-  const minX = Math.min(...points.map((point) => point.x));
-  const maxX = Math.max(...points.map((point) => point.x));
-  const minY = Math.min(...points.map((point) => point.y));
-  const maxY = Math.max(...points.map((point) => point.y));
-
-  return { minX, maxX, minY, maxY };
-}
-
-function toOverlayPosition(point: AtlasLayoutPoint, bounds: { minX: number; maxX: number; minY: number; maxY: number }) {
-  const width = Math.max(bounds.maxX - bounds.minX, 1);
-  const height = Math.max(bounds.maxY - bounds.minY, 1);
-
-  return {
-    left: 13 + ((point.x - bounds.minX) / width) * 74,
-    top: 12 + ((point.y - bounds.minY) / height) * 76
-  };
-}
-
-function pointFromOverlayPointer(
-  event: React.PointerEvent,
-  element: HTMLElement,
-  bounds: { minX: number; maxX: number; minY: number; maxY: number }
-): AtlasLayoutPoint {
-  const rect = element.getBoundingClientRect();
-  const width = Math.max(bounds.maxX - bounds.minX, 1);
-  const height = Math.max(bounds.maxY - bounds.minY, 1);
-  const leftPercent = ((event.clientX - rect.left) / Math.max(rect.width, 1)) * 100;
-  const topPercent = ((event.clientY - rect.top) / Math.max(rect.height, 1)) * 100;
-  const xRatio = clamp((leftPercent - 13) / 74, 0, 1);
-  const yRatio = clamp((topPercent - 12) / 76, 0, 1);
-
-  return roundPoint({
-    x: bounds.minX + xRatio * width,
-    y: bounds.minY + yRatio * height
-  });
-}
-
-function diseaseNeighborhoodAnchor(index: number, nodeId: string): AtlasLayoutPoint {
-  const baseAnchor = diseaseNeighborhoodAnchors[index] ?? fallbackAnchor(nodeId, index);
-  const unit = seededUnit(`disease-neighborhood:${nodeId}`) - 0.5;
-
-  return roundPoint({
-    x: baseAnchor.x + unit * 14,
-    y: baseAnchor.y - unit * 10
-  });
-}
-
-function documentTypeAnchor(index: number, total: number, resourceCentroid: AtlasLayoutPoint | null): AtlasLayoutPoint {
-  const compactScale = total > 4 ? 0.86 : 1;
-  const column = index % 3;
-  const row = Math.floor(index / 3);
-  const pocketX = ((column - 1) * 70 + (row % 2) * 22) * compactScale;
-  const pocketY = 24 + row * 38 + (column === 1 ? -12 : 8);
-  const centroidX = resourceCentroid ? clamp(resourceCentroid.x, -250, 250) : 0;
-  const centroidY = resourceCentroid ? clamp(resourceCentroid.y, -110, 150) : 0;
-
-  return roundPoint({
-    x: clamp(centroidX * 0.58 + pocketX, -300, 300),
-    y: clamp(centroidY * 0.5 + pocketY, -92, 172)
-  });
-}
-
-function archiveStatusAnchor(index: number, total: number): AtlasLayoutPoint {
-  return roundPoint({
-    x: 300 + (index - (total - 1) / 2) * 56,
-    y: archiveShelfY + (index % 2) * 22
-  });
-}
-
-function resourceNeighborhoodPoint(resourceId: string, anchor: AtlasLayoutPoint, index: number, total: number): AtlasLayoutPoint {
-  const unit = seededUnit(resourceId);
-  const angle = index * GOLDEN_ANGLE + unit * Math.PI * 0.62;
-  const neighborhoodRadius = Math.min(64, 27 + Math.sqrt(Math.max(total, 1)) * 6.4);
-  const radius = 11 + Math.sqrt(index + 1) * 6.8 + unit * 4;
-  const boundedRadius = Math.min(radius, neighborhoodRadius);
-
-  return roundPoint({
-    x: anchor.x + Math.cos(angle) * boundedRadius + (unit - 0.5) * 7,
-    y: anchor.y + Math.sin(angle) * boundedRadius * 0.68 + (0.5 - unit) * 5
-  });
-}
-
-function centroidForResources(resourceIds: string[], layout: Record<string, AtlasLayoutPoint>): AtlasLayoutPoint | null {
-  const points = resourceIds.map((resourceId) => layout[resourceId]).filter((point): point is AtlasLayoutPoint => Boolean(point));
-  if (points.length === 0) {
-    return null;
-  }
-
-  return {
-    x: points.reduce((sum, point) => sum + point.x, 0) / points.length,
-    y: points.reduce((sum, point) => sum + point.y, 0) / points.length
-  };
-}
-
-function clamp(value: number, minimum: number, maximum: number) {
-  return Math.min(maximum, Math.max(minimum, value));
-}
-
-function fallbackAnchor(nodeId: string, index: number): AtlasLayoutPoint {
-  const unit = seededUnit(nodeId);
-  const angle = index * GOLDEN_ANGLE;
-  const radius = 180 + unit * 80;
-
-  return roundPoint({
-    x: Math.cos(angle) * radius,
-    y: Math.sin(angle) * radius * 0.78
-  });
-}
-
-function activeEdgesForNode(edges: AtlasEdgeView[], nodeId: string) {
-  return edges
-    .filter((edge) => edge.source === nodeId || edge.target === nodeId)
-    .sort((left, right) => `${left.type}:${left.source}:${left.target}`.localeCompare(`${right.type}:${right.source}:${right.target}`));
-}
-
-function neighborOriginsForNode(nodeId: string, layout: Record<string, AtlasLayoutPoint>, edges: AtlasEdgeView[]) {
-  return activeEdgesForNode(edges, nodeId).reduce<Record<string, AtlasLayoutPoint>>((origins, edge) => {
-    const neighborId = edge.source === nodeId ? edge.target : edge.source;
-    const point = layout[neighborId];
-    if (point) {
-      origins[neighborId] = point;
-    }
-    return origins;
-  }, {});
-}
-
-function buildTensionPositions(
-  draggedNodeId: string,
-  point: AtlasLayoutPoint,
-  origin: DragTensionOrigin | null,
-  edges: AtlasEdgeView[]
-) {
-  const positions: Record<string, AtlasLayoutPoint> = { [draggedNodeId]: point };
-  if (!origin || origin.nodeId !== draggedNodeId) {
-    return positions;
-  }
-
-  const delta = { x: point.x - origin.origin.x, y: point.y - origin.origin.y };
-  activeEdgesForNode(edges, draggedNodeId).forEach((edge) => {
-    const neighborId = edge.source === draggedNodeId ? edge.target : edge.source;
-    const neighborOrigin = origin.neighborOrigins[neighborId];
-    if (!neighborOrigin) {
-      return;
-    }
-
-    const weight = edgeTensionWeight(edge.type);
-    positions[neighborId] = roundPoint({
-      x: neighborOrigin.x + delta.x * weight,
-      y: neighborOrigin.y + delta.y * weight
-    });
-  });
-
-  return positions;
-}
-
-function applyGraphTension(graph: SigmaAtlasGraph, draggedNodeId: string, point: AtlasLayoutPoint, origin: DragTensionOrigin | null) {
-  const positions = buildGraphTensionPositions(graph, draggedNodeId, point, origin);
-  Object.entries(positions).forEach(([nodeId, position]) => {
-    if (!graph.hasNode(nodeId)) {
-      return;
-    }
-    graph.setNodeAttribute(nodeId, "x", position.x);
-    graph.setNodeAttribute(nodeId, "y", position.y);
-    if (nodeId !== draggedNodeId) {
-      graph.setNodeAttribute(nodeId, "highlighted", true);
-    }
-  });
-}
-
-function buildGraphTensionPositions(graph: SigmaAtlasGraph, draggedNodeId: string, point: AtlasLayoutPoint, origin: DragTensionOrigin | null) {
-  const positions: Record<string, AtlasLayoutPoint> = { [draggedNodeId]: point };
-  if (!origin || origin.nodeId !== draggedNodeId) {
-    return positions;
-  }
-
-  const delta = { x: point.x - origin.origin.x, y: point.y - origin.origin.y };
-  graph.edges(draggedNodeId).forEach((edgeId) => {
-    const [source, target] = graph.extremities(edgeId);
-    const neighborId = source === draggedNodeId ? target : source;
-    const neighborOrigin = origin.neighborOrigins[neighborId];
-    if (!neighborOrigin) {
-      return;
-    }
-
-    const edge = graph.getEdgeAttributes(edgeId);
-    const weight = edgeTensionWeight(edge.edgeType);
-    positions[neighborId] = roundPoint({
-      x: neighborOrigin.x + delta.x * weight,
-      y: neighborOrigin.y + delta.y * weight
-    });
-  });
-
-  return positions;
-}
-
-function edgeTensionWeight(edgeType: string) {
-  if (edgeType === "resource_to_source_span") {
-    return 0.36;
-  }
-  if (edgeType === "resource_to_disease_site") {
-    return 0.3;
-  }
-  if (edgeType === "resource_to_document_type") {
-    return 0.22;
-  }
-  if (edgeType === "resource_to_archive_status") {
-    return 0.16;
-  }
-  return 0.2;
-}
-
-function edgeTypeShortLabel(edgeType: string) {
-  if (edgeType === "resource_to_disease_site") {
-    return "site";
-  }
-  if (edgeType === "resource_to_document_type") {
-    return "type";
-  }
-  if (edgeType === "resource_to_archive_status") {
-    return "archive";
-  }
-  if (edgeType === "resource_to_source_span") {
-    return "span";
-  }
-  return "link";
-}
-
 function shouldShowPersistentLabel(node: AtlasNodeView) {
   if (node.kind === "resource") {
     return false;
   }
 
   return node.kind === "archive" || node.aggregateCount >= 8;
+}
+
+function capturePointer(element: HTMLElement, pointerId: number) {
+  try {
+    element.setPointerCapture(pointerId);
+  } catch {
+    return;
+  }
+}
+
+function releasePointer(element: HTMLElement, pointerId: number) {
+  if (typeof element.hasPointerCapture !== "function" || typeof element.releasePointerCapture !== "function") {
+    return;
+  }
+
+  try {
+    if (element.hasPointerCapture(pointerId)) {
+      element.releasePointerCapture(pointerId);
+    }
+  } catch {
+    return;
+  }
 }
 
 function drawAtlasNode(context: CanvasRenderingContext2D, node: CanvasLabelNode) {
@@ -947,8 +984,8 @@ function drawAtlasNode(context: CanvasRenderingContext2D, node: CanvasLabelNode)
 
   if (node.highlighted || node.isDragging) {
     context.beginPath();
-    context.arc(node.x, node.y, node.size + (node.isDragging ? 8 : 5.4), 0, Math.PI * 2);
-    context.strokeStyle = withAlpha(readAtlasColorToken("--color-ink"), node.isDragging ? 0.72 : 0.54);
+    context.arc(node.x, node.y, node.size + (node.isDragging ? 8 : node.isPinned ? 6.4 : 5.4), 0, Math.PI * 2);
+    context.strokeStyle = withAlpha(readAtlasColorToken("--color-ink"), node.isDragging ? 0.72 : node.isPinned ? 0.62 : 0.54);
     context.lineWidth = node.isDragging ? 2.2 : 1.4;
     context.stroke();
   }
@@ -957,17 +994,17 @@ function drawAtlasNode(context: CanvasRenderingContext2D, node: CanvasLabelNode)
   context.arc(node.x, node.y, node.size, 0, Math.PI * 2);
   context.fillStyle = node.color ?? readAtlasColorToken("--color-cyan");
   context.shadowColor = node.color ?? readAtlasColorToken("--color-cyan");
-  context.shadowBlur = node.isDragging ? 18 : node.highlighted ? 12 : node.isClusterAnchor ? 9 : 5;
+  context.shadowBlur = node.isDragging ? 18 : node.isPinned ? 14 : node.highlighted ? 12 : node.isClusterAnchor ? 9 : 5;
   context.fill();
   context.shadowBlur = 0;
   context.strokeStyle = node.isDragging || node.highlighted ? readAtlasColorToken("--color-ink") : withAlpha(readAtlasColorToken("--color-ink"), 0.42);
   context.lineWidth = node.isDragging ? 2.2 : node.highlighted ? 1.7 : node.isClusterAnchor ? 1.35 : 0.9;
   context.stroke();
   drawNodeEncodingMark(context, node);
-  if (!node.isClusterAnchor || node.isDragging) {
+  if (!node.isClusterAnchor || node.isDragging || node.isPinned) {
     context.beginPath();
     context.arc(node.x, node.y, node.size + 3.2, 0, Math.PI * 2);
-    context.strokeStyle = withAlpha(node.color ?? readAtlasColorToken("--color-cyan"), node.isDragging ? 0.64 : node.highlighted ? 0.5 : 0.2);
+    context.strokeStyle = withAlpha(node.color ?? readAtlasColorToken("--color-cyan"), node.isDragging ? 0.64 : node.isPinned ? 0.58 : node.highlighted ? 0.5 : 0.2);
     context.lineWidth = node.isDragging || node.highlighted ? 1.45 : 0.8;
     context.stroke();
   }
@@ -1081,22 +1118,6 @@ function segmentGraphemes(label: string) {
   return Array.from(label);
 }
 
-function nodeVisualLabel(node: AtlasNodeView) {
-  if (node.kind === "resource") {
-    return "resource";
-  }
-  if (node.group === "documents") {
-    return "doc type";
-  }
-  if (node.kind === "archive") {
-    return "archive";
-  }
-  if (node.kind === "sourceSpan") {
-    return "span";
-  }
-  return "site";
-}
-
 function withAlpha(color: string, alpha: number) {
   if (color.startsWith("#") && color.length === 7) {
     const red = Number.parseInt(color.slice(1, 3), 16);
@@ -1106,16 +1127,6 @@ function withAlpha(color: string, alpha: number) {
   }
 
   return color;
-}
-
-function seededUnit(value: string) {
-  let hash = 2166136261;
-  for (let index = 0; index < value.length; index += 1) {
-    hash ^= value.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
-  }
-
-  return (hash >>> 0) / 4294967295;
 }
 
 function roundPoint(point: AtlasLayoutPoint): AtlasLayoutPoint {

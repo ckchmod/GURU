@@ -263,6 +263,21 @@ describe("corpus atlas client and adapters", () => {
         modelRouting: "none-local-deterministic-search-only"
       }
     });
+    expect(results.sourceSpanResults[0]).toEqual(expect.objectContaining({
+      sourceDocumentId: "source-document.local-test",
+      quotedSpan: "Local deterministic parsed excerpt for search coverage.",
+      excerptChecksum: "0".repeat(64),
+      promptOrModelVersion: "none-local-deterministic-parser",
+      reviewer: "unreviewed",
+      reviewStatus: "draft",
+      timestamp: "2026-06-15T12:00:00Z",
+      focusResource: expect.objectContaining({
+        resourceId,
+        focusNodeId: `resource.${resourceId}`,
+        sourceSpanIds: [sourceSpanId],
+        coverageStatus: "source_span_ready"
+      })
+    }));
     expect(results.metadataResultCount).toBe(2);
     expect(results.sourceSpanResultCount).toBe(1);
     expect(results.totalResourceCount).toBe(198);
