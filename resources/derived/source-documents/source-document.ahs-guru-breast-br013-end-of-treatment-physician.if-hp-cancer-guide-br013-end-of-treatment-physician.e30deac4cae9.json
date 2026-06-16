@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br013-end-of-treatment-physician.pdf",
+  "document_id": "source-document.ahs-guru-breast-br013-end-of-treatment-physician.if-hp-cancer-guide-br013-end-of-treatment-physician.e30deac4cae9",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-br013-end-of-treatment-physician.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-breast-br013-end-of-treatment-physician",
+  "source_checksum_sha256": "e30deac4cae9bea3cee11f5589ff0d3bcf826fc534cc1d91340d603e24e229dd",
+  "source_document_id": "source-document.ahs-guru-breast-br013-end-of-treatment-physician.if-hp-cancer-guide-br013-end-of-treatment-physician.e30deac4cae9",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Sample End of Treatment Physician Letter: Early Breast Follow-up"
+}

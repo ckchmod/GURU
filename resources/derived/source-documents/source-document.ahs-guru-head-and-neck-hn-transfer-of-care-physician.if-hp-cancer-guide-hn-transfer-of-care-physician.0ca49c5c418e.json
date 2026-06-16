@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-hn-transfer-of-care-physician.pdf",
+  "document_id": "source-document.ahs-guru-head-and-neck-hn-transfer-of-care-physician.if-hp-cancer-guide-hn-transfer-of-care-physician.0ca49c5c418e",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-hn-transfer-of-care-physician.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:1"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-head-and-neck-hn-transfer-of-care-physician",
+  "source_checksum_sha256": "0ca49c5c418e82547870c778a388523e158bc5ae7ee5d3f52db0d648841a8ba1",
+  "source_document_id": "source-document.ahs-guru-head-and-neck-hn-transfer-of-care-physician.if-hp-cancer-guide-hn-transfer-of-care-physician.0ca49c5c418e",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Sample Transfer of Care Physician Letter: Head and Neck Cancer"
+}

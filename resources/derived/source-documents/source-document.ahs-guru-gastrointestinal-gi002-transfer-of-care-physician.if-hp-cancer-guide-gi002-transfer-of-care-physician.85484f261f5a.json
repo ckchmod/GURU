@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gi002-transfer-of-care-physician.pdf",
+  "document_id": "source-document.ahs-guru-gastrointestinal-gi002-transfer-of-care-physician.if-hp-cancer-guide-gi002-transfer-of-care-physician.85484f261f5a",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gi002-transfer-of-care-physician.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-gastrointestinal-gi002-transfer-of-care-physician",
+  "source_checksum_sha256": "85484f261f5a92c40aaf4c64697c076d4a82b70aeed380641d3a731f12ed3452",
+  "source_document_id": "source-document.ahs-guru-gastrointestinal-gi002-transfer-of-care-physician.if-hp-cancer-guide-gi002-transfer-of-care-physician.85484f261f5a",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Sample Physician Letter: Colorectal Cancer"
+}

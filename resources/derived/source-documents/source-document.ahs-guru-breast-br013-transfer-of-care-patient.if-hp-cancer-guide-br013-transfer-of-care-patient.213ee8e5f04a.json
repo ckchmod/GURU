@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br013-transfer-of-care-patient.pdf",
+  "document_id": "source-document.ahs-guru-breast-br013-transfer-of-care-patient.if-hp-cancer-guide-br013-transfer-of-care-patient.213ee8e5f04a",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-br013-transfer-of-care-patient.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-breast-br013-transfer-of-care-patient",
+  "source_checksum_sha256": "213ee8e5f04abe442afb1fae0dad82fae13aa5a949903cafa8e96add5a5b1579",
+  "source_document_id": "source-document.ahs-guru-breast-br013-transfer-of-care-patient.if-hp-cancer-guide-br013-transfer-of-care-patient.213ee8e5f04a",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Sample Transfer of Care Patient Letter: Early Breast Follow-up"
+}

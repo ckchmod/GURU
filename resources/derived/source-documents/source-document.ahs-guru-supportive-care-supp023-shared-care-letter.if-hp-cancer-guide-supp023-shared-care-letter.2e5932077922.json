@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp023-shared-care-letter.pdf",
+  "document_id": "source-document.ahs-guru-supportive-care-supp023-shared-care-letter.if-hp-cancer-guide-supp023-shared-care-letter.2e5932077922",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp023-shared-care-letter.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:2"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-supportive-care-supp023-shared-care-letter",
+  "source_checksum_sha256": "2e5932077922ae6790d0f0742959cf77f04dd048ed44bf2d090bd4691734593e",
+  "source_document_id": "source-document.ahs-guru-supportive-care-supp023-shared-care-letter.if-hp-cancer-guide-supp023-shared-care-letter.2e5932077922",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Sample Physician Letter: Advanced Cancer Shared Care"
+}

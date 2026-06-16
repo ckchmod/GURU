@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu001b-transfer-of-care-physician.pdf",
+  "document_id": "source-document.ahs-guru-genitourinary-gu001b-transfer-of-care-physician.if-hp-cancer-guide-gu001b-transfer-of-care-physician.a91be4505142",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu001b-transfer-of-care-physician.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-genitourinary-gu001b-transfer-of-care-physician",
+  "source_checksum_sha256": "a91be4505142d7534a6d021d3e09c65a12962fb148f4d1756ecd97a13acc8ae0",
+  "source_document_id": "source-document.ahs-guru-genitourinary-gu001b-transfer-of-care-physician.if-hp-cancer-guide-gu001b-transfer-of-care-physician.a91be4505142",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Sample Physician Letter: Nonseminoma Transfer of Care"
+}

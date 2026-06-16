@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe-ngs-testing.pdf",
+  "document_id": "source-document.ahs-guru-lymphoma-hematology-lyhe-ngs-testing.if-hp-cancer-guide-lyhe-ngs-testing.ffc365303f92",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe-ngs-testing.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-lymphoma-hematology-lyhe-ngs-testing",
+  "source_checksum_sha256": "ffc365303f92c17373499d084d86055c255ef434c12939c236a3163af8c49723",
+  "source_document_id": "source-document.ahs-guru-lymphoma-hematology-lyhe-ngs-testing.if-hp-cancer-guide-lyhe-ngs-testing.ffc365303f92",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Myeloid NGS Testing"
+}

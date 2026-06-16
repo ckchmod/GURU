@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-net002-SSA.pdf",
+  "document_id": "source-document.ahs-guru-endocrine-neuroendocrine-net002-ssa.if-hp-cancer-guide-net002-ssa.1c7b1e97de4a",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-net002-SSA.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-endocrine-neuroendocrine-net002-ssa",
+  "source_checksum_sha256": "1c7b1e97de4aa4b881d793bb88ac2413921ae2c4ca320496e4633060cf94024a",
+  "source_document_id": "source-document.ahs-guru-endocrine-neuroendocrine-net002-ssa.if-hp-cancer-guide-net002-ssa.1c7b1e97de4a",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Neuroendocrine Tumour Management by Somatostatin Analogues & Tryptophan Hydroxylase Inhibitors"
+}

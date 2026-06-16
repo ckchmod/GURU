@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cu015a-transfer-of-care-physician.pdf",
+  "document_id": "source-document.ahs-guru-cutaneous-cu015a-transfer-of-care-physician.if-hp-cancer-guide-cu015a-transfer-of-care-physician.8664b3f7d726",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cu015a-transfer-of-care-physician.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:1"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-cutaneous-cu015a-transfer-of-care-physician",
+  "source_checksum_sha256": "8664b3f7d726ec57b07d5c1631957510f25870abaf38da38ded2de5ef1edc492",
+  "source_document_id": "source-document.ahs-guru-cutaneous-cu015a-transfer-of-care-physician.if-hp-cancer-guide-cu015a-transfer-of-care-physician.8664b3f7d726",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Class 1"
+}

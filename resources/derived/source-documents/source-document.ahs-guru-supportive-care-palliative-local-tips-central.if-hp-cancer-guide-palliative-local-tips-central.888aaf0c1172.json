@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-palliative-local-tips-central.pdf",
+  "document_id": "source-document.ahs-guru-supportive-care-palliative-local-tips-central.if-hp-cancer-guide-palliative-local-tips-central.888aaf0c1172",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-palliative-local-tips-central.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:29"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-supportive-care-palliative-local-tips-central",
+  "source_checksum_sha256": "888aaf0c1172594730f9d5d10ead4d8c123dab8438dcc73e591bab556039d708",
+  "source_document_id": "source-document.ahs-guru-supportive-care-palliative-local-tips-central.if-hp-cancer-guide-palliative-local-tips-central.888aaf0c1172",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Local Tips for Providers"
+}

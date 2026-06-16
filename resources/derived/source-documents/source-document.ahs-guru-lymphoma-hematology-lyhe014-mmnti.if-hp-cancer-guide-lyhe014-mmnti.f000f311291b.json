@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe014-mmnti.pdf",
+  "document_id": "source-document.ahs-guru-lymphoma-hematology-lyhe014-mmnti.if-hp-cancer-guide-lyhe014-mmnti.f000f311291b",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe014-mmnti.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-lymphoma-hematology-lyhe014-mmnti",
+  "source_checksum_sha256": "f000f311291b600d9f7d77523016388ec0514184dda9584c09f89ea8c3ccf4e9",
+  "source_document_id": "source-document.ahs-guru-lymphoma-hematology-lyhe014-mmnti.if-hp-cancer-guide-lyhe014-mmnti.f000f311291b",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Multiple Myeloma: Transplant Ineligible"
+}

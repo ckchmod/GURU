@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lu012-nsclc-mutation-negative.pdf",
+  "document_id": "source-document.ahs-guru-lung-lu012-nsclc-mutation-negative.if-hp-cancer-guide-lu012-nsclc-mutation-negative.e52b8761346a",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lu012-nsclc-mutation-negative.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-lung-lu012-nsclc-mutation-negative",
+  "source_checksum_sha256": "e52b8761346ace2a7359d279eca7b6a6c8411bf313d175375d55fbee194c0469",
+  "source_document_id": "source-document.ahs-guru-lung-lu012-nsclc-mutation-negative.if-hp-cancer-guide-lu012-nsclc-mutation-negative.e52b8761346a",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Advanced Non-Small Cell Lung Cancer: Driver Mutation Negative"
+}

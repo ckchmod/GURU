@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cns015-idh-mutant-gliomas.pdf",
+  "document_id": "source-document.ahs-guru-central-nervous-system-cns015-idh-mutant-gliomas.if-hp-cancer-guide-cns015-idh-mutant-gliomas.f0de4370a4cc",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cns015-idh-mutant-gliomas.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:1"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-central-nervous-system-cns015-idh-mutant-gliomas",
+  "source_checksum_sha256": "f0de4370a4cc5afa7a075d470b7a465a37c2f8f2cbf399a9c6bf1985825f2b92",
+  "source_document_id": "source-document.ahs-guru-central-nervous-system-cns015-idh-mutant-gliomas.if-hp-cancer-guide-cns015-idh-mutant-gliomas.f0de4370a4cc",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "IDH-Mutant Grade 2-3 Gliomas"
+}

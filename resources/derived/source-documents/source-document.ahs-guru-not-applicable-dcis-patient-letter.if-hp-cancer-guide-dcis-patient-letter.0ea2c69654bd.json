@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-dcis-patient-letter.pdf",
+  "document_id": "source-document.ahs-guru-not-applicable-dcis-patient-letter.if-hp-cancer-guide-dcis-patient-letter.0ea2c69654bd",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-dcis-patient-letter.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-not-applicable-dcis-patient-letter",
+  "source_checksum_sha256": "0ea2c69654bd5839438b472cc2e3221eee4600eee0a74f6932c25a5f5e11361a",
+  "source_document_id": "source-document.ahs-guru-not-applicable-dcis-patient-letter.if-hp-cancer-guide-dcis-patient-letter.0ea2c69654bd",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Sample Patient Letter: DCIS Follow-up"
+}

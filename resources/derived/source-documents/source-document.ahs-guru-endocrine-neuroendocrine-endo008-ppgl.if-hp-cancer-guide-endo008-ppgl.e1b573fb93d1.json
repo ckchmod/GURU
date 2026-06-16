@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-endo008-ppgl.pdf",
+  "document_id": "source-document.ahs-guru-endocrine-neuroendocrine-endo008-ppgl.if-hp-cancer-guide-endo008-ppgl.e1b573fb93d1",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-endo008-ppgl.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-endocrine-neuroendocrine-endo008-ppgl",
+  "source_checksum_sha256": "e1b573fb93d1a794e27d68f0f891070155079f64d0a9d42be9fc3999b2c5c17b",
+  "source_document_id": "source-document.ahs-guru-endocrine-neuroendocrine-endo008-ppgl.if-hp-cancer-guide-endo008-ppgl.e1b573fb93d1",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Management of Metastatic and/or Unresectable Pheochromocytoma & Paraganglioma"
+}

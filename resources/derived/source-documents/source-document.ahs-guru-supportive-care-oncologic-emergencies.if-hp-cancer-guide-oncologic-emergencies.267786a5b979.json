@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-oncologic-emergencies.pdf",
+  "document_id": "source-document.ahs-guru-supportive-care-oncologic-emergencies.if-hp-cancer-guide-oncologic-emergencies.267786a5b979",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-oncologic-emergencies.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-supportive-care-oncologic-emergencies",
+  "source_checksum_sha256": "267786a5b97978ad497534429e39d61a1f768f1b74c9f8215a8cd80a2d78e58d",
+  "source_document_id": "source-document.ahs-guru-supportive-care-oncologic-emergencies.if-hp-cancer-guide-oncologic-emergencies.267786a5b979",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Oncologic Emergencies"
+}

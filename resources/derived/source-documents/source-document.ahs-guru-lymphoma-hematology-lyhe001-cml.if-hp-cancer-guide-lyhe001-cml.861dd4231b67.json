@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe001-cml.pdf",
+  "document_id": "source-document.ahs-guru-lymphoma-hematology-lyhe001-cml.if-hp-cancer-guide-lyhe001-cml.861dd4231b67",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe001-cml.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-lymphoma-hematology-lyhe001-cml",
+  "source_checksum_sha256": "861dd4231b67b08a1e9b130b57a908a02f8e77132d50615a0058d814c1a8a215",
+  "source_document_id": "source-document.ahs-guru-lymphoma-hematology-lyhe001-cml.if-hp-cancer-guide-lyhe001-cml.861dd4231b67",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Chronic Myeloid Leukemia"
+}

@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-rectal-tnt-transfer-of-care-physician.pdf",
+  "document_id": "source-document.ahs-guru-gastrointestinal-rectal-tnt-transfer-of-care-physician.if-hp-cancer-guide-rectal-tnt-transfer-of-care-physician.4a58de1d004b",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-rectal-tnt-transfer-of-care-physician.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-gastrointestinal-rectal-tnt-transfer-of-care-physician",
+  "source_checksum_sha256": "4a58de1d004bd030177d6d2b4a38624986704180cc381c6ef19385e6b13ac0b7",
+  "source_document_id": "source-document.ahs-guru-gastrointestinal-rectal-tnt-transfer-of-care-physician.if-hp-cancer-guide-rectal-tnt-transfer-of-care-physician.4a58de1d004b",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Sample TNT Transfer of Care Physician Letter"
+}

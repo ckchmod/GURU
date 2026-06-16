@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp006-vte.pdf",
+  "document_id": "source-document.ahs-guru-supportive-care-supp006-vte.if-hp-cancer-guide-supp006-vte.8cd785583c73",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp006-vte.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-supportive-care-supp006-vte",
+  "source_checksum_sha256": "8cd785583c7365a60a94a941e61dc913ecda934a70b57c5d56f6560fbc1b477b",
+  "source_document_id": "source-document.ahs-guru-supportive-care-supp006-vte.if-hp-cancer-guide-supp006-vte.8cd785583c73",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Prevention and Management of Venous Thromboembolism in Patients with Cancer"
+}

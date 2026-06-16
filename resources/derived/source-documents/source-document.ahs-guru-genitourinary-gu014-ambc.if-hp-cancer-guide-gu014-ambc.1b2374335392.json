@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu014-ambc.pdf",
+  "document_id": "source-document.ahs-guru-genitourinary-gu014-ambc.if-hp-cancer-guide-gu014-ambc.1b2374335392",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu014-ambc.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-genitourinary-gu014-ambc",
+  "source_checksum_sha256": "1b2374335392637bc1b0e1726bc9737e447a10d1add6bbe3827520b6c5abf77c",
+  "source_document_id": "source-document.ahs-guru-genitourinary-gu014-ambc.if-hp-cancer-guide-gu014-ambc.1b2374335392",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Locally Advanced/Metastatic Bladder Cancer"
+}

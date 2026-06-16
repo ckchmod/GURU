@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-hn009-laryngeal.pdf",
+  "document_id": "source-document.ahs-guru-head-and-neck-hn009-laryngeal.if-hp-cancer-guide-hn009-laryngeal.52b6e1ac3583",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-hn009-laryngeal.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:2"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-head-and-neck-hn009-laryngeal",
+  "source_checksum_sha256": "52b6e1ac3583dae97e761cc9fa9b1f054018401d15d97a880038e1c2f4c0f011",
+  "source_document_id": "source-document.ahs-guru-head-and-neck-hn009-laryngeal.if-hp-cancer-guide-hn009-laryngeal.52b6e1ac3583",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Laryngeal Cancer"
+}

@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-hn-end-of-treatment-patient.pdf",
+  "document_id": "source-document.ahs-guru-head-and-neck-hn-end-of-treatment-patient.if-hp-cancer-guide-hn-end-of-treatment-patient.93482517e224",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-hn-end-of-treatment-patient.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:1"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-head-and-neck-hn-end-of-treatment-patient",
+  "source_checksum_sha256": "93482517e2246c541e8328055d93e55f7e9b4cd0ea8e33f6dccb88179fe4667e",
+  "source_document_id": "source-document.ahs-guru-head-and-neck-hn-end-of-treatment-patient.if-hp-cancer-guide-hn-end-of-treatment-patient.93482517e224",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Sample End of Treatment Patient Letter: Head and Neck Cancer - Calgary and Southern AB"
+}

@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu013-mibc.pdf",
+  "document_id": "source-document.ahs-guru-genitourinary-gu013-mibc.if-hp-cancer-guide-gu013-mibc.b5ac02ed1be3",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu013-mibc.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-genitourinary-gu013-mibc",
+  "source_checksum_sha256": "b5ac02ed1be31ff6848a19678b3fbfc57641dbfd0c331ba53eee8771932a91c7",
+  "source_document_id": "source-document.ahs-guru-genitourinary-gu013-mibc.if-hp-cancer-guide-gu013-mibc.b5ac02ed1be3",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Muscle Invasive Bladder Cancer"
+}

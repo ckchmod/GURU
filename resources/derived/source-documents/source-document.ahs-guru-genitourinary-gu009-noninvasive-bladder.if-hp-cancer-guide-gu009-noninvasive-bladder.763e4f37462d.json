@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu009-noninvasive-bladder.pdf",
+  "document_id": "source-document.ahs-guru-genitourinary-gu009-noninvasive-bladder.if-hp-cancer-guide-gu009-noninvasive-bladder.763e4f37462d",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu009-noninvasive-bladder.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-genitourinary-gu009-noninvasive-bladder",
+  "source_checksum_sha256": "763e4f37462db03a38d8d1479f85d30102f77d96febccce60fd24ad1acde4f62",
+  "source_document_id": "source-document.ahs-guru-genitourinary-gu009-noninvasive-bladder.if-hp-cancer-guide-gu009-noninvasive-bladder.763e4f37462d",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Non-Muscle Invasive Bladder Cancer"
+}

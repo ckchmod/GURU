@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe007-transfer-of-care-physician.pdf",
+  "document_id": "source-document.ahs-guru-lymphoma-hematology-lyhe007-transfer-of-care-physician.if-hp-cancer-guide-lyhe007-transfer-of-care-physician.a2690a5cf213",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe007-transfer-of-care-physician.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:1"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-lymphoma-hematology-lyhe007-transfer-of-care-physician",
+  "source_checksum_sha256": "a2690a5cf2133f7986ad1a235c0f8a51dacd2eea429d9e792960d6ab815e9418",
+  "source_document_id": "source-document.ahs-guru-lymphoma-hematology-lyhe007-transfer-of-care-physician.if-hp-cancer-guide-lyhe007-transfer-of-care-physician.a2690a5cf213",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Sample Transfer of Care Physician Letter: Chronic Lymphocytic Leukemia"
+}

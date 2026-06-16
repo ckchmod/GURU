@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gyne008-algorithm-gtn.pdf",
+  "document_id": "source-document.ahs-guru-gynecologic-gyne008-algorithm-gtn.if-hp-cancer-guide-gyne008-algorithm-gtn.a734c70ac844",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gyne008-algorithm-gtn.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-gynecologic-gyne008-algorithm-gtn",
+  "source_checksum_sha256": "a734c70ac8447e0f7b14120359ede0722818751804383e89f7be718654758100",
+  "source_document_id": "source-document.ahs-guru-gynecologic-gyne008-algorithm-gtn.if-hp-cancer-guide-gyne008-algorithm-gtn.a734c70ac844",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Gestational Trophoblastic Neoplasia Algorithm"
+}

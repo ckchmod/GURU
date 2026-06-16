@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp001-tobacco-cessation.pdf",
+  "document_id": "source-document.ahs-guru-supportive-care-supp001-tobacco-cessation.if-hp-cancer-guide-supp001-tobacco-cessation.01eca45cac0f",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp001-tobacco-cessation.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:1"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-supportive-care-supp001-tobacco-cessation",
+  "source_checksum_sha256": "01eca45cac0fd89560e50633160ddd07c90431a0976c4e85119cef24420fedb9",
+  "source_document_id": "source-document.ahs-guru-supportive-care-supp001-tobacco-cessation.if-hp-cancer-guide-supp001-tobacco-cessation.01eca45cac0f",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Tobacco Cessation"
+}

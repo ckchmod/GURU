@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe015-mmrr.pdf",
+  "document_id": "source-document.ahs-guru-lymphoma-hematology-lyhe015-mmrr.if-hp-cancer-guide-lyhe015-mmrr.9e991bc155eb",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe015-mmrr.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-lymphoma-hematology-lyhe015-mmrr",
+  "source_checksum_sha256": "9e991bc155eb9402da50a1a6c7a4cdbd25c46eeb6876a819af0bfd8742bb4275",
+  "source_document_id": "source-document.ahs-guru-lymphoma-hematology-lyhe015-mmrr.if-hp-cancer-guide-lyhe015-mmrr.9e991bc155eb",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Multiple Myeloma: Relapsed/Refractory Disease"
+}

@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gyne007-uterine-sarcoma.pdf",
+  "document_id": "source-document.ahs-guru-gynecologic-gyne007-uterine-sarcoma.if-hp-cancer-guide-gyne007-uterine-sarcoma.38a154996c77",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gyne007-uterine-sarcoma.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-gynecologic-gyne007-uterine-sarcoma",
+  "source_checksum_sha256": "38a154996c77ff1396a437e543b1f74336a9ce86fb93ec6053e8e93121a88946",
+  "source_document_id": "source-document.ahs-guru-gynecologic-gyne007-uterine-sarcoma.if-hp-cancer-guide-gyne007-uterine-sarcoma.38a154996c77",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Uterine Sarcoma Guideline"
+}

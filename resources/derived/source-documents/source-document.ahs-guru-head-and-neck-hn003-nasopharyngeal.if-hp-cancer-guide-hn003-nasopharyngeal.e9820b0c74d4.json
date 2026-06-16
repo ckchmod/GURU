@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-hn003-nasopharyngeal.pdf",
+  "document_id": "source-document.ahs-guru-head-and-neck-hn003-nasopharyngeal.if-hp-cancer-guide-hn003-nasopharyngeal.e9820b0c74d4",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-hn003-nasopharyngeal.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-head-and-neck-hn003-nasopharyngeal",
+  "source_checksum_sha256": "e9820b0c74d4f2b338d80bdd06d02273f785adfe3f938a186a83f6e8855942da",
+  "source_document_id": "source-document.ahs-guru-head-and-neck-hn003-nasopharyngeal.if-hp-cancer-guide-hn003-nasopharyngeal.e9820b0c74d4",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Nasopharyngeal Cancer Treatment"
+}

@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cu017-mohs.pdf",
+  "document_id": "source-document.ahs-guru-cutaneous-cu017-mohs.if-hp-cancer-guide-cu017-mohs.f7304b798326",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cu017-mohs.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-cutaneous-cu017-mohs",
+  "source_checksum_sha256": "f7304b79832691493b127f70e1f4fb89b843354c3abc631120993b23d0305177",
+  "source_document_id": "source-document.ahs-guru-cutaneous-cu017-mohs.if-hp-cancer-guide-cu017-mohs.f7304b798326",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Mohs Micrographic Surgery"
+}

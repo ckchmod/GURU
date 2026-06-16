@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe007-cll.pdf",
+  "document_id": "source-document.ahs-guru-lymphoma-hematology-lyhe007-cll.if-hp-cancer-guide-lyhe007-cll.0dacf8002cd7",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe007-cll.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-lymphoma-hematology-lyhe007-cll",
+  "source_checksum_sha256": "0dacf8002cd7584942bec3e3cfc4f3c574cc809a952d0f679e6aa212c17944ce",
+  "source_document_id": "source-document.ahs-guru-lymphoma-hematology-lyhe007-cll.if-hp-cancer-guide-lyhe007-cll.0dacf8002cd7",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Chronic Lymphocytic Leukemia"
+}

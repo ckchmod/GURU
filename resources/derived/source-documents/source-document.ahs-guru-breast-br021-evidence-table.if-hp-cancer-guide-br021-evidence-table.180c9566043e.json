@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br021-evidence-table.pdf",
+  "document_id": "source-document.ahs-guru-breast-br021-evidence-table.if-hp-cancer-guide-br021-evidence-table.180c9566043e",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-br021-evidence-table.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:1"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-breast-br021-evidence-table",
+  "source_checksum_sha256": "180c9566043e25d563bb40089db1cb4907bbeb2455944d03d6420e6ddca560df",
+  "source_document_id": "source-document.ahs-guru-breast-br021-evidence-table.if-hp-cancer-guide-br021-evidence-table.180c9566043e",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Evidence Table"
+}

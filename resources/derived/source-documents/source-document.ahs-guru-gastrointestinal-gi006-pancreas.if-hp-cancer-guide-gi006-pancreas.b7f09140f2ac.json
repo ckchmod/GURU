@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gi006-pancreas.pdf",
+  "document_id": "source-document.ahs-guru-gastrointestinal-gi006-pancreas.if-hp-cancer-guide-gi006-pancreas.b7f09140f2ac",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gi006-pancreas.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-gastrointestinal-gi006-pancreas",
+  "source_checksum_sha256": "b7f09140f2ac72485697ca2e78bab37665861ec059e4b045e7030bab656f9bcf",
+  "source_document_id": "source-document.ahs-guru-gastrointestinal-gi006-pancreas.if-hp-cancer-guide-gi006-pancreas.b7f09140f2ac",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Adenocarcinoma of the Pancreas"
+}

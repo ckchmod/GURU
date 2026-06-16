@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-evidence-supp003-egfri-rash.pdf",
+  "document_id": "source-document.ahs-guru-supportive-care-supp003-egfri-rash.if-hp-cancer-evidence-supp003-egfri-rash.d1a8f81acec7",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-evidence-supp003-egfri-rash.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:1"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-supportive-care-supp003-egfri-rash",
+  "source_checksum_sha256": "d1a8f81acec743e27ccbc9bd9c0a4fdafc65cfdcb10e72cbf964153d2136a79c",
+  "source_document_id": "source-document.ahs-guru-supportive-care-supp003-egfri-rash.if-hp-cancer-evidence-supp003-egfri-rash.d1a8f81acec7",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Evidence Table"
+}

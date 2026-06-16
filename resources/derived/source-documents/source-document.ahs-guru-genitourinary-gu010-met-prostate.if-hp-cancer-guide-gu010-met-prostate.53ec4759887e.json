@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu010-met-prostate.pdf",
+  "document_id": "source-document.ahs-guru-genitourinary-gu010-met-prostate.if-hp-cancer-guide-gu010-met-prostate.53ec4759887e",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu010-met-prostate.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-genitourinary-gu010-met-prostate",
+  "source_checksum_sha256": "53ec4759887eff51bcbe01800662c9a7b48966d0ac117583afd9415c25972c42",
+  "source_document_id": "source-document.ahs-guru-genitourinary-gu010-met-prostate.if-hp-cancer-guide-gu010-met-prostate.53ec4759887e",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Advanced/Metastatic Prostate Cancer"
+}

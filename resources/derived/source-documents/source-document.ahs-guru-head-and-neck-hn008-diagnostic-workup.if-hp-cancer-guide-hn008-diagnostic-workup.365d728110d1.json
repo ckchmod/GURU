@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-hn008-diagnostic-workup.pdf",
+  "document_id": "source-document.ahs-guru-head-and-neck-hn008-diagnostic-workup.if-hp-cancer-guide-hn008-diagnostic-workup.365d728110d1",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-hn008-diagnostic-workup.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-head-and-neck-hn008-diagnostic-workup",
+  "source_checksum_sha256": "365d728110d1e52b71e94bf1b666944a77116a12e0b9a9646fc5a2c0ede32065",
+  "source_document_id": "source-document.ahs-guru-head-and-neck-hn008-diagnostic-workup.if-hp-cancer-guide-hn008-diagnostic-workup.365d728110d1",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Diagnostic Workup and Staging of Head and Neck Cancer"
+}

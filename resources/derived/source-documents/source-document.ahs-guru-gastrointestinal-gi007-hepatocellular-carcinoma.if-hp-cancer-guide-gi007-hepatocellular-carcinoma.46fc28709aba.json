@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gi007-hepatocellular-carcinoma.pdf",
+  "document_id": "source-document.ahs-guru-gastrointestinal-gi007-hepatocellular-carcinoma.if-hp-cancer-guide-gi007-hepatocellular-carcinoma.46fc28709aba",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gi007-hepatocellular-carcinoma.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-gastrointestinal-gi007-hepatocellular-carcinoma",
+  "source_checksum_sha256": "46fc28709aba5218afdac6acb2a6d5b51e3d69a7be3d05cd4e1305215fb22505",
+  "source_document_id": "source-document.ahs-guru-gastrointestinal-gi007-hepatocellular-carcinoma.if-hp-cancer-guide-gi007-hepatocellular-carcinoma.46fc28709aba",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Hepatocellular Carcinoma"
+}

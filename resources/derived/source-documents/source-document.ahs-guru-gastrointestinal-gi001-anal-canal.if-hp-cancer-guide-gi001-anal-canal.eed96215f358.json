@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gi001-anal-canal.pdf",
+  "document_id": "source-document.ahs-guru-gastrointestinal-gi001-anal-canal.if-hp-cancer-guide-gi001-anal-canal.eed96215f358",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gi001-anal-canal.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-gastrointestinal-gi001-anal-canal",
+  "source_checksum_sha256": "eed96215f3585ff05a64fd7ee8f309da66588b68ecc7b443b847b683b83402e2",
+  "source_document_id": "source-document.ahs-guru-gastrointestinal-gi001-anal-canal.if-hp-cancer-guide-gi001-anal-canal.eed96215f358",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Anal Canal Cancer"
+}

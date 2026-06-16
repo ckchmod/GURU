@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-southern-alberta-providers-thyroid.pdf",
+  "document_id": "source-document.ahs-guru-thyroid-southern-alberta-providers-thyroid.if-hp-cancer-guide-southern-alberta-providers-thyroid.a620006cb3c7",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-southern-alberta-providers-thyroid.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:2"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-thyroid-southern-alberta-providers-thyroid",
+  "source_checksum_sha256": "a620006cb3c7eadb361cc2eefd18d0dea9be04c530e3d0ef917e7102d29fcdae",
+  "source_document_id": "source-document.ahs-guru-thyroid-southern-alberta-providers-thyroid.if-hp-cancer-guide-southern-alberta-providers-thyroid.a620006cb3c7",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Endocrinology Services: Thyroid Nodule & Cancer Referrals \u2013 Southern Alberta Zone"
+}

@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu001a-end-of-treatment-physician.pdf",
+  "document_id": "source-document.ahs-guru-genitourinary-gu001a-end-of-treatment-physician.if-hp-cancer-guide-gu001a-end-of-treatment-physician.ed0eae1249ea",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu001a-end-of-treatment-physician.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-genitourinary-gu001a-end-of-treatment-physician",
+  "source_checksum_sha256": "ed0eae1249eaa4c0fd39588604b00b8d038c803784c225ea88ae792ce258bb72",
+  "source_document_id": "source-document.ahs-guru-genitourinary-gu001a-end-of-treatment-physician.if-hp-cancer-guide-gu001a-end-of-treatment-physician.ed0eae1249ea",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Sample Physician Letter: Seminoma End of Treatment"
+}

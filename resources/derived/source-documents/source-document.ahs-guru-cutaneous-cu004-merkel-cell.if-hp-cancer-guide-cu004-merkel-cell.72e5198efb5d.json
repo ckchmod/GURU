@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cu004-merkel-cell.pdf",
+  "document_id": "source-document.ahs-guru-cutaneous-cu004-merkel-cell.if-hp-cancer-guide-cu004-merkel-cell.72e5198efb5d",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cu004-merkel-cell.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-cutaneous-cu004-merkel-cell",
+  "source_checksum_sha256": "72e5198efb5ddb16af275ebdd10910b7a5c5e16f785a7cbfd4321c0780276f79",
+  "source_document_id": "source-document.ahs-guru-cutaneous-cu004-merkel-cell.if-hp-cancer-guide-cu004-merkel-cell.72e5198efb5d",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Merkel Cell Carcinoma"
+}

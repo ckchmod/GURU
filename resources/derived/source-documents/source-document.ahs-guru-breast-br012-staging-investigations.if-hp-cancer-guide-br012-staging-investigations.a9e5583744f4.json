@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br012-staging-investigations.pdf",
+  "document_id": "source-document.ahs-guru-breast-br012-staging-investigations.if-hp-cancer-guide-br012-staging-investigations.a9e5583744f4",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-br012-staging-investigations.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:1"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-breast-br012-staging-investigations",
+  "source_checksum_sha256": "a9e5583744f4c5caa93c6fa7d9ddd20399571f7007ba70237aa5d6227c0506c0",
+  "source_document_id": "source-document.ahs-guru-breast-br012-staging-investigations.if-hp-cancer-guide-br012-staging-investigations.a9e5583744f4",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Staging Investigations for Newly Diagnosed Breast Cancer"
+}

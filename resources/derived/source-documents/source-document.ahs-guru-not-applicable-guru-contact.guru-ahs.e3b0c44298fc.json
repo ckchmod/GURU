@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "mailto:GURU@ahs.ca",
+  "document_id": "source-document.ahs-guru-not-applicable-guru-contact.guru-ahs.e3b0c44298fc",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/GURU@ahs.ca",
+  "output_status": "draft",
+  "parse_status": "download_missing",
+  "parse_warnings": [
+    "manifest_status:failed"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-not-applicable-guru-contact",
+  "source_checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "source_document_id": "source-document.ahs-guru-not-applicable-guru-contact.guru-ahs.e3b0c44298fc",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "GURU@ahs.ca"
+}

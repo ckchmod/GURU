@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu012-transfer-of-care-physician.pdf",
+  "document_id": "source-document.ahs-guru-genitourinary-gu012-transfer-of-care-physician.if-hp-cancer-guide-gu012-transfer-of-care-physician.b1ad017eeca5",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu012-transfer-of-care-physician.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-genitourinary-gu012-transfer-of-care-physician",
+  "source_checksum_sha256": "b1ad017eeca530efa78ee9acf75d92fcb67f30fbb9b96ba008164cea753f37ee",
+  "source_document_id": "source-document.ahs-guru-genitourinary-gu012-transfer-of-care-physician.if-hp-cancer-guide-gu012-transfer-of-care-physician.b1ad017eeca5",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Sample Transfer of Care Physician Letter: EBRT Follow-up"
+}

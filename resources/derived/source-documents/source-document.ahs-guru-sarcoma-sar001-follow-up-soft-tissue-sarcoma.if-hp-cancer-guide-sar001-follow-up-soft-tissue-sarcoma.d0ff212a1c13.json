@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-sar001-follow-up-soft-tissue-sarcoma.pdf",
+  "document_id": "source-document.ahs-guru-sarcoma-sar001-follow-up-soft-tissue-sarcoma.if-hp-cancer-guide-sar001-follow-up-soft-tissue-sarcoma.d0ff212a1c13",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-sar001-follow-up-soft-tissue-sarcoma.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-sarcoma-sar001-follow-up-soft-tissue-sarcoma",
+  "source_checksum_sha256": "d0ff212a1c13b70172f00a3ea04290b03e63d856c1eb8d887e1c2c91c0dd61bc",
+  "source_document_id": "source-document.ahs-guru-sarcoma-sar001-follow-up-soft-tissue-sarcoma.if-hp-cancer-guide-sar001-follow-up-soft-tissue-sarcoma.d0ff212a1c13",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Surveillance and Follow-Up for Soft Tissue Sarcoma"
+}

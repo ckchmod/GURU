@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu003-renal-cell.pdf",
+  "document_id": "source-document.ahs-guru-renal-cell-carcinoma-gu003.if-hp-cancer-guide-gu003-renal-cell.b7ef478748b6",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu003-renal-cell.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-renal-cell-carcinoma-gu003",
+  "source_checksum_sha256": "b7ef478748b6e83d16eeff3e632aa0ffd91170d8a67d25c566caae247a167e5d",
+  "source_document_id": "source-document.ahs-guru-renal-cell-carcinoma-gu003.if-hp-cancer-guide-gu003-renal-cell.b7ef478748b6",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Renal Cell Carcinoma Clinical Practice Guideline GU-003"
+}

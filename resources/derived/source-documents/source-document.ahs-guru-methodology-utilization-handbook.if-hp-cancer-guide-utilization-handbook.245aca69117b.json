@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-utilization-handbook.pdf",
+  "document_id": "source-document.ahs-guru-methodology-utilization-handbook.if-hp-cancer-guide-utilization-handbook.245aca69117b",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-utilization-handbook.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-methodology-utilization-handbook",
+  "source_checksum_sha256": "245aca69117b1708ef2b166d4c29fb4bfbf90a4599e8261eadce9b399cb1c156",
+  "source_document_id": "source-document.ahs-guru-methodology-utilization-handbook.if-hp-cancer-guide-utilization-handbook.245aca69117b",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "GURU Guideline Development Handbook"
+}

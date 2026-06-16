@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lu013-surveillance-nsclc.pdf",
+  "document_id": "source-document.ahs-guru-lung-lu013-surveillance-nsclc.if-hp-cancer-guide-lu013-surveillance-nsclc.b077fc207a99",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lu013-surveillance-nsclc.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-lung-lu013-surveillance-nsclc",
+  "source_checksum_sha256": "b077fc207a99b3605ed22e18ac3f4a85888c9c0ebbf5b12396ee91594fd793c1",
+  "source_document_id": "source-document.ahs-guru-lung-lu013-surveillance-nsclc.if-hp-cancer-guide-lu013-surveillance-nsclc.b077fc207a99",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Surveillance for Early Stage Non-Small Cell Lung Cancer"
+}

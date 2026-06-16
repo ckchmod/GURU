@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gyne002-end-of-treatment-patient.pdf",
+  "document_id": "source-document.ahs-guru-gynecologic-gyne002-end-of-treatment-patient.if-hp-cancer-guide-gyne002-end-of-treatment-patient.2ce92b58ab96",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gyne002-end-of-treatment-patient.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-gynecologic-gyne002-end-of-treatment-patient",
+  "source_checksum_sha256": "2ce92b58ab967fefc64c538190d41f9bd50541afb5b1f19d87f513af56f4474e",
+  "source_document_id": "source-document.ahs-guru-gynecologic-gyne002-end-of-treatment-patient.if-hp-cancer-guide-gyne002-end-of-treatment-patient.2ce92b58ab96",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Sample End of Treatment Patient Letter: Endometrial Cancer"
+}

@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-hn002-oral-cavity.pdf",
+  "document_id": "source-document.ahs-guru-head-and-neck-hn002-oral-cavity.if-hp-cancer-guide-hn002-oral-cavity.ab4ec6e04d52",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-hn002-oral-cavity.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-head-and-neck-hn002-oral-cavity",
+  "source_checksum_sha256": "ab4ec6e04d52d0d3ef54535a8d7d9e5267ca53fc7c5d0fcb07bc9a3f76f72fcc",
+  "source_document_id": "source-document.ahs-guru-head-and-neck-hn002-oral-cavity.if-hp-cancer-guide-hn002-oral-cavity.ab4ec6e04d52",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Oral Cavity Cancer"
+}

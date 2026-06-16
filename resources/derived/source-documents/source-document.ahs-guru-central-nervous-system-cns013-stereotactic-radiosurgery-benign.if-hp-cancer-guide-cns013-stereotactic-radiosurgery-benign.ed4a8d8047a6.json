@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cns013-stereotactic-radiosurgery-benign.pdf",
+  "document_id": "source-document.ahs-guru-central-nervous-system-cns013-stereotactic-radiosurgery-benign.if-hp-cancer-guide-cns013-stereotactic-radiosurgery-benign.ed4a8d8047a6",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cns013-stereotactic-radiosurgery-benign.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-central-nervous-system-cns013-stereotactic-radiosurgery-benign",
+  "source_checksum_sha256": "ed4a8d8047a6711ff2a720f7e7e8ad56a71cb3bec044d84b1a8b680e4160d869",
+  "source_document_id": "source-document.ahs-guru-central-nervous-system-cns013-stereotactic-radiosurgery-benign.if-hp-cancer-guide-cns013-stereotactic-radiosurgery-benign.ed4a8d8047a6",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Stereotactic Radiosurgery: Benign Indication"
+}

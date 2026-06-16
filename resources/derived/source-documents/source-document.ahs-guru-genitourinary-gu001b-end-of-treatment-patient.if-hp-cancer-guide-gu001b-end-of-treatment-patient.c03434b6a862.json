@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu001b-end-of-treatment-patient.pdf",
+  "document_id": "source-document.ahs-guru-genitourinary-gu001b-end-of-treatment-patient.if-hp-cancer-guide-gu001b-end-of-treatment-patient.c03434b6a862",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu001b-end-of-treatment-patient.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-genitourinary-gu001b-end-of-treatment-patient",
+  "source_checksum_sha256": "c03434b6a862aef1298b3901b395d637f3f88562a3d362c489cb56fd395a1d1f",
+  "source_document_id": "source-document.ahs-guru-genitourinary-gu001b-end-of-treatment-patient.if-hp-cancer-guide-gu001b-end-of-treatment-patient.c03434b6a862",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Sample Patient Letter: Nonseminoma End of Treatment"
+}

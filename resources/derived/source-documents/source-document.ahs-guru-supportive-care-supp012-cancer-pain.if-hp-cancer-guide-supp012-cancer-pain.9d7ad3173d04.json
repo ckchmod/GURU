@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp012-cancer-pain.pdf",
+  "document_id": "source-document.ahs-guru-supportive-care-supp012-cancer-pain.if-hp-cancer-guide-supp012-cancer-pain.9d7ad3173d04",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp012-cancer-pain.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-supportive-care-supp012-cancer-pain",
+  "source_checksum_sha256": "9d7ad3173d04fc5594b464df7963ce5347b6912c6dbcf10afd7b4f61410475c8",
+  "source_document_id": "source-document.ahs-guru-supportive-care-supp012-cancer-pain.if-hp-cancer-guide-supp012-cancer-pain.9d7ad3173d04",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Cancer Pain"
+}

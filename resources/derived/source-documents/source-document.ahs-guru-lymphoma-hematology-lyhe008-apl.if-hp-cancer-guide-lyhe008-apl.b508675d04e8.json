@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe008-apl.pdf",
+  "document_id": "source-document.ahs-guru-lymphoma-hematology-lyhe008-apl.if-hp-cancer-guide-lyhe008-apl.b508675d04e8",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe008-apl.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-lymphoma-hematology-lyhe008-apl",
+  "source_checksum_sha256": "b508675d04e89b91fd95f4952f45ab9f39c00da3bdcca2eb8488eaacc6585869",
+  "source_document_id": "source-document.ahs-guru-lymphoma-hematology-lyhe008-apl.if-hp-cancer-guide-lyhe008-apl.b508675d04e8",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Acute Promyelocytic Leukemia"
+}

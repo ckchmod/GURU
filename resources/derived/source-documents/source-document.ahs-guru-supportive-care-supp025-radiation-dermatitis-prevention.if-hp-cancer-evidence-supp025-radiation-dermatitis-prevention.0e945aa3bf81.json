@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-evidence-supp025-radiation-dermatitis-prevention.pdf",
+  "document_id": "source-document.ahs-guru-supportive-care-supp025-radiation-dermatitis-prevention.if-hp-cancer-evidence-supp025-radiation-dermatitis-prevention.0e945aa3bf81",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-evidence-supp025-radiation-dermatitis-prevention.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-supportive-care-supp025-radiation-dermatitis-prevention",
+  "source_checksum_sha256": "0e945aa3bf81f0bdacecaca4f6a1359cfdc4fb3bfd804c9de053c5fcba8f8469",
+  "source_document_id": "source-document.ahs-guru-supportive-care-supp025-radiation-dermatitis-prevention.if-hp-cancer-evidence-supp025-radiation-dermatitis-prevention.0e945aa3bf81",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Evidence Table Prevention"
+}

@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br005-adjuvant-rt-invasive-breast.pdf",
+  "document_id": "source-document.ahs-guru-breast-br005-adjuvant-rt-invasive-breast.if-hp-cancer-guide-br005-adjuvant-rt-invasive-breast.c9b10b3ac1d3",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-br005-adjuvant-rt-invasive-breast.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-breast-br005-adjuvant-rt-invasive-breast",
+  "source_checksum_sha256": "c9b10b3ac1d37f1a711e8c89ae61f435aaa09c91976ad85100a509e9d1000193",
+  "source_document_id": "source-document.ahs-guru-breast-br005-adjuvant-rt-invasive-breast.if-hp-cancer-guide-br005-adjuvant-rt-invasive-breast.c9b10b3ac1d3",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Adjuvant Radiotherapy for Invasive Breast Cancer"
+}

@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp023-early-palliative-care-advanced-cancer.pdf",
+  "document_id": "source-document.ahs-guru-supportive-care-supp023-early-palliative-care-advanced-cancer.if-hp-cancer-guide-supp023-early-palliative-care-advanced-cancer.90c997c8b94b",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp023-early-palliative-care-advanced-cancer.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:6"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-supportive-care-supp023-early-palliative-care-advanced-cancer",
+  "source_checksum_sha256": "90c997c8b94b89e8837e7e450e54a2a06a5afad3dfd83953c55555db8b89d8a4",
+  "source_document_id": "source-document.ahs-guru-supportive-care-supp023-early-palliative-care-advanced-cancer.if-hp-cancer-guide-supp023-early-palliative-care-advanced-cancer.90c997c8b94b",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Integrating an Early Palliative Approach into Advanced Cancer Care"
+}

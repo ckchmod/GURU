@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-provider-list-surgery-services-and-cancer-referrals.pdf",
+  "document_id": "source-document.ahs-guru-thyroid-surgery-services-and-cancer-referrals.if-hp-cancer-provider-list-surgery-services-and-cancer-referrals.2fbe1fa8e232",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-provider-list-surgery-services-and-cancer-referrals.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:1"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-thyroid-surgery-services-and-cancer-referrals",
+  "source_checksum_sha256": "2fbe1fa8e2322d457bc58ace734b1e08a6e90e4c046e354fde993d730a33f943",
+  "source_document_id": "source-document.ahs-guru-thyroid-surgery-services-and-cancer-referrals.if-hp-cancer-provider-list-surgery-services-and-cancer-referrals.2fbe1fa8e232",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Surgery Services: Thyroid Nodule & Cancer Referrals \u2013 Southern Alberta Zone"
+}

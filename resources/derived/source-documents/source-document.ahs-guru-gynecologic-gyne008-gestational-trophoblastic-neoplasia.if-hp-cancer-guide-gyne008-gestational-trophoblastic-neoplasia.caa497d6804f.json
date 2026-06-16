@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gyne008-gestational-trophoblastic-neoplasia.pdf",
+  "document_id": "source-document.ahs-guru-gynecologic-gyne008-gestational-trophoblastic-neoplasia.if-hp-cancer-guide-gyne008-gestational-trophoblastic-neoplasia.caa497d6804f",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gyne008-gestational-trophoblastic-neoplasia.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-gynecologic-gyne008-gestational-trophoblastic-neoplasia",
+  "source_checksum_sha256": "caa497d6804f7d993f990d49db38bf0d74d3f5db729720929f3d2caa56d56a41",
+  "source_document_id": "source-document.ahs-guru-gynecologic-gyne008-gestational-trophoblastic-neoplasia.if-hp-cancer-guide-gyne008-gestational-trophoblastic-neoplasia.caa497d6804f",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Gestational Trophoblastic Neoplasia"
+}

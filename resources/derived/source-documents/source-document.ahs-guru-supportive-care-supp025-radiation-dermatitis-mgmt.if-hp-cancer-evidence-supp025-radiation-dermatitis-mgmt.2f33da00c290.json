@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-evidence-supp025-radiation-dermatitis-mgmt.pdf",
+  "document_id": "source-document.ahs-guru-supportive-care-supp025-radiation-dermatitis-mgmt.if-hp-cancer-evidence-supp025-radiation-dermatitis-mgmt.2f33da00c290",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-evidence-supp025-radiation-dermatitis-mgmt.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-supportive-care-supp025-radiation-dermatitis-mgmt",
+  "source_checksum_sha256": "2f33da00c290bd6cbf68f7fa0db1755906548ff941f8fbccd4e274b592c7a003",
+  "source_document_id": "source-document.ahs-guru-supportive-care-supp025-radiation-dermatitis-mgmt.if-hp-cancer-evidence-supp025-radiation-dermatitis-mgmt.2f33da00c290",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Evidence Table Management"
+}

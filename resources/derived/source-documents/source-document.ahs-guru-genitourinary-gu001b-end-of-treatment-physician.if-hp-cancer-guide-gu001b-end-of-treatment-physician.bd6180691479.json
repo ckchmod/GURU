@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu001b-end-of-treatment-physician.pdf",
+  "document_id": "source-document.ahs-guru-genitourinary-gu001b-end-of-treatment-physician.if-hp-cancer-guide-gu001b-end-of-treatment-physician.bd6180691479",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu001b-end-of-treatment-physician.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-genitourinary-gu001b-end-of-treatment-physician",
+  "source_checksum_sha256": "bd61806914797735b6019499b80dd94e3d39e4bf10e1744f876b1db72f305b15",
+  "source_document_id": "source-document.ahs-guru-genitourinary-gu001b-end-of-treatment-physician.if-hp-cancer-guide-gu001b-end-of-treatment-physician.bd6180691479",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Sample Physician Letter: Nonseminoma End of Treatment"
+}

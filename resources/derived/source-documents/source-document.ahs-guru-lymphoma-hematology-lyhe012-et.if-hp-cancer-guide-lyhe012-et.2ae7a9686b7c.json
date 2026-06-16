@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe012-et.pdf",
+  "document_id": "source-document.ahs-guru-lymphoma-hematology-lyhe012-et.if-hp-cancer-guide-lyhe012-et.2ae7a9686b7c",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe012-et.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-lymphoma-hematology-lyhe012-et",
+  "source_checksum_sha256": "2ae7a9686b7c25cf2e613b97936a285f7eb003f82b12c759ee34bf5d7c49a984",
+  "source_document_id": "source-document.ahs-guru-lymphoma-hematology-lyhe012-et.if-hp-cancer-guide-lyhe012-et.2ae7a9686b7c",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Essential Thrombocythemia"
+}

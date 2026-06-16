@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gyne003-hbot-for-lrti.pdf",
+  "document_id": "source-document.ahs-guru-gynecologic-gyne003-hbot-for-lrti.if-hp-cancer-guide-gyne003-hbot-for-lrti.17fcf73208b7",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gyne003-hbot-for-lrti.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-gynecologic-gyne003-hbot-for-lrti",
+  "source_checksum_sha256": "17fcf73208b74f4f39a566224606cdce47900a0d71e5e22dcb322d56d655e9cf",
+  "source_document_id": "source-document.ahs-guru-gynecologic-gyne003-hbot-for-lrti.if-hp-cancer-guide-gyne003-hbot-for-lrti.17fcf73208b7",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "HBOT for Late Radiation Tissue Injury in Gynecologic Malignancies"
+}

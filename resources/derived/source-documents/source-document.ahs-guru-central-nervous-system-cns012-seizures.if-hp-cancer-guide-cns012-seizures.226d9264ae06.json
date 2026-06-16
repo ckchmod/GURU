@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cns012-seizures.pdf",
+  "document_id": "source-document.ahs-guru-central-nervous-system-cns012-seizures.if-hp-cancer-guide-cns012-seizures.226d9264ae06",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cns012-seizures.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-central-nervous-system-cns012-seizures",
+  "source_checksum_sha256": "226d9264ae0603c7c7975ab2f5a17556a99c1221f0914405203e824667099249",
+  "source_document_id": "source-document.ahs-guru-central-nervous-system-cns012-seizures.if-hp-cancer-guide-cns012-seizures.226d9264ae06",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Seizure Management in Adults with Brain Tumours"
+}

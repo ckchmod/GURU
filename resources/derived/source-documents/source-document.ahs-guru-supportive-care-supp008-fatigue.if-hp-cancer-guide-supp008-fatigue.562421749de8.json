@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp008-fatigue.pdf",
+  "document_id": "source-document.ahs-guru-supportive-care-supp008-fatigue.if-hp-cancer-guide-supp008-fatigue.562421749de8",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp008-fatigue.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:1"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-supportive-care-supp008-fatigue",
+  "source_checksum_sha256": "562421749de88fa597a962001d4af61909a0b683f95d5eb0a322b4c8840c94df",
+  "source_document_id": "source-document.ahs-guru-supportive-care-supp008-fatigue.if-hp-cancer-guide-supp008-fatigue.562421749de8",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Cancer-Related Fatigue"
+}

@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br016-breast-reconstruction.pdf",
+  "document_id": "source-document.ahs-guru-breast-br016-breast-reconstruction.if-hp-cancer-guide-br016-breast-reconstruction.5eae0ecc5fc8",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-br016-breast-reconstruction.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:1"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-breast-br016-breast-reconstruction",
+  "source_checksum_sha256": "5eae0ecc5fc8305901143c09ead90b6931bb5f352deaa57aaa8816118a56932a",
+  "source_document_id": "source-document.ahs-guru-breast-br016-breast-reconstruction.if-hp-cancer-guide-br016-breast-reconstruction.5eae0ecc5fc8",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Breast Reconstruction in Patients Undergoing Prophylactic or Therapeutic Mastectomy"
+}

@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br018-phyllodes.pdf",
+  "document_id": "source-document.ahs-guru-breast-br018-phyllodes.if-hp-cancer-guide-br018-phyllodes.cd7eedfc293e",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-br018-phyllodes.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:2"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-breast-br018-phyllodes",
+  "source_checksum_sha256": "cd7eedfc293e09d1d5c4cafcb13c272b634f3b63d7e1b5a1148f32849f774803",
+  "source_document_id": "source-document.ahs-guru-breast-br018-phyllodes.if-hp-cancer-guide-br018-phyllodes.cd7eedfc293e",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Phyllodes Tumour of the Breast"
+}

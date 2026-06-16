@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-br021-breast-implant.pdf",
+  "document_id": "source-document.ahs-guru-breast-br021-breast-implant.if-hp-cancer-guide-br021-breast-implant.c92d604ad9dc",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-br021-breast-implant.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-breast-br021-breast-implant",
+  "source_checksum_sha256": "c92d604ad9dc410689257c301ef3268d1afa875f724d96fa55be1b1daeb3b0ee",
+  "source_document_id": "source-document.ahs-guru-breast-br021-breast-implant.if-hp-cancer-guide-br021-breast-implant.c92d604ad9dc",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Navigating Breast Implants, Cancer, and Illness"
+}

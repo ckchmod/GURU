@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 import re
@@ -99,6 +100,37 @@ BLOCKED_PLACEHOLDER_LABELS = re.compile(
 )
 RAW_PUBLIC_DIR = ROOT / "resources" / "raw" / "ahs-guru-public"
 COMMITTED_ALL_PUBLIC_MANIFEST = ROOT / "resources" / "manifests" / "ahs-guru-public" / "manifest-20260615T000000Z-no-network-status.json"
+VALIDATED_ALL_PUBLIC_MANIFEST = ROOT / "resources" / "manifests" / "ahs-guru-public" / "manifest-20260616T053200Z.json"
+PARSE_SUBSET_REGISTRY = ROOT / "resources" / "registry" / "ahs-guru-parse-subset.json"
+PUBLIC_CORPUS_REGISTRY = ROOT / "resources" / "registry" / "ahs-guru-public-corpus.json"
+DERIVED_SOURCE_DOCUMENT_DIR = ROOT / "resources" / "derived" / "source-documents"
+DERIVED_SOURCE_SPAN_DIR = ROOT / "resources" / "derived" / "source-spans"
+DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+DATETIME_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$")
+SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
+SAFE_ID_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$")
+CANONICAL_SOURCE_DOCUMENT_FIELDS = {
+    "source_document_id",
+    "resource_id",
+    "access_date",
+    "parse_status",
+    "parser_version",
+    "timestamp",
+    "output_status",
+}
+CANONICAL_SOURCE_SPAN_FIELDS = {
+    "source_document_id",
+    "access_date",
+    "stable_locator",
+    "quoted_span",
+    "excerpt_checksum",
+    "prompt_or_model_version",
+    "reviewer",
+    "review_status",
+    "timestamp",
+    "output_status",
+}
+DETERMINISTIC_MODEL_VERSION = "none-local-deterministic-parser"
 
 
 def iter_existing_paths(paths: list[Path]) -> list[Path]:
@@ -162,6 +194,125 @@ def error(message: str) -> None:
 
 def load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def unsafe_json_string(value: Any) -> bool:
+    if not isinstance(value, str):
+        return True
+    return any((ord(character) < 32 and character not in "\n\t") for character in value)
+
+
+def load_json_records(directory: Path) -> list[tuple[Path, dict[str, Any]]]:
+    records: list[tuple[Path, dict[str, Any]]] = []
+    if not directory.exists():
+        return records
+    for path in sorted(directory.glob("*.json")):
+        payload = load_json(path)
+        if isinstance(payload, list):
+            records.extend((path, record) for record in payload if isinstance(record, dict))
+        elif isinstance(payload, dict):
+            records.append((path, payload))
+    return records
+
+
+def validated_all_public_manifest_ids() -> set[str]:
+    manifest = load_json(VALIDATED_ALL_PUBLIC_MANIFEST)
+    corpus = load_json(PUBLIC_CORPUS_REGISTRY)
+    manifest_rows = manifest.get("rows") if isinstance(manifest, dict) else None
+    corpus_rows = corpus.get("rows") if isinstance(corpus, dict) else None
+    if not isinstance(manifest_rows, list) or not isinstance(corpus_rows, list):
+        return set()
+    corpus_ids = {row.get("resource_id") for row in corpus_rows if isinstance(row, dict)}
+    manifest_ids = {row.get("resource_id") for row in manifest_rows if isinstance(row, dict)}
+    if len(manifest_rows) != 198 or manifest_ids != corpus_ids:
+        return set()
+    return {str(resource_id) for resource_id in manifest_ids if isinstance(resource_id, str)}
+
+
+def parse_subset_resource_ids() -> set[str]:
+    payload = load_json(PARSE_SUBSET_REGISTRY)
+    rows = payload.get("rows") if isinstance(payload, dict) else None
+    if not isinstance(rows, list) or len(rows) != 5:
+        return set()
+    return {str(row["resource_id"]) for row in rows if isinstance(row, dict) and isinstance(row.get("resource_id"), str)}
+
+
+def validate_derived_source_provenance() -> list[str]:
+    errors: list[str] = []
+    allowed_resource_ids = parse_subset_resource_ids() | validated_all_public_manifest_ids()
+    if not allowed_resource_ids:
+        errors.append("derived provenance resource allowlist could not be loaded")
+        return errors
+
+    source_documents = load_json_records(DERIVED_SOURCE_DOCUMENT_DIR)
+    source_spans = load_json_records(DERIVED_SOURCE_SPAN_DIR)
+    document_ids = {record.get("source_document_id") for _, record in source_documents if isinstance(record.get("source_document_id"), str)}
+
+    for path, record in source_documents:
+        label = relative(path)
+        missing = CANONICAL_SOURCE_DOCUMENT_FIELDS - set(record)
+        if missing:
+            errors.append(f"{label}: source document missing canonical fields {sorted(missing)!r}")
+        if record.get("source_document_id") != record.get("document_id"):
+            errors.append(f"{label}: source_document_id must match document_id")
+        if record.get("resource_id") not in allowed_resource_ids:
+            errors.append(f"{label}: unsafe resource_id outside parse subset or validated all-public manifest")
+        if not isinstance(record.get("source_document_id"), str) or not SAFE_ID_RE.fullmatch(str(record.get("source_document_id"))):
+            errors.append(f"{label}: source_document_id must be a safe identifier")
+        if not isinstance(record.get("access_date"), str) or not DATE_RE.fullmatch(record["access_date"]):
+            errors.append(f"{label}: access_date must use YYYY-MM-DD")
+        if not isinstance(record.get("timestamp"), str) or not DATETIME_RE.fullmatch(record["timestamp"]):
+            errors.append(f"{label}: timestamp must be UTC date-time")
+        if record.get("output_status") != "draft":
+            errors.append(f"{label}: output_status must be draft")
+        if unsafe_json_string(record.get("source_document_id")) or unsafe_json_string(record.get("resource_id")):
+            errors.append(f"{label}: unsafe control character in canonical identifier fields")
+
+    seen_span_ids: set[str] = set()
+    for path, record in source_spans:
+        label = relative(path)
+        missing = CANONICAL_SOURCE_SPAN_FIELDS - set(record)
+        if missing:
+            errors.append(f"{label}: source span missing canonical fields {sorted(missing)!r}")
+        span_id = record.get("span_id")
+        if not isinstance(span_id, str) or not SAFE_ID_RE.fullmatch(span_id):
+            errors.append(f"{label}: span_id must be a safe identifier")
+        elif span_id in seen_span_ids:
+            errors.append(f"{label}: duplicate span_id {span_id!r}")
+        else:
+            seen_span_ids.add(span_id)
+        if record.get("source_document_id") not in document_ids:
+            errors.append(f"{label}: source_document_id does not match a derived source document")
+        if record.get("resource_id") not in allowed_resource_ids:
+            errors.append(f"{label}: unsafe resource_id outside parse subset or validated all-public manifest")
+        if not isinstance(record.get("access_date"), str) or not DATE_RE.fullmatch(record["access_date"]):
+            errors.append(f"{label}: access_date must use YYYY-MM-DD")
+        if not isinstance(record.get("stable_locator"), str) or unsafe_json_string(record.get("stable_locator")):
+            errors.append(f"{label}: stable_locator must be a safe string")
+        quoted_span = record.get("quoted_span")
+        if unsafe_json_string(quoted_span):
+            errors.append(f"{label}: quoted_span must be a safe string")
+        checksum = record.get("excerpt_checksum")
+        if not isinstance(checksum, str) or not SHA256_RE.fullmatch(checksum):
+            errors.append(f"{label}: excerpt_checksum must be SHA-256")
+        elif isinstance(quoted_span, str) and checksum != sha256_text(quoted_span):
+            errors.append(f"{label}: excerpt_checksum does not match quoted_span")
+        if record.get("prompt_or_model_version") != DETERMINISTIC_MODEL_VERSION:
+            errors.append(f"{label}: prompt_or_model_version must mark the deterministic parser")
+        if record.get("reviewer") != "unreviewed":
+            errors.append(f"{label}: reviewer must be unreviewed")
+        if record.get("review_status") != "draft":
+            errors.append(f"{label}: review_status must be draft")
+        if not isinstance(record.get("timestamp"), str) or not DATETIME_RE.fullmatch(record["timestamp"]):
+            errors.append(f"{label}: timestamp must be UTC date-time")
+        if record.get("output_status") != "draft":
+            errors.append(f"{label}: output_status must be draft")
+
+    return errors
 
 
 def validate_real_corpus_counts() -> list[str]:
@@ -326,6 +477,7 @@ def main() -> int:
         real_corpus_errors.extend(validate_manifest_plan_rows())
         real_corpus_errors.extend(validate_committed_manifest_artifact())
         real_corpus_errors.extend(validate_raw_public_dir_ignored_and_untracked())
+        real_corpus_errors.extend(validate_derived_source_provenance())
         for message in real_corpus_errors:
             error(message)
 

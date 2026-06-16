@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gi002-colon-surveillance.pdf",
+  "document_id": "source-document.ahs-guru-gastrointestinal-gi002-colon-surveillance.if-hp-cancer-guide-gi002-colon-surveillance.162b67081bc8",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gi002-colon-surveillance.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-gastrointestinal-gi002-colon-surveillance",
+  "source_checksum_sha256": "162b67081bc87c27148c76b3df7851a078e78d0649c42d02cfc16a8b485ceff3",
+  "source_document_id": "source-document.ahs-guru-gastrointestinal-gi002-colon-surveillance.if-hp-cancer-guide-gi002-colon-surveillance.162b67081bc8",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Early Stage Colorectal Cancer Surveillance"
+}

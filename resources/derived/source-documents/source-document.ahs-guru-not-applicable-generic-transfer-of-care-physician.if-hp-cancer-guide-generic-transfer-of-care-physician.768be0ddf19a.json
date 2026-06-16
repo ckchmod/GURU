@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-generic-transfer-of-care-physician.pdf",
+  "document_id": "source-document.ahs-guru-not-applicable-generic-transfer-of-care-physician.if-hp-cancer-guide-generic-transfer-of-care-physician.768be0ddf19a",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-generic-transfer-of-care-physician.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:1"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-not-applicable-generic-transfer-of-care-physician",
+  "source_checksum_sha256": "768be0ddf19abeb0ed69f24a7037d21be80514654e3b9ee1d211ffbfebdf5027",
+  "source_document_id": "source-document.ahs-guru-not-applicable-generic-transfer-of-care-physician.if-hp-cancer-guide-generic-transfer-of-care-physician.768be0ddf19a",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Generic Physician Letter \u2013 Transfer of Care"
+}

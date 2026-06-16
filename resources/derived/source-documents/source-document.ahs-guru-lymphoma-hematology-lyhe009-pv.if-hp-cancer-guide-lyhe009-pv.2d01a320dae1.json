@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe009-pv.pdf",
+  "document_id": "source-document.ahs-guru-lymphoma-hematology-lyhe009-pv.if-hp-cancer-guide-lyhe009-pv.2d01a320dae1",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe009-pv.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-lymphoma-hematology-lyhe009-pv",
+  "source_checksum_sha256": "2d01a320dae11653a846b712f72fc564cff486e6c21487f1bc4dacb8a0660e35",
+  "source_document_id": "source-document.ahs-guru-lymphoma-hematology-lyhe009-pv.if-hp-cancer-guide-lyhe009-pv.2d01a320dae1",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Polycythemia Vera"
+}

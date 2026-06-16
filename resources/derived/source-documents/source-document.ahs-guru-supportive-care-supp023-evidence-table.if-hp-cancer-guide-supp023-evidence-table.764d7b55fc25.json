@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp023-evidence-table.pdf",
+  "document_id": "source-document.ahs-guru-supportive-care-supp023-evidence-table.if-hp-cancer-guide-supp023-evidence-table.764d7b55fc25",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp023-evidence-table.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:9"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-supportive-care-supp023-evidence-table",
+  "source_checksum_sha256": "764d7b55fc2581cb62752791ba20941b8a52aac0a8482a2ff07a739ec3f177dd",
+  "source_document_id": "source-document.ahs-guru-supportive-care-supp023-evidence-table.if-hp-cancer-guide-supp023-evidence-table.764d7b55fc25",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Evidence Table"
+}

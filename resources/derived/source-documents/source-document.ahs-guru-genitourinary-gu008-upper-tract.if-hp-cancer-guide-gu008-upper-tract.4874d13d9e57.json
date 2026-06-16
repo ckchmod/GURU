@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu008-upper-tract.pdf",
+  "document_id": "source-document.ahs-guru-genitourinary-gu008-upper-tract.if-hp-cancer-guide-gu008-upper-tract.4874d13d9e57",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu008-upper-tract.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-genitourinary-gu008-upper-tract",
+  "source_checksum_sha256": "4874d13d9e57c4769224ffaf4af76a94a0862bc49189451a1ca182c606f8d247",
+  "source_document_id": "source-document.ahs-guru-genitourinary-gu008-upper-tract.if-hp-cancer-guide-gu008-upper-tract.4874d13d9e57",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Upper Tract Urothelial Tumours"
+}

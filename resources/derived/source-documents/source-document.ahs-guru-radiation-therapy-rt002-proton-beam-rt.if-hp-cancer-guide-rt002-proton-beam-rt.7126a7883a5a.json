@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-rt002-proton-beam-RT.pdf",
+  "document_id": "source-document.ahs-guru-radiation-therapy-rt002-proton-beam-rt.if-hp-cancer-guide-rt002-proton-beam-rt.7126a7883a5a",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-rt002-proton-beam-RT.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:2"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-radiation-therapy-rt002-proton-beam-rt",
+  "source_checksum_sha256": "7126a7883a5a66d739f259c044850b07c34889694084b4ddee79e498e087cb8b",
+  "source_document_id": "source-document.ahs-guru-radiation-therapy-rt002-proton-beam-rt.if-hp-cancer-guide-rt002-proton-beam-rt.7126a7883a5a",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Proton Beam Radiation Therapy"
+}

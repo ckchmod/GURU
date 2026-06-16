@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lyhe011-mf.pdf",
+  "document_id": "source-document.ahs-guru-lymphoma-hematology-lyhe011-mf.if-hp-cancer-guide-lyhe011-mf.32bd1324478c",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lyhe011-mf.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-lymphoma-hematology-lyhe011-mf",
+  "source_checksum_sha256": "32bd1324478c56b8b85dfe01efec2e8b9ea8098159ebcaa3e84f84a1e9168e4e",
+  "source_document_id": "source-document.ahs-guru-lymphoma-hematology-lyhe011-mf.if-hp-cancer-guide-lyhe011-mf.32bd1324478c",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Myelofibrosis"
+}

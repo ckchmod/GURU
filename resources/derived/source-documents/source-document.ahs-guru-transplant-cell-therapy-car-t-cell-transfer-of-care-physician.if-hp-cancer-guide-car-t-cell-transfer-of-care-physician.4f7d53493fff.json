@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-car-t-cell-transfer-of-care-physician.pdf",
+  "document_id": "source-document.ahs-guru-transplant-cell-therapy-car-t-cell-transfer-of-care-physician.if-hp-cancer-guide-car-t-cell-transfer-of-care-physician.4f7d53493fff",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-car-t-cell-transfer-of-care-physician.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:1"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-transplant-cell-therapy-car-t-cell-transfer-of-care-physician",
+  "source_checksum_sha256": "4f7d53493fffe0619d9ae1d2232289f22073d3d8aaecc05f2e825caadfa2d646",
+  "source_document_id": "source-document.ahs-guru-transplant-cell-therapy-car-t-cell-transfer-of-care-physician.if-hp-cancer-guide-car-t-cell-transfer-of-care-physician.4f7d53493fff",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Sample Transfer of Care Physician Letter: CAR T-cell Therapy"
+}

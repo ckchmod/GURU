@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cu011-regional-node-dissection.pdf",
+  "document_id": "source-document.ahs-guru-cutaneous-cu011-regional-node-dissection.if-hp-cancer-guide-cu011-regional-node-dissection.c06324a2fcdf",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cu011-regional-node-dissection.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:1"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-cutaneous-cu011-regional-node-dissection",
+  "source_checksum_sha256": "c06324a2fcdf54482073773cedfbc642c2289d124e09ddc5b954c2df4d10d78a",
+  "source_document_id": "source-document.ahs-guru-cutaneous-cu011-regional-node-dissection.if-hp-cancer-guide-cu011-regional-node-dissection.c06324a2fcdf",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Sentinel Lymph Node Biopsy in Primary Cutaneous Melanoma"
+}

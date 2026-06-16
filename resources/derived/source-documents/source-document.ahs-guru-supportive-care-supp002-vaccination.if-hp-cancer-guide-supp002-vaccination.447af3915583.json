@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp002-vaccination.pdf",
+  "document_id": "source-document.ahs-guru-supportive-care-supp002-vaccination.if-hp-cancer-guide-supp002-vaccination.447af3915583",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp002-vaccination.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-supportive-care-supp002-vaccination",
+  "source_checksum_sha256": "447af3915583e01b360c847b0aba3b4ed0b2b442ecad470de88f207f7cf0c4b8",
+  "source_document_id": "source-document.ahs-guru-supportive-care-supp002-vaccination.if-hp-cancer-guide-supp002-vaccination.447af3915583",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Immunization Guidelines for Cancer Patients"
+}

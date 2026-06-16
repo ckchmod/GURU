@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-lu015-unresectable-stage3-nsclc.pdf",
+  "document_id": "source-document.ahs-guru-lung-lu015-unresectable-stage3-nsclc.if-hp-cancer-guide-lu015-unresectable-stage3-nsclc.baef812765c4",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-lu015-unresectable-stage3-nsclc.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-lung-lu015-unresectable-stage3-nsclc",
+  "source_checksum_sha256": "baef812765c4f863d21637a683b36e0536809f358d967a0233100cff67302f40",
+  "source_document_id": "source-document.ahs-guru-lung-lu015-unresectable-stage3-nsclc.if-hp-cancer-guide-lu015-unresectable-stage3-nsclc.baef812765c4",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Unresectable Stage III Non-Small Cell Lung Cancer"
+}

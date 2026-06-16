@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gu012-end-of-treatment-patient.pdf",
+  "document_id": "source-document.ahs-guru-genitourinary-gu012-end-of-treatment-patient.if-hp-cancer-guide-gu012-end-of-treatment-patient.6205393d1090",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gu012-end-of-treatment-patient.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-genitourinary-gu012-end-of-treatment-patient",
+  "source_checksum_sha256": "6205393d1090ec9f1807b46dc32321976e041c50e00571c3c952dd80f7eab415",
+  "source_document_id": "source-document.ahs-guru-genitourinary-gu012-end-of-treatment-patient.if-hp-cancer-guide-gu012-end-of-treatment-patient.6205393d1090",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Sample End of Treatment Patient Letter: EBRT Follow-up"
+}

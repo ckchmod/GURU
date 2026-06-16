@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gi010-biliary.pdf",
+  "document_id": "source-document.ahs-guru-gastrointestinal-gi010-biliary.if-hp-cancer-guide-gi010-biliary.fae1897a1fef",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gi010-biliary.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-gastrointestinal-gi010-biliary",
+  "source_checksum_sha256": "fae1897a1feffbdbf8426f072c9ae58f281f240c01ba5ac3d2f0122b7fa6c53c",
+  "source_document_id": "source-document.ahs-guru-gastrointestinal-gi010-biliary.if-hp-cancer-guide-gi010-biliary.fae1897a1fef",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Cholangiocarcinoma and Gallbladder Cancer"
+}

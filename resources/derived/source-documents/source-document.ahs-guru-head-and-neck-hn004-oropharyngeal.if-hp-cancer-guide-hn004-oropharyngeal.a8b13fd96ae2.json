@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-hn004-oropharyngeal.pdf",
+  "document_id": "source-document.ahs-guru-head-and-neck-hn004-oropharyngeal.if-hp-cancer-guide-hn004-oropharyngeal.a8b13fd96ae2",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-hn004-oropharyngeal.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-head-and-neck-hn004-oropharyngeal",
+  "source_checksum_sha256": "a8b13fd96ae2c09a01fb4abce8ca37edb924064827bdb9c42bd177280ce877e6",
+  "source_document_id": "source-document.ahs-guru-head-and-neck-hn004-oropharyngeal.if-hp-cancer-guide-hn004-oropharyngeal.a8b13fd96ae2",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Oropharyngeal Cancer Treatment"
+}

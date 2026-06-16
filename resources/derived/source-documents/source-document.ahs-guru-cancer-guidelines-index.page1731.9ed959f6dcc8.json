@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/cancer/page1731.aspx",
+  "document_id": "source-document.ahs-guru-cancer-guidelines-index.page1731.9ed959f6dcc8",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/page1731.aspx",
+  "output_status": "draft",
+  "parse_status": "parse_failed",
+  "parse_warnings": [
+    "unsupported_media_type:text/html"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-cancer-guidelines-index",
+  "source_checksum_sha256": "9ed959f6dcc82a7a8a20884d268b2e1f29901be401ef3edafa8acc76428adfbf",
+  "source_document_id": "source-document.ahs-guru-cancer-guidelines-index.page1731.9ed959f6dcc8",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Cancer Guidelines / Guideline Resource Unit public index"
+}

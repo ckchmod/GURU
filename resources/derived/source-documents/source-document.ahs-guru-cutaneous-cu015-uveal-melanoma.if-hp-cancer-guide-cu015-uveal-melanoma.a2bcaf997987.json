@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-cu015-uveal-melanoma.pdf",
+  "document_id": "source-document.ahs-guru-cutaneous-cu015-uveal-melanoma.if-hp-cancer-guide-cu015-uveal-melanoma.a2bcaf997987",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-cu015-uveal-melanoma.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:1"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-cutaneous-cu015-uveal-melanoma",
+  "source_checksum_sha256": "a2bcaf99798739b91f0f21ce696b06bfc4ea1fc867ca345551d5e9feff5fcd9b",
+  "source_document_id": "source-document.ahs-guru-cutaneous-cu015-uveal-melanoma.if-hp-cancer-guide-cu015-uveal-melanoma.a2bcaf997987",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Uveal Melanoma"
+}

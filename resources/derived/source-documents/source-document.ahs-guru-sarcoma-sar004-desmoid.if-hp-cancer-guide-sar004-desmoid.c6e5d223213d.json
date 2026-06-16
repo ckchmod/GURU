@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-sar004-desmoid.pdf",
+  "document_id": "source-document.ahs-guru-sarcoma-sar004-desmoid.if-hp-cancer-guide-sar004-desmoid.c6e5d223213d",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-sar004-desmoid.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-sarcoma-sar004-desmoid",
+  "source_checksum_sha256": "c6e5d223213df4269c467de37cd5a5d12acf3b36e9735d0ef295a288adb7e86a",
+  "source_document_id": "source-document.ahs-guru-sarcoma-sar004-desmoid.if-hp-cancer-guide-sar004-desmoid.c6e5d223213d",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Desmoid Tumours"
+}

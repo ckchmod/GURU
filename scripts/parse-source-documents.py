@@ -19,13 +19,26 @@ DEFAULT_SOURCE_DOCUMENT_DIR = ROOT / "resources" / "derived" / "source-documents
 DEFAULT_SOURCE_SPAN_DIR = ROOT / "resources" / "derived" / "source-spans"
 PARSER_VERSION = "source-document-parser-skeleton-v1"
 PDF_PARSER_VERSION = "source-document-pdf-parser-v1"
+DETERMINISTIC_MODEL_VERSION = "none-local-deterministic-parser"
 EMPTY_SHA256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-PARSE_STATUSES = {"parsed", "download_missing", "encrypted", "empty_text", "partial_text", "parse_failed"}
+PARSE_STATUSES = {"parsed", "partial_text", "download_missing", "checksum_mismatch", "encrypted", "empty_text", "parse_failed"}
 DEFAULT_RAW_DIR = ROOT / "resources" / "raw" / "ahs-guru-public"
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 DATETIME_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$")
 ID_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9_.:-]*$")
 SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
+UNSAFE_JSON_CONTROL_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+OFFICIAL_EMAIL_ALLOWLIST = {"guru@ahs.ca"}
+SPAN_SAFETY_RULES = [
+    ("mrn-label", re.compile(r"\b(?:mrn|medical record number)\b", re.IGNORECASE)),
+    ("dob-label", re.compile(r"\b(?:dob|date of birth)\b", re.IGNORECASE)),
+    ("patient-name-label", re.compile(r"\bpatient[_ -]?name\b", re.IGNORECASE)),
+    ("health-card-label", re.compile(r"\b(?:health card|healthcare card|hin|phn)\b", re.IGNORECASE)),
+    ("phone-label", re.compile(r"\b(?:patient[_ -]?)?(?:phone|telephone|mobile)(?:[_ -]?number)?\b", re.IGNORECASE)),
+    ("address-label", re.compile(r"\b(?:patient[_ -]?)?(?:street[_ -]?)?address\b", re.IGNORECASE)),
+    ("email-label", re.compile(r"\bpatient[_ -]?email\b", re.IGNORECASE)),
+    ("email-address", re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")),
+]
 
 
 def iso_now() -> str:
@@ -126,6 +139,7 @@ def build_source_document(
         "record_type": "source_document",
         "resource_id": resource_id,
         "document_id": document_id,
+        "source_document_id": document_id,
         "title": title,
         "access_date": access_date,
         "access_path": source_url or relative_to_root(input_path),
@@ -133,10 +147,21 @@ def build_source_document(
         "source_checksum_sha256": source_checksum,
         "parser_version": parser_version,
         "extraction_timestamp": extraction_timestamp,
+        "timestamp": extraction_timestamp,
         "status": "draft",
         "output_status": "draft",
         "parse_status": parse_status,
         "parse_warnings": parse_warnings or [],
+    }
+
+
+def deterministic_span_provenance(extraction_timestamp: str) -> dict[str, str]:
+    return {
+        "prompt_or_model_version": DETERMINISTIC_MODEL_VERSION,
+        "reviewer": "unreviewed",
+        "review_status": "draft",
+        "timestamp": extraction_timestamp,
+        "output_status": "draft",
     }
 
 
@@ -173,9 +198,8 @@ def build_source_spans(
                 "excerpt_checksum": checksum,
                 "checksum_sha256": checksum,
                 "extraction_timestamp": extraction_timestamp,
-                "timestamp": extraction_timestamp,
                 "status": "draft",
-                "output_status": "draft",
+                **deterministic_span_provenance(extraction_timestamp),
             }
         )
     if not spans:
@@ -218,7 +242,8 @@ def source_document_for_status(
 
 
 def bounded_excerpt(text: str, limit: int = 1200) -> str:
-    normalized = " ".join(text.split())
+    sanitized = UNSAFE_JSON_CONTROL_RE.sub(" ", text)
+    normalized = " ".join(sanitized.split())
     return normalized[:limit].strip()
 
 
@@ -228,6 +253,21 @@ def split_page_spans(page_text: str) -> list[str]:
         return blocks
     excerpt = bounded_excerpt(page_text)
     return [excerpt] if excerpt else []
+
+
+def unsafe_span_rule_names(text: str) -> list[str]:
+    rule_names: list[str] = []
+    for rule_name, regex in SPAN_SAFETY_RULES:
+        for match in regex.finditer(text):
+            if rule_name == "email-address" and match.group(0).lower() in OFFICIAL_EMAIL_ALLOWLIST:
+                continue
+            rule_names.append(rule_name)
+            break
+    return rule_names
+
+
+def is_safe_source_span_text(text: str) -> bool:
+    return not unsafe_span_rule_names(text)
 
 
 def extract_pdf_pages(input_path: Path) -> tuple[list[str | None], list[str]]:
@@ -306,10 +346,14 @@ def parse_pdf_source_document(
 
     document_id = make_document_id(resource_id, source_checksum, input_path)
     source_spans: list[dict[str, Any]] = []
+    safety_filtered_count = 0
     for page_number, page_text in enumerate(pages, start=1):
         if page_text is None:
             continue
         for span_index, excerpt in enumerate(split_page_spans(page_text), start=1):
+            if not is_safe_source_span_text(excerpt):
+                safety_filtered_count += 1
+                continue
             checksum = sha256_text(excerpt)
             stable_locator = f"page:{page_number};span:{span_index}"
             source_spans.append(
@@ -330,16 +374,21 @@ def parse_pdf_source_document(
                     "checksum_sha256": checksum,
                     "parser_version": PDF_PARSER_VERSION,
                     "extraction_timestamp": extraction_timestamp,
-                    "timestamp": extraction_timestamp,
                     "status": "draft",
-                    "output_status": "draft",
+                    **deterministic_span_provenance(extraction_timestamp),
                     "parse_warnings": [],
                 }
             )
 
-    if not source_spans:
+    parse_warnings = list(warnings)
+    if safety_filtered_count:
+        parse_warnings.append(f"safety_filtered_spans:{safety_filtered_count}")
+    if not source_spans and safety_filtered_count:
+        parse_status = "parse_failed"
+        parse_warnings.append("safety_filter_no_safe_spans")
+    elif not source_spans:
         parse_status = "empty_text"
-    elif warnings or any(page_text == "" for page_text in pages):
+    elif parse_warnings or any(page_text == "" for page_text in pages):
         parse_status = "partial_text"
     else:
         parse_status = "parsed"
@@ -354,7 +403,7 @@ def parse_pdf_source_document(
         source_url=source_url,
         parser_version=PDF_PARSER_VERSION,
         parse_status=parse_status,
-        parse_warnings=warnings,
+        parse_warnings=parse_warnings,
     )
     return {"source_document": source_document, "source_spans": source_spans}
 
@@ -402,6 +451,7 @@ def validate_source_document(record: Any) -> list[str]:
         "record_type",
         "resource_id",
         "document_id",
+        "source_document_id",
         "title",
         "access_date",
         "access_path",
@@ -409,6 +459,7 @@ def validate_source_document(record: Any) -> list[str]:
         "source_checksum_sha256",
         "parser_version",
         "extraction_timestamp",
+        "timestamp",
         "status",
         "output_status",
         "parse_status",
@@ -420,12 +471,20 @@ def validate_source_document(record: Any) -> list[str]:
         errors.append("source_document.record_type: expected source_document")
     if "document_id" in record and not ID_RE.fullmatch(str(record["document_id"])):
         errors.append("source_document.document_id: invalid identifier")
+    if "source_document_id" in record and not ID_RE.fullmatch(str(record["source_document_id"])):
+        errors.append("source_document.source_document_id: invalid identifier")
+    if record.get("source_document_id") != record.get("document_id"):
+        errors.append("source_document.source_document_id: does not match document_id")
     if "access_date" in record and not DATE_RE.fullmatch(str(record["access_date"])):
         errors.append("source_document.access_date: expected YYYY-MM-DD")
     if "source_checksum_sha256" in record and not SHA256_RE.fullmatch(str(record["source_checksum_sha256"])):
         errors.append("source_document.source_checksum_sha256: expected SHA-256")
     if "extraction_timestamp" in record and not DATETIME_RE.fullmatch(str(record["extraction_timestamp"])):
         errors.append("source_document.extraction_timestamp: expected UTC date-time")
+    if "timestamp" in record and not DATETIME_RE.fullmatch(str(record["timestamp"])):
+        errors.append("source_document.timestamp: expected UTC date-time")
+    if record.get("timestamp") != record.get("extraction_timestamp"):
+        errors.append("source_document.timestamp: does not match extraction_timestamp")
     if record.get("status") != "draft":
         errors.append("source_document.status: expected draft")
     if record.get("output_status") != "draft":
@@ -453,6 +512,9 @@ def validate_source_span(record: Any, document_id: str | None = None) -> list[st
         "quoted_span",
         "excerpt_checksum",
         "checksum_sha256",
+        "prompt_or_model_version",
+        "reviewer",
+        "review_status",
         "extraction_timestamp",
         "timestamp",
         "status",
@@ -478,8 +540,14 @@ def validate_source_span(record: Any, document_id: str | None = None) -> list[st
             errors.append(f"source_span.{field}: expected SHA-256")
     if record.get("excerpt_checksum") != record.get("checksum_sha256"):
         errors.append("source_span.checksum_sha256: does not match excerpt_checksum")
-    if "quoted_text" in record and record.get("excerpt_checksum") != sha256_text(str(record["quoted_text"])):
-        errors.append("source_span.excerpt_checksum: does not match quoted_text")
+    if "quoted_span" in record and record.get("excerpt_checksum") != sha256_text(str(record["quoted_span"])):
+        errors.append("source_span.excerpt_checksum: does not match quoted_span")
+    if record.get("prompt_or_model_version") != DETERMINISTIC_MODEL_VERSION:
+        errors.append("source_span.prompt_or_model_version: expected deterministic parser marker")
+    if record.get("reviewer") != "unreviewed":
+        errors.append("source_span.reviewer: expected unreviewed")
+    if record.get("review_status") != "draft":
+        errors.append("source_span.review_status: expected draft")
     for field in ("extraction_timestamp", "timestamp"):
         if field in record and not DATETIME_RE.fullmatch(str(record[field])):
             errors.append(f"source_span.{field}: expected UTC date-time")
@@ -573,10 +641,237 @@ def load_registry_rows(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
+def load_manifest_rows(path: Path) -> list[dict[str, Any]]:
+    payload = load_json(path)
+    if not isinstance(payload, dict) or not isinstance(payload.get("rows"), list):
+        raise SystemExit(f"ERROR {path}: expected manifest object with rows array")
+    rows: list[dict[str, Any]] = []
+    for index, row in enumerate(payload["rows"], start=1):
+        if not isinstance(row, dict):
+            raise SystemExit(f"ERROR {path}: rows[{index}] must be an object")
+        rows.append(row)
+    return rows
+
+
+def registry_rows_by_resource_id(registry_path: Path) -> dict[str, dict[str, Any]]:
+    rows_by_id: dict[str, dict[str, Any]] = {}
+    for row in load_registry_rows(registry_path):
+        resource_id = str(row.get("resource_id") or "")
+        if not resource_id:
+            raise SystemExit(f"ERROR {registry_path}: registry row missing resource_id")
+        if resource_id in rows_by_id:
+            raise SystemExit(f"ERROR {registry_path}: duplicate resource_id {resource_id!r}")
+        rows_by_id[resource_id] = row
+    return rows_by_id
+
+
+def validate_manifest_resource_id_coverage(
+    *,
+    manifest_path: Path,
+    corpus_path: Path,
+    manifest_rows: list[dict[str, Any]],
+    registry_rows: dict[str, dict[str, Any]],
+) -> int:
+    manifest_ids: list[str] = []
+    seen_manifest_ids: set[str] = set()
+    duplicate_manifest_ids: list[str] = []
+    for index, manifest_row in enumerate(manifest_rows, start=1):
+        resource_id = str(manifest_row.get("resource_id") or "")
+        if not resource_id:
+            print(f"ERROR {manifest_path}: rows[{index}].resource_id: expected non-empty string", file=sys.stderr)
+            return 1
+        manifest_ids.append(resource_id)
+        if resource_id in seen_manifest_ids and resource_id not in duplicate_manifest_ids:
+            duplicate_manifest_ids.append(resource_id)
+        seen_manifest_ids.add(resource_id)
+
+    if duplicate_manifest_ids:
+        print(f"ERROR {manifest_path}: duplicate manifest resource_id(s): {', '.join(repr(resource_id) for resource_id in duplicate_manifest_ids)}", file=sys.stderr)
+        return 1
+
+    manifest_id_set = set(manifest_ids)
+    corpus_id_set = set(registry_rows)
+    missing_manifest_ids = [resource_id for resource_id in registry_rows if resource_id not in manifest_id_set]
+    extra_manifest_ids = [resource_id for resource_id in manifest_ids if resource_id not in corpus_id_set]
+    if missing_manifest_ids:
+        print(f"ERROR {manifest_path}: missing manifest resource_id(s) from {corpus_path}: {', '.join(repr(resource_id) for resource_id in missing_manifest_ids)}", file=sys.stderr)
+        return 1
+    if extra_manifest_ids:
+        print(f"ERROR {manifest_path}: extra manifest resource_id(s) not present in {corpus_path}: {', '.join(repr(resource_id) for resource_id in extra_manifest_ids)}", file=sys.stderr)
+        return 1
+    return 0
+
+
 def write_parser_payload(payload: dict[str, Any], source_document_dir: Path, source_span_dir: Path) -> None:
     document_id = payload["source_document"]["document_id"]
     write_json(source_document_dir / f"{document_id}.json", payload["source_document"])
     write_json(source_span_dir / f"{document_id}.json", payload["source_spans"])
+
+
+def no_span_pdf_payload(
+    *,
+    resource_id: str,
+    title: str,
+    input_path: Path,
+    access_date: str,
+    source_url: str | None,
+    source_checksum: str,
+    extraction_timestamp: str,
+    parse_status: str,
+    parse_warnings: list[str],
+) -> dict[str, Any]:
+    source_document = source_document_for_status(
+        resource_id=resource_id,
+        title=title,
+        input_path=input_path,
+        access_date=access_date,
+        source_url=source_url,
+        source_checksum=source_checksum,
+        extraction_timestamp=extraction_timestamp,
+        parse_status=parse_status,
+        parse_warnings=parse_warnings,
+    )
+    return {"source_document": source_document, "source_spans": []}
+
+
+def manifest_pdf_payload(
+    *,
+    manifest_row: dict[str, Any],
+    registry_row: dict[str, Any],
+    extraction_timestamp: str,
+) -> dict[str, Any]:
+    resource_id = str(manifest_row.get("resource_id") or "")
+    title = str(registry_row.get("title") or resource_id)
+    access_date = str(registry_row.get("access_date") or "")
+    source_url = str(manifest_row.get("url") or registry_row.get("source_url_or_access_path") or "")
+    input_path = resolve_path(str(manifest_row.get("file_path") or f"resources/raw/ahs-guru-public/{resource_id}.pdf"))
+
+    if manifest_row.get("status") != "downloaded":
+        return no_span_pdf_payload(
+            resource_id=resource_id,
+            title=title,
+            input_path=input_path,
+            access_date=access_date,
+            source_url=source_url,
+            source_checksum=EMPTY_SHA256,
+            extraction_timestamp=extraction_timestamp,
+            parse_status="download_missing",
+            parse_warnings=[f"manifest_status:{manifest_row.get('status')}"] if manifest_row.get("status") else ["manifest_status_missing"],
+        )
+
+    media_type = str(manifest_row.get("media_type") or "")
+    if media_type != "application/pdf":
+        source_checksum = sha256_file(input_path) if input_path.exists() and input_path.is_file() else EMPTY_SHA256
+        return no_span_pdf_payload(
+            resource_id=resource_id,
+            title=title,
+            input_path=input_path,
+            access_date=access_date,
+            source_url=source_url,
+            source_checksum=source_checksum,
+            extraction_timestamp=extraction_timestamp,
+            parse_status="parse_failed",
+            parse_warnings=[f"unsupported_media_type:{media_type or 'missing'}"],
+        )
+
+    expected_size = manifest_row.get("byte_size")
+    expected_sha256 = manifest_row.get("sha256")
+    if not input_path.exists() or not input_path.is_file():
+        return no_span_pdf_payload(
+            resource_id=resource_id,
+            title=title,
+            input_path=input_path,
+            access_date=access_date,
+            source_url=source_url,
+            source_checksum=EMPTY_SHA256,
+            extraction_timestamp=extraction_timestamp,
+            parse_status="download_missing",
+            parse_warnings=["raw_pdf_missing"],
+        )
+    actual_size = input_path.stat().st_size
+    if not isinstance(expected_size, int) or expected_size <= 0 or actual_size <= 0 or actual_size != expected_size:
+        return no_span_pdf_payload(
+            resource_id=resource_id,
+            title=title,
+            input_path=input_path,
+            access_date=access_date,
+            source_url=source_url,
+            source_checksum=sha256_file(input_path),
+            extraction_timestamp=extraction_timestamp,
+            parse_status="download_missing",
+            parse_warnings=[f"byte_size_mismatch:expected={expected_size}:actual={actual_size}"],
+        )
+    actual_sha256 = sha256_file(input_path)
+    if not isinstance(expected_sha256, str) or not SHA256_RE.fullmatch(expected_sha256) or expected_sha256 != actual_sha256:
+        return no_span_pdf_payload(
+            resource_id=resource_id,
+            title=title,
+            input_path=input_path,
+            access_date=access_date,
+            source_url=source_url,
+            source_checksum=actual_sha256,
+            extraction_timestamp=extraction_timestamp,
+            parse_status="checksum_mismatch",
+            parse_warnings=[f"sha256_mismatch:expected={expected_sha256}:actual={actual_sha256}"],
+        )
+    return parse_pdf_source_document(
+        input_path=input_path,
+        resource_id=resource_id,
+        access_date=access_date,
+        title=title,
+        source_url=source_url,
+        extraction_timestamp=extraction_timestamp,
+    )
+
+
+def parse_manifest_corpus(
+    *,
+    manifest_path: Path,
+    corpus_path: Path,
+    source_document_dir: Path,
+    source_span_dir: Path,
+    extraction_timestamp: str,
+    output_path: Path | None,
+) -> int:
+    manifest_rows = load_manifest_rows(manifest_path)
+    registry_rows = registry_rows_by_resource_id(corpus_path)
+    coverage_result = validate_manifest_resource_id_coverage(
+        manifest_path=manifest_path,
+        corpus_path=corpus_path,
+        manifest_rows=manifest_rows,
+        registry_rows=registry_rows,
+    )
+    if coverage_result != 0:
+        return coverage_result
+    outputs: list[dict[str, Any]] = []
+    status_counts: dict[str, int] = {}
+    for manifest_row in manifest_rows:
+        resource_id = str(manifest_row.get("resource_id") or "")
+        registry_row = registry_rows[resource_id]
+        access_date = str(registry_row.get("access_date") or "")
+        if not DATE_RE.fullmatch(access_date):
+            print(f"ERROR {corpus_path}: resource_id {resource_id!r} has invalid access_date", file=sys.stderr)
+            return 1
+        payload = manifest_pdf_payload(
+            manifest_row=manifest_row,
+            registry_row=registry_row,
+            extraction_timestamp=extraction_timestamp,
+        )
+        errors = validate_parser_output(payload)
+        if errors:
+            for error in errors:
+                print(f"ERROR {resource_id}: {error}", file=sys.stderr)
+            return 1
+        write_parser_payload(payload, source_document_dir, source_span_dir)
+        outputs.append(payload)
+        parse_status = payload["source_document"]["parse_status"]
+        status_counts[parse_status] = status_counts.get(parse_status, 0) + 1
+        print(f"Parsed manifest resource: resource_id={resource_id} parse_status={parse_status} span_count={len(payload['source_spans'])}")
+    batch_payload = {"parser_version": PDF_PARSER_VERSION, "source_documents": [item["source_document"] for item in outputs], "source_spans": [span for item in outputs for span in item["source_spans"]]}
+    if output_path is not None:
+        write_json(output_path, batch_payload)
+    print(f"Parsed manifest statuses: resource_count={len(outputs)} status_counts={json.dumps(status_counts, sort_keys=True)}")
+    return 0
 
 
 def parse_registry_subset(
@@ -642,11 +937,15 @@ def main() -> int:
     parser.add_argument("--validate-output", help="Validate an existing combined parser output JSON file")
     parser.add_argument("--input-format", choices=["text", "pdf"], default="text", help="Input parser to use for a single input")
     parser.add_argument("--registry", help="Parse exactly the five-row PDF parse subset registry")
+    parser.add_argument("--manifest", help="Parse PDF rows from an acquisition manifest")
+    parser.add_argument("--corpus", help="Public corpus registry for --manifest metadata")
     parser.add_argument("--raw-dir", default=str(DEFAULT_RAW_DIR), help="Raw PDF directory for --registry")
     args = parser.parse_args()
 
     if args.validate_output:
         return validate_output_file(resolve_path(args.validate_output))
+    if args.registry and args.manifest:
+        parser.error("--registry and --manifest are separate modes and cannot be combined")
     if args.registry:
         return parse_registry_subset(
             registry_path=resolve_path(args.registry),
@@ -656,6 +955,19 @@ def main() -> int:
             extraction_timestamp=args.extraction_timestamp,
             output_path=resolve_path(args.output) if args.output else None,
         )
+    if args.manifest:
+        if not args.corpus:
+            parser.error("--corpus is required with --manifest")
+        return parse_manifest_corpus(
+            manifest_path=resolve_path(args.manifest),
+            corpus_path=resolve_path(args.corpus),
+            source_document_dir=resolve_path(args.source_document_dir),
+            source_span_dir=resolve_path(args.source_span_dir),
+            extraction_timestamp=args.extraction_timestamp,
+            output_path=resolve_path(args.output) if args.output else None,
+        )
+    if args.corpus:
+        parser.error("--corpus is only valid with --manifest")
     if not args.input:
         parser.error("input is required unless --validate-output is used")
     if not args.resource_id:

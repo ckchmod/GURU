@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-metastatic-colorectal-local-tips.pdf",
+  "document_id": "source-document.ahs-guru-gastrointestinal-metastatic-colorectal-local-tips.if-hp-cancer-guide-metastatic-colorectal-local-tips.06f32ee661db",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-metastatic-colorectal-local-tips.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:31"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-gastrointestinal-metastatic-colorectal-local-tips",
+  "source_checksum_sha256": "06f32ee661db22f3c71b0e46c55af5bd18c9ba262e1d1107e272df307210b919",
+  "source_document_id": "source-document.ahs-guru-gastrointestinal-metastatic-colorectal-local-tips.if-hp-cancer-guide-metastatic-colorectal-local-tips.06f32ee661db",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Local Tips for Providers"
+}

@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-endo007-pet.pdf",
+  "document_id": "source-document.ahs-guru-endocrine-neuroendocrine-endo007-pet.if-hp-cancer-guide-endo007-pet.9a0b42d77f85",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-endo007-pet.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-endocrine-neuroendocrine-endo007-pet",
+  "source_checksum_sha256": "9a0b42d77f85dcdd3e48665aa2e76be6b72a747724a1e3b1b67551ad73e6311a",
+  "source_document_id": "source-document.ahs-guru-endocrine-neuroendocrine-endo007-pet.if-hp-cancer-guide-endo007-pet.9a0b42d77f85",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Procedure Guideline for Positron Emission Tomography (PET) / Computed Tomography (CT) Tumor Imaging with 68Ga-DOTA-conjugated peptide"
+}

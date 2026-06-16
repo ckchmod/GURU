@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp010-peripheral-neuropathy-summary.pdf",
+  "document_id": "source-document.ahs-guru-supportive-care-supp010-peripheral-neuropathy-summary.if-hp-cancer-guide-supp010-peripheral-neuropathy-summary.ac422a68300f",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp010-peripheral-neuropathy-summary.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-supportive-care-supp010-peripheral-neuropathy-summary",
+  "source_checksum_sha256": "ac422a68300fb8729d188c36e19a082bb05233af7313cac6524071d3f7c29e90",
+  "source_document_id": "source-document.ahs-guru-supportive-care-supp010-peripheral-neuropathy-summary.if-hp-cancer-guide-supp010-peripheral-neuropathy-summary.ac422a68300f",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Chemotherapy Induced Peripheral Neuropathy"
+}

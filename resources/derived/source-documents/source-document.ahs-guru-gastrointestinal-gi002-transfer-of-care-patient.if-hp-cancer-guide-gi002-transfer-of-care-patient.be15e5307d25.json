@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-gi002-transfer-of-care-patient.pdf",
+  "document_id": "source-document.ahs-guru-gastrointestinal-gi002-transfer-of-care-patient.if-hp-cancer-guide-gi002-transfer-of-care-patient.be15e5307d25",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-gi002-transfer-of-care-patient.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-gastrointestinal-gi002-transfer-of-care-patient",
+  "source_checksum_sha256": "be15e5307d2508adf6f537d678cd99a432b3eaed0f7b671152e29fb658bb4efd",
+  "source_document_id": "source-document.ahs-guru-gastrointestinal-gi002-transfer-of-care-patient.if-hp-cancer-guide-gi002-transfer-of-care-patient.be15e5307d25",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Sample Patient Letter: Colorectal Cancer"
+}

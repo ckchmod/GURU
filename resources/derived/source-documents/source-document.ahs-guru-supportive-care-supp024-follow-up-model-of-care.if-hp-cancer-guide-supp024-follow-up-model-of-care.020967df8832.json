@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-supp024-follow-up-model-of-care.pdf",
+  "document_id": "source-document.ahs-guru-supportive-care-supp024-follow-up-model-of-care.if-hp-cancer-guide-supp024-follow-up-model-of-care.020967df8832",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-supp024-follow-up-model-of-care.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:1"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-supportive-care-supp024-follow-up-model-of-care",
+  "source_checksum_sha256": "020967df8832afdadddde400abae267e812a236c736d06202443118c20ed1484",
+  "source_document_id": "source-document.ahs-guru-supportive-care-supp024-follow-up-model-of-care.if-hp-cancer-guide-supp024-follow-up-model-of-care.020967df8832",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Follow-up Model of Care for Cancer Survivors"
+}

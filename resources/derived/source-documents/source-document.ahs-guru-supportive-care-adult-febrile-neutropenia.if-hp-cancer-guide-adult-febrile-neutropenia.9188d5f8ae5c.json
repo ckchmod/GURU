@@ -1,0 +1,18 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-adult-febrile-neutropenia.pdf",
+  "document_id": "source-document.ahs-guru-supportive-care-adult-febrile-neutropenia.if-hp-cancer-guide-adult-febrile-neutropenia.9188d5f8ae5c",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-adult-febrile-neutropenia.pdf",
+  "output_status": "draft",
+  "parse_status": "parsed",
+  "parse_warnings": [],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-supportive-care-adult-febrile-neutropenia",
+  "source_checksum_sha256": "9188d5f8ae5c540481c250b7e15a81f0a3b3a8e60e2a69629ff4b06654293f18",
+  "source_document_id": "source-document.ahs-guru-supportive-care-adult-febrile-neutropenia.if-hp-cancer-guide-adult-febrile-neutropenia.9188d5f8ae5c",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Febrile Neutropenia"
+}

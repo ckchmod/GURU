@@ -1,0 +1,20 @@
+{
+  "access_date": "2026-06-15",
+  "access_path": "https://www.albertahealthservices.ca/assets/info/hp/cancer/if-hp-cancer-guide-pedsbmt-manual.pdf",
+  "document_id": "source-document.ahs-guru-pediatric-pedsbmt-manual.if-hp-cancer-guide-pedsbmt-manual.b0c8d791ac36",
+  "extraction_timestamp": "2026-06-16T06:20:00Z",
+  "input_path": "resources/raw/ahs-guru-public/if-hp-cancer-guide-pedsbmt-manual.pdf",
+  "output_status": "draft",
+  "parse_status": "partial_text",
+  "parse_warnings": [
+    "safety_filtered_spans:8"
+  ],
+  "parser_version": "source-document-pdf-parser-v1",
+  "record_type": "source_document",
+  "resource_id": "ahs-guru-pediatric-pedsbmt-manual",
+  "source_checksum_sha256": "b0c8d791ac3639ce1d971cdcd4f24d9519fde770474e3e20346590fcdc68183b",
+  "source_document_id": "source-document.ahs-guru-pediatric-pedsbmt-manual.if-hp-cancer-guide-pedsbmt-manual.b0c8d791ac36",
+  "status": "draft",
+  "timestamp": "2026-06-16T06:20:00Z",
+  "title": "Pediatric Standard Practice Manual"
+}
