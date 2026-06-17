@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import importlib.util
 import json
+import os
 import re
 import subprocess
 import sys
@@ -93,6 +94,18 @@ PATIENT_ADVICE_RULES = [
     PatternRule("recommended-regimen", re.compile(r"\brecommended regimen\b", re.IGNORECASE)),
     PatternRule("patient-specific", re.compile(r"\bpatient-specific\b", re.IGNORECASE)),
 ]
+
+GENERATED_ANSWER_FORBIDDEN_KEYS = {
+    "answer_text",
+    "output_text",
+    "generated_answer",
+    "generatedAnswer",
+    "raw_model_output",
+}
+GENERATED_ANSWER_FORBIDDEN_TEXT = re.compile(
+    r"\b(?:chat transcript|assistant response|recommendation text|treatment advice|dosing|diagnosis)\b",
+    re.IGNORECASE,
+)
 
 BLOCKED_PLACEHOLDER_LABELS = re.compile(
     r"\b(?:Synthetic|Packet Alpha|Model Trace Stub|Evidence Hub|Mock|Demo|Placeholder)\b",
@@ -385,6 +398,59 @@ def validate_corpus_runtime_labels() -> list[str]:
     return errors
 
 
+def iter_payload_records(value: Any, path: str = "$") -> list[tuple[str, Any]]:
+    records = [(path, value)]
+    if isinstance(value, dict):
+        for key, item in value.items():
+            records.extend(iter_payload_records(item, f"{path}.{key}"))
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            records.extend(iter_payload_records(item, f"{path}[{index}]"))
+    return records
+
+
+def validate_no_generated_answer_drift() -> list[str]:
+    from fastapi.testclient import TestClient
+
+    from services.api.app.main import app
+
+    errors: list[str] = []
+    previous_debug_gate = os.environ.get("GURU_LOCAL_DEBUG_MODEL_OUTPUT")
+    os.environ["GURU_LOCAL_DEBUG_MODEL_OUTPUT"] = "0"
+    try:
+        client = TestClient(app)
+        responses = {
+            "corpus search": client.get("/knowledgebase/corpus/search", params={"q": "adjuvant radiotherapy"}),
+            "workbench trace": client.get("/knowledgebase/corpus/workbench/trace", params={"q": "adjuvant radiotherapy"}),
+            "explain selection metadata-only": client.post(
+                "/knowledgebase/corpus/workbench/explain-selection",
+                json={"resource_id": "ahs-guru-breast-br005-adjuvant-rt-invasive-breast"},
+            ),
+        }
+    finally:
+        if previous_debug_gate is None:
+            os.environ.pop("GURU_LOCAL_DEBUG_MODEL_OUTPUT", None)
+        else:
+            os.environ["GURU_LOCAL_DEBUG_MODEL_OUTPUT"] = previous_debug_gate
+
+    for label, response in responses.items():
+        if response.status_code != 200:
+            errors.append(f"{label} normal API response failed with HTTP {response.status_code}")
+            continue
+        for path, value in iter_payload_records(response.json()):
+            if isinstance(value, dict):
+                forbidden_keys = GENERATED_ANSWER_FORBIDDEN_KEYS & set(value)
+                if forbidden_keys:
+                    errors.append(f"{label} exposes forbidden generated-answer/raw-output keys at {path}: {sorted(forbidden_keys)!r}")
+                if value.get("raw_output_included") is True:
+                    errors.append(f"{label} reports raw_output_included=true at {path} while debug gates are off")
+                if value.get("external_api_used") is True:
+                    errors.append(f"{label} reports external_api_used=true at {path}")
+            elif isinstance(value, str) and GENERATED_ANSWER_FORBIDDEN_TEXT.search(value):
+                errors.append(f"{label} exposes forbidden answer/advice text at {path}")
+    return errors
+
+
 def load_downloader_module() -> Any:
     module_path = ROOT / "scripts" / "download-public-guidelines.py"
     spec = importlib.util.spec_from_file_location("download_public_guidelines", module_path)
@@ -503,6 +569,10 @@ def main() -> int:
     for message in docs_errors:
         error(message)
 
+    no_answer_errors = validate_no_generated_answer_drift()
+    for message in no_answer_errors:
+        error(message)
+
     real_corpus_errors: list[str] = []
     if not args.skip_real_corpus:
         real_corpus_errors.extend(validate_real_corpus_counts())
@@ -514,8 +584,8 @@ def main() -> int:
         for message in real_corpus_errors:
             error(message)
 
-    if findings or docs_errors or real_corpus_errors:
-        total = len(findings) + len(docs_errors) + len(real_corpus_errors)
+    if findings or docs_errors or no_answer_errors or real_corpus_errors:
+        total = len(findings) + len(docs_errors) + len(no_answer_errors) + len(real_corpus_errors)
         print(f"Safety boundary validation failed: {total} finding(s)", file=sys.stderr)
         return 1
 
