@@ -126,6 +126,7 @@ export type CorpusSearchResponse = {
 
 export type CorpusWorkbenchTraceSourceRecord = {
   source_span_id?: string;
+  selected_node_id?: string;
   resource_id?: string;
   source_document_id?: string;
   stable_locator?: string;
@@ -162,11 +163,19 @@ export type CorpusWorkbenchModelTrace = {
   trace_status: string;
   runner_status: string;
   policy_request_id: string;
+  gateway_outcome?: string;
+  gateway_reason_code?: string | null;
   citation_verifier_status: "pass" | "not_run";
   abstention_status: "abstained_no_answer_text" | "abstained_no_model_execution";
+  input_digest?: string;
+  output_digest?: string;
   source_span_ids: string[];
+  input_tokens?: number;
   output_tokens: number;
   gpu_seconds: number;
+  raw_output_included?: false;
+  input_summary?: Record<string, unknown>;
+  reason_code?: string;
 };
 
 export type CorpusWorkbenchTraceResponse = {
@@ -183,6 +192,35 @@ export type CorpusWorkbenchTraceResponse = {
   warnings: string[];
   abstained: boolean;
   abstention_status: "abstained_no_answer_text" | "abstained_no_model_execution";
+  evidence_ids: string[];
+  no_claim: true;
+  model_routing: CorpusModelRouting;
+};
+
+export type CorpusExplainSelectionRequest = {
+  source_span_id?: string;
+  selected_node_id?: string;
+  resource_id?: string;
+  command_metadata?: Record<string, unknown>;
+};
+
+export type CorpusExplainSelectionTraceResponse = {
+  command_label: "explain-selection";
+  selected_node_id: string;
+  selected_node_type: string;
+  resource_id?: string;
+  source_span_ids: string[];
+  context_digest: string;
+  output_digest: string;
+  gateway_decision: CorpusWorkbenchGatewayDecision;
+  model_class: string;
+  model_trace: CorpusWorkbenchModelTrace;
+  runner_status: string;
+  raw_output_included: false;
+  cost_ledger_entry: Record<string, unknown> | null;
+  source_ids_used: CorpusWorkbenchTraceSourceRecord[];
+  source_ids_rejected: CorpusWorkbenchTraceSourceRecord[];
+  warnings: string[];
   evidence_ids: string[];
   no_claim: true;
   model_routing: CorpusModelRouting;
@@ -446,6 +484,11 @@ type LoadCorpusWorkbenchTraceOptions = {
   signal?: AbortSignal;
 };
 
+type LoadCorpusExplainSelectionOptions = {
+  basePath?: string;
+  signal?: AbortSignal;
+};
+
 export class CorpusAtlasClientError extends Error {
   constructor(message: string, readonly status: "api_unavailable" | "http_error") {
     super(message);
@@ -479,6 +522,19 @@ export async function loadCorpusWorkbenchTrace(
   const basePath = options.basePath ?? CORPUS_API_BASE_PATH;
   const params = new URLSearchParams({ q: query });
   return fetchJson<CorpusWorkbenchTraceResponse>(`${basePath}/workbench/trace?${params.toString()}`, "corpus workbench trace", options.signal);
+}
+
+export async function loadCorpusExplainSelection(
+  request: CorpusExplainSelectionRequest,
+  options: LoadCorpusExplainSelectionOptions = {}
+): Promise<CorpusExplainSelectionTraceResponse> {
+  const basePath = options.basePath ?? CORPUS_API_BASE_PATH;
+  return postJson<CorpusExplainSelectionTraceResponse>(
+    `${basePath}/workbench/explain-selection`,
+    "corpus explain selection trace",
+    request,
+    options.signal
+  );
 }
 
 export async function loadCorpusInterpretability(
@@ -802,6 +858,30 @@ async function fetchJson<T>(url: string, label: string, signal?: AbortSignal): P
 
   try {
     response = await fetch(url, { signal });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw error;
+    }
+    throw new CorpusAtlasClientError(`Corpus API unavailable while loading ${label}.`, "api_unavailable");
+  }
+
+  if (!response.ok) {
+    throw new CorpusAtlasClientError(`Corpus API ${label} request failed with status ${response.status}.`, "http_error");
+  }
+
+  return response.json() as Promise<T>;
+}
+
+async function postJson<T>(url: string, label: string, body: unknown, signal?: AbortSignal): Promise<T> {
+  let response: Response;
+
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal
+    });
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
       throw error;

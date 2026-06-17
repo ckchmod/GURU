@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildCorpusAtlasModel,
+  loadCorpusExplainSelection,
   loadCorpusInterpretability,
   loadCorpusWorkbenchTrace,
   searchCorpus,
@@ -164,9 +165,33 @@ function sourceSpanSearchResult(): CorpusSearchSourceSpanResult {
 }
 
 function expectNoGeneratedAnswerFields(value: unknown) {
-  const serialized = JSON.stringify(value);
-  expect(serialized).not.toContain("generated_answer");
-  expect(serialized).not.toContain("generatedAnswer");
+  const forbiddenFields = new Set([
+    "answer_text",
+    "output_text",
+    "generated_answer",
+    "generatedAnswer",
+    "clinical_summary",
+    "suggested_treatment",
+    "dosing",
+    "diagnosis"
+  ]);
+  const visited = new Set<unknown>();
+  const visit = (candidate: unknown) => {
+    if (candidate === null || typeof candidate !== "object" || visited.has(candidate)) {
+      return;
+    }
+    visited.add(candidate);
+    if (Array.isArray(candidate)) {
+      candidate.forEach(visit);
+      return;
+    }
+    Object.entries(candidate as Record<string, unknown>).forEach(([key, nestedValue]) => {
+      expect(forbiddenFields.has(key)).toBe(false);
+      visit(nestedValue);
+    });
+  };
+
+  visit(value);
 }
 
 describe("corpus atlas client and adapters", () => {
@@ -489,6 +514,119 @@ describe("corpus atlas client and adapters", () => {
     expect(trace).toEqual(tracePayload);
     expect(trace.abstention_status).toBe("abstained_no_answer_text");
     expect(trace.no_claim).toBe(true);
+    expectNoGeneratedAnswerFields(trace);
+  });
+
+  it("posts Explain Selection identifiers and preserves trace-only metadata", async () => {
+    const tracePayload = {
+      command_label: "explain-selection",
+      selected_node_id: sourceSpanId,
+      selected_node_type: "SourceSpan",
+      resource_id: resourceId,
+      source_span_ids: [sourceSpanId],
+      context_digest: `sha256:${"1".repeat(64)}`,
+      output_digest: `sha256:${"2".repeat(64)}`,
+      gateway_decision: {
+        allowed: true,
+        outcome: "executed",
+        reason_code: null,
+        policy_request_id: "policy-request-explain-selection-local-test",
+        external_api_used: false
+      },
+      model_class: "local_open_weight_7b",
+      model_trace: {
+        model_class: "local_open_weight_7b",
+        provider_kind: "local",
+        trace_status: "abstained",
+        runner_status: "dry_run_completed",
+        policy_request_id: "policy-request-explain-selection-local-test",
+        gateway_outcome: "executed",
+        gateway_reason_code: null,
+        citation_verifier_status: "pass",
+        abstention_status: "abstained_no_answer_text",
+        input_digest: `sha256:${"3".repeat(64)}`,
+        output_digest: `sha256:${"2".repeat(64)}`,
+        source_span_ids: [sourceSpanId],
+        input_tokens: 1,
+        output_tokens: 0,
+        gpu_seconds: 0,
+        raw_output_included: false,
+        input_summary: {
+          source_span_contexts: [
+            {
+              source_span_id: sourceSpanId,
+              excerpt_digest: `sha256:${"4".repeat(64)}`,
+              source_document_id: "source-document.local-test",
+              stable_locator: "page:1;span:1"
+            }
+          ]
+        }
+      },
+      runner_status: "dry_run_completed",
+      raw_output_included: false,
+      cost_ledger_entry: { external_api_used: false, outcome: "executed" },
+      source_ids_used: [
+        {
+          source_span_id: sourceSpanId,
+          resource_id: resourceId,
+          source_document_id: "source-document.local-test",
+          stable_locator: "page:1;span:1",
+          status: "used",
+          evidence_id: sourceSpanId
+        }
+      ],
+      source_ids_rejected: [],
+      warnings: [],
+      evidence_ids: [sourceSpanId],
+      no_claim: true,
+      model_routing: "none-local-deterministic-search-only"
+    };
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify(tracePayload), { status: 200, headers: { "Content-Type": "application/json" } })
+    );
+
+    const trace = await loadCorpusExplainSelection({
+      source_span_id: sourceSpanId,
+      selected_node_id: `source-span.${sourceSpanId}`,
+      resource_id: resourceId,
+      command_metadata: { invocation_surface: "graph-workbench", selection_kind: "source-span" }
+    });
+
+    expect(globalThis.fetch).toHaveBeenCalledWith("/api/knowledgebase/corpus/workbench/explain-selection", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        source_span_id: sourceSpanId,
+        selected_node_id: `source-span.${sourceSpanId}`,
+        resource_id: resourceId,
+        command_metadata: { invocation_surface: "graph-workbench", selection_kind: "source-span" }
+      }),
+      signal: undefined
+    });
+    const [, requestInit] = vi.mocked(globalThis.fetch).mock.calls[0];
+    const requestBody = JSON.parse(String(requestInit?.body));
+    expect(requestBody).toEqual({
+      source_span_id: sourceSpanId,
+      selected_node_id: `source-span.${sourceSpanId}`,
+      resource_id: resourceId,
+      command_metadata: { invocation_surface: "graph-workbench", selection_kind: "source-span" }
+    });
+    expect(requestBody).not.toHaveProperty("prompt");
+    expect(requestBody).not.toHaveProperty("chat_prompt");
+    expect(requestBody).not.toHaveProperty("message");
+    expect(requestBody).not.toHaveProperty("messages");
+    expect(requestBody).not.toHaveProperty("query");
+    expect(requestBody).not.toHaveProperty("q");
+    expect(trace).toEqual(tracePayload);
+    expect(trace.command_label).toBe("explain-selection");
+    expect(trace.no_claim).toBe(true);
+    expect(trace.raw_output_included).toBe(false);
+    expect(trace.gateway_decision.external_api_used).toBe(false);
+    expect(trace.source_span_ids).toEqual([sourceSpanId]);
+    expect(trace.context_digest).toMatch(/^sha256:/);
+    expect(trace.output_digest).toMatch(/^sha256:/);
+    expect(trace.runner_status).toBe("dry_run_completed");
+    expect(trace.evidence_ids).toEqual([sourceSpanId]);
     expectNoGeneratedAnswerFields(trace);
   });
 });
