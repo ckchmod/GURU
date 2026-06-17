@@ -14,7 +14,7 @@
     "test:api": "pytest services/api",
     "test:baseline": "npm run test:api && npm run test:web && npm run lint:web && npm run typecheck:web && npm run test:e2e:web && npm run test:schemas && npm run test:safety && python scripts/validate-resource-registry.py",
     "smoke:api": "python -m services.api.scripts.smoke_health",
-    "test:schemas": "python scripts/validate-graph-schemas.py tests/fixtures/graph-provenance/synthetic-graph.json && ! python scripts/validate-graph-schemas.py tests/fixtures/graph-provenance/recommendation-missing-source-span.json && ! python scripts/validate-graph-schemas.py tests/fixtures/graph-provenance/model-trace-missing-provenance.json",
+    "test:schemas": "python scripts/validate-graph-schemas.py tests/fixtures/graph-provenance/synthetic-graph.json tests/fixtures/graph-provenance/typed-claim-eval-contract.json && for fixture in tests/fixtures/graph-provenance/recommendation-missing-source-span.json tests/fixtures/graph-provenance/recommendation-missing-source-span-field.json tests/fixtures/graph-provenance/evidence-item-missing-source-span-field.json tests/fixtures/graph-provenance/evidence-item-empty-source-span.json tests/fixtures/graph-provenance/funding-rule-missing-source-span-field.json tests/fixtures/graph-provenance/funding-rule-empty-source-span.json tests/fixtures/graph-provenance/model-trace-missing-provenance.json; do ! python scripts/validate-graph-schemas.py \"$fixture\" || exit 1; done",
     "test:safety": "python scripts/validate-safety-boundaries.py",
     "test:schemas:invalid": "python scripts/validate-graph-schemas.py tests/fixtures/graph-provenance/recommendation-missing-source-span.json"
   }

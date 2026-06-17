@@ -1,0 +1,23 @@
+{
+  "graph_version": "0.1.0",
+  "generated_at": "2026-06-16T13:00:00Z",
+  "nodes": [
+    {
+      "id": "evidence.bad.missing.001",
+      "node_type": "EvidenceItem",
+      "label": "Invalid evidence item missing source span field",
+      "status": "draft",
+      "created_at": "2026-06-16T13:00:00Z",
+      "updated_at": "2026-06-16T13:00:00Z",
+      "provenance": {
+        "source_span_ids": [],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-16T13:00:00Z"
+      },
+      "evidence_text": "Invalid synthetic evidence fixture missing claim source spans.",
+      "study_design": "expert_opinion"
+    }
+  ],
+  "edges": []
+}

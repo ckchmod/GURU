@@ -1,0 +1,25 @@
+{
+  "graph_version": "0.1.0",
+  "generated_at": "2026-06-16T13:00:00Z",
+  "nodes": [
+    {
+      "id": "rec.bad.missing.001",
+      "node_type": "Recommendation",
+      "label": "Invalid recommendation missing source span field",
+      "status": "draft",
+      "created_at": "2026-06-16T13:00:00Z",
+      "updated_at": "2026-06-16T13:00:00Z",
+      "provenance": {
+        "source_span_ids": [],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-16T13:00:00Z"
+      },
+      "recommendation_text": "Invalid synthetic recommendation fixture missing claim source spans.",
+      "strength": "consensus",
+      "certainty": "low",
+      "pico_ids": []
+    }
+  ],
+  "edges": []
+}

@@ -1,0 +1,109 @@
+{
+  "graph_version": "0.1.0",
+  "generated_at": "2026-06-16T13:00:00Z",
+  "nodes": [
+    {
+      "id": "source.eval.001",
+      "node_type": "SourceDocument",
+      "label": "Synthetic eval source document",
+      "status": "draft",
+      "created_at": "2026-06-16T13:00:00Z",
+      "updated_at": "2026-06-16T13:00:00Z",
+      "provenance": {
+        "source_span_ids": [],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-16T13:00:00Z"
+      },
+      "title": "Synthetic Graph-RAG Eval Contract Source",
+      "owner": "Synthetic Owner",
+      "access_date": "2026-06-16",
+      "access_path": "synthetic://graph-rag/eval-contract/source-001",
+      "license_status": "public_domain",
+      "checksum_sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+    },
+    {
+      "id": "span.eval.001",
+      "node_type": "SourceSpan",
+      "label": "Synthetic eval source span",
+      "status": "draft",
+      "created_at": "2026-06-16T13:00:00Z",
+      "updated_at": "2026-06-16T13:00:00Z",
+      "provenance": {
+        "source_span_ids": [],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-16T13:00:00Z"
+      },
+      "span_id": "span.eval.001",
+      "source_document_id": "source.eval.001",
+      "access_date": "2026-06-16",
+      "stable_locator": "Synthetic Eval Contract, Paragraph 1",
+      "quoted_span": "This synthetic span exists only to test graph context assembly and evaluation provenance.",
+      "excerpt_checksum": "6666666666666666666666666666666666666666666666666666666666666666",
+      "prompt_or_model_version": "fixture-v0",
+      "reviewer": "synthetic-reviewer",
+      "review_status": "unreviewed",
+      "timestamp": "2026-06-16T13:00:00Z",
+      "output_status": "draft"
+    },
+    {
+      "id": "rec.eval.001",
+      "node_type": "Recommendation",
+      "label": "Synthetic Graph-RAG recommendation contract",
+      "status": "draft",
+      "created_at": "2026-06-16T13:00:00Z",
+      "updated_at": "2026-06-16T13:00:00Z",
+      "provenance": {
+        "source_span_ids": ["span.eval.001"],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-16T13:00:00Z"
+      },
+      "recommendation_text": "Synthetic recommendation contract: Graph-RAG tests must attach source spans before treating text as a claim.",
+      "strength": "consensus",
+      "certainty": "low",
+      "source_span_ids": ["span.eval.001"],
+      "pico_ids": []
+    },
+    {
+      "id": "evidence.eval.001",
+      "node_type": "EvidenceItem",
+      "label": "Synthetic Graph-RAG evidence contract",
+      "status": "draft",
+      "created_at": "2026-06-16T13:00:00Z",
+      "updated_at": "2026-06-16T13:00:00Z",
+      "provenance": {
+        "source_span_ids": ["span.eval.001"],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-16T13:00:00Z"
+      },
+      "evidence_text": "Synthetic evidence contract for Graph-RAG context tests; no clinical finding is represented.",
+      "study_design": "expert_opinion",
+      "source_span_ids": ["span.eval.001"]
+    },
+    {
+      "id": "funding.eval.001",
+      "node_type": "FundingRule",
+      "label": "Synthetic Graph-RAG funding contract",
+      "status": "draft",
+      "created_at": "2026-06-16T13:00:00Z",
+      "updated_at": "2026-06-16T13:00:00Z",
+      "provenance": {
+        "source_span_ids": ["span.eval.001"],
+        "generated_by": "synthetic-fixture-agent",
+        "output_status": "draft",
+        "timestamp": "2026-06-16T13:00:00Z"
+      },
+      "rule_text": "Synthetic funding contract for Graph-RAG evaluation; no real reimbursement decision is represented.",
+      "source_span_ids": ["span.eval.001"]
+    }
+  ],
+  "edges": [
+    { "id": "edge.eval.001", "source": "source.eval.001", "target": "span.eval.001", "relation": "has_source_span" },
+    { "id": "edge.eval.002", "source": "rec.eval.001", "target": "evidence.eval.001", "relation": "has_evidence" },
+    { "id": "edge.eval.003", "source": "rec.eval.001", "target": "span.eval.001", "relation": "derived_from" },
+    { "id": "edge.eval.004", "source": "funding.eval.001", "target": "span.eval.001", "relation": "derived_from" }
+  ]
+}
