@@ -5,91 +5,54 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import {
   CorpusAtlasClientError,
+  loadCorpusConversationTurn,
   loadCorpusExplainSelection,
   loadCorpusAtlas,
   loadCorpusInterpretability,
   loadCorpusWorkbenchTrace,
   searchCorpus,
-  type CompactAtlasGraphFocusMetadata,
-  type CompactAtlasInterpretabilityModel,
   type CompactAtlasMetadataSearchResult,
-  type CompactAtlasReviewQueueItem,
-  type CompactAtlasResource,
-  type CompactAtlasSearchResponse,
   type CompactAtlasSourceSpanSearchResult,
-  type CompactAtlasSurveillanceStatus,
-  type CorpusExplainSelectionRequest,
-  type CorpusExplainSelectionTraceResponse,
-  type CorpusGraphNode,
-  type CorpusAtlasModel,
-  type CorpusSourceSpan,
-  type CorpusWorkbenchTraceResponse,
-  type CorpusWorkbenchTraceSourceRecord,
-  type CorpusWorkbenchTraceStep
+  type CorpusConversationCitation,
+  type CorpusSourceSpan
 } from "../../lib/corpusAtlas";
+import { AtlasSidebar } from "./AtlasSidebar";
+import { GraphSearchPanel } from "./GraphSearchPanel";
+import { GraphCanvasViewport, GraphWorkbenchLayout } from "./GraphWorkbenchLayout";
+import {
+  buildAtlasNodeViews,
+  buildClusterResourceCounts,
+  buildExplainSelectionRequest,
+  buildRetrievalGraphEvidenceState,
+  buildSearchOptions,
+  formatSourceSpanLabel,
+  isInteractiveKeyboardTarget,
+  selectVisibleResources,
+  sourceSpanFromSearchResult,
+  sourceSpanGraphNodeIds
+} from "./GraphWorkbenchHelpers";
+import { AtlasStateCard, NodeHoverCard } from "./GraphWorkbenchShared";
+import {
+  type AtlasLoadState,
+  type ExplainSelectionTraceState,
+  type InterpretabilityLoadState,
+  type LookupSelection,
+  type ReviewQueueLocalAction,
+  type RetrievalGraphEvidenceState,
+  type SearchOption,
+  type SearchSubmitEvent,
+  type SelectNodeOptions,
+  type WorkbenchPanelMode,
+  type WorkbenchSearchState,
+  type WorkbenchSearchSubmitEvent,
+  type WorkbenchTraceState
+} from "./GraphWorkbenchTypes";
+import { ProvenancePanel } from "./ProvenancePanel";
+import { RetrievalAssistantRail, type AnswerCitationFocusMode, type SelectedContextAssistantTurnState, type SelectedSourceContext } from "./RetrievalAssistantRail";
 import type { SigmaCorpusGraphProps } from "./SigmaCorpusGraph";
+import { SourceViewPanel } from "./SourceViewPanel";
 
-export type AtlasNodeKind = "resource" | "cluster" | "archive" | "sourceSpan";
-type AtlasNodeGroup = "resources" | "diseaseSites" | "documents" | "archive" | "provenance";
-type DetailPriority = "high" | "normal";
-type LoadStatus = "loading" | "success" | "empty" | "error";
-type SearchStatus = "idle" | "loading" | "success" | "error";
-
-type AtlasNodeData = {
-  title: string;
-  type: string;
-  kind: AtlasNodeKind;
-  group: AtlasNodeGroup;
-  priority: DetailPriority;
-  summary: string;
-  sourceLabel: string;
-  provenanceStatus: string;
-  reviewerStatus: string;
-  resourceId?: string;
-  aggregateCount: number;
-};
-
-export type AtlasNodeView = AtlasNodeData & {
-  id: string;
-};
-
-export type RetrievalGraphEvidenceState = {
-  query: string;
-  highlightedResourceIds: string[];
-  highlightedSourceSpanIds: string[];
-  representedSourceSpanNodeIds: string[];
-  selectedResourceId: string | null;
-  selectedSourceSpanId: string | null;
-  graphFocusNodeId: string | null;
-  graphResourceNodeId: string | null;
-  graphContextNodeIds: string[];
-  graphPathNodeIds: string[];
-  edgeTypes: string[];
-  focusMode: "metadata-query-hit" | "metadata-only-blocked" | "source-span-node" | "source-span-parent-fallback";
-  blockedReason: string | null;
-};
-
-type SearchOption = {
-  id: string;
-  label: string;
-  detail: string;
-};
-
-type SearchSubmitEvent = {
-  preventDefault: () => void;
-  stopPropagation: () => void;
-  currentTarget: HTMLFormElement;
-};
-
-type WorkbenchSearchSubmitEvent = {
-  preventDefault: () => void;
-  currentTarget: HTMLFormElement;
-};
-
-type ReviewQueueLocalAction = {
-  reviewTaskId: string;
-  label: string;
-};
+export type { AtlasNodeKind, AtlasNodeView, RetrievalGraphEvidenceState } from "./GraphWorkbenchTypes";
 
 const SigmaCorpusGraph = dynamic<SigmaCorpusGraphProps>(
   () => import("./SigmaCorpusGraph").then((module) => module.SigmaCorpusGraph),
@@ -98,52 +61,6 @@ const SigmaCorpusGraph = dynamic<SigmaCorpusGraphProps>(
     loading: () => <div className="sigma-atlas-loading" role="status">Loading Sigma corpus graph</div>
   }
 );
-
-type AtlasLoadState = {
-  status: LoadStatus;
-  model: CorpusAtlasModel | null;
-  message: string;
-};
-
-type WorkbenchSearchState = {
-  status: SearchStatus;
-  query: string;
-  response: CompactAtlasSearchResponse | null;
-  message: string;
-};
-
-type InterpretabilityLoadState = {
-  status: SearchStatus;
-  resourceId: string | null;
-  model: CompactAtlasInterpretabilityModel | null;
-  message: string;
-};
-
-type WorkbenchTraceState = {
-  status: SearchStatus;
-  query: string;
-  response: CorpusWorkbenchTraceResponse | null;
-  message: string;
-};
-
-type ExplainSelectionTraceState = {
-  status: SearchStatus;
-  request: CorpusExplainSelectionRequest | null;
-  response: CorpusExplainSelectionTraceResponse | null;
-  message: string;
-};
-
-type LookupSelection = {
-  kind: "metadata" | "source_span";
-  resourceId: string;
-  title: string;
-  focus: CompactAtlasGraphFocusMetadata;
-  sourceSpan?: CorpusSourceSpan;
-};
-
-type SelectNodeOptions = {
-  preserveLookupSelection?: boolean;
-};
 
 const initialLoadState: AtlasLoadState = {
   status: "loading",
@@ -176,25 +93,46 @@ const initialExplainSelectionTraceState: ExplainSelectionTraceState = {
   status: "idle",
   request: null,
   response: null,
-  message: "Select a graph resource or source-span result, then run Explain Selection for a trace-only command."
+  message: "Select a source-backed graph item, then run trace details for command metadata."
 };
 
-const modelDisabledNote = "Generated answers disabled until retrieval/source-span verification is implemented.";
-
-const groupLabels: Record<AtlasNodeGroup, string> = {
-  resources: "Resources",
-  diseaseSites: "Disease sites",
-  documents: "Document types",
-  archive: "Archive state",
-  provenance: "Source spans"
+const initialSelectedContextAssistantTurnState: SelectedContextAssistantTurnState = {
+  status: "idle",
+  request: null,
+  response: null,
+  message: "Select source-span context, then ask one source-backed question."
 };
 
-const nodeTypeLabels: Record<AtlasNodeKind, string> = {
-  resource: "Public resource",
-  cluster: "Metadata cluster",
-  archive: "Archive state",
-  sourceSpan: "Source span"
+type SelectedContextQuestionSubmitEvent = {
+  preventDefault: () => void;
+  currentTarget: HTMLFormElement;
 };
+
+type AnswerCitationGraphFocus = {
+  citation: CorpusConversationCitation;
+  mode: Exclude<AnswerCitationFocusMode, "none">;
+  resourceId: string | null;
+  selectedNodeId: string | null;
+};
+
+const minVaultWidth = 208;
+const maxVaultWidth = 360;
+const defaultVaultWidth = 248;
+const minProvenanceWidth = 240;
+const maxProvenanceWidth = 460;
+const defaultProvenanceWidth = 296;
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function eventCoordinate(value: number | undefined, fallback: number) {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function defaultAssistantRailHeight() {
+  return 260;
+}
 
 export function GuidelineGraphCanvas() {
   const [loadState, setLoadState] = useState<AtlasLoadState>(initialLoadState);
@@ -207,9 +145,22 @@ export function GuidelineGraphCanvas() {
   const [workbenchSearchState, setWorkbenchSearchState] = useState<WorkbenchSearchState>(initialWorkbenchSearchState);
   const [workbenchTraceState, setWorkbenchTraceState] = useState<WorkbenchTraceState>(initialWorkbenchTraceState);
   const [explainSelectionTraceState, setExplainSelectionTraceState] = useState<ExplainSelectionTraceState>(initialExplainSelectionTraceState);
+  const [selectedContextQuestion, setSelectedContextQuestion] = useState("");
+  const [selectedContextAssistantTurnState, setSelectedContextAssistantTurnState] = useState<SelectedContextAssistantTurnState>(initialSelectedContextAssistantTurnState);
+  const [answerCitationGraphFocus, setAnswerCitationGraphFocus] = useState<AnswerCitationGraphFocus | null>(null);
   const [interpretabilityState, setInterpretabilityState] = useState<InterpretabilityLoadState>(initialInterpretabilityState);
   const [lookupSelection, setLookupSelection] = useState<LookupSelection | null>(null);
   const [reviewQueueLocalAction, setReviewQueueLocalAction] = useState<ReviewQueueLocalAction | null>(null);
+  const [vaultPanelMode, setVaultPanelMode] = useState<WorkbenchPanelMode>("visible");
+  const [provenancePanelMode, setProvenancePanelMode] = useState<WorkbenchPanelMode>("visible");
+  const [reviewPanelMode, setReviewPanelMode] = useState<WorkbenchPanelMode>("visible");
+  const [assistantRailMode, setAssistantRailMode] = useState<WorkbenchPanelMode>("visible");
+  const [graphSearchVisible, setGraphSearchVisible] = useState(true);
+  const [sourceViewVisible, setSourceViewVisible] = useState(true);
+  const [vaultWidth, setVaultWidth] = useState(defaultVaultWidth);
+  const [provenanceWidth, setProvenanceWidth] = useState(defaultProvenanceWidth);
+  const [assistantRailHeight, setAssistantRailHeight] = useState(defaultAssistantRailHeight);
+  const [assistantRailHeightState, setAssistantRailHeightState] = useState<"default" | "resized">("default");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -339,10 +290,122 @@ export function GuidelineGraphCanvas() {
     () => buildRetrievalGraphEvidenceState(workbenchSearchState.response, lookupSelection, selectedResource, selectedNode, activeSpan, model),
     [activeSpan, lookupSelection, model, selectedNode, selectedResource, workbenchSearchState.response]
   );
+  const answerCitationGraphEvidence = useMemo(
+    () => buildAnswerCitationGraphEvidenceState(answerCitationGraphFocus, model),
+    [answerCitationGraphFocus, model]
+  );
+  const activeRetrievalGraphEvidence = answerCitationGraphEvidence ?? retrievalGraphEvidence;
   const explainSelectionRequest = useMemo(
     () => buildExplainSelectionRequest(retrievalGraphEvidence, selectedNode, selectedResource, activeSpan),
     [activeSpan, retrievalGraphEvidence, selectedNode, selectedResource]
   );
+  const selectedSourceContext = useMemo<SelectedSourceContext | null>(() => {
+    if (!activeSpan) {
+      return null;
+    }
+
+    const sourceSpanSelected = lookupSelection?.kind === "source_span"
+      || selectedNode?.kind === "sourceSpan"
+      || retrievalGraphEvidence?.selectedSourceSpanId === activeSpan.span_id;
+    if (!sourceSpanSelected) {
+      return null;
+    }
+
+    return {
+      sourceSpanId: activeSpan.span_id,
+      displayLabel: formatSourceSpanLabel(activeSpan.stable_locator),
+      stableLocator: activeSpan.stable_locator,
+      resourceId: activeSpan.resource_id,
+      selectedNodeId: retrievalGraphEvidence?.graphFocusNodeId ?? selectedNode?.id ?? `resource.${activeSpan.resource_id}`,
+      sourceDocumentId: activeSpan.document_id,
+      excerpt: activeSpan.excerpt
+    };
+  }, [activeSpan, lookupSelection?.kind, retrievalGraphEvidence?.graphFocusNodeId, retrievalGraphEvidence?.selectedSourceSpanId, selectedNode?.id, selectedNode?.kind]);
+
+  useEffect(() => {
+    setSelectedContextQuestion("");
+    setSelectedContextAssistantTurnState(initialSelectedContextAssistantTurnState);
+    setAnswerCitationGraphFocus(null);
+  }, [selectedSourceContext?.sourceSpanId]);
+
+  useEffect(() => {
+    setAnswerCitationGraphFocus(null);
+  }, [selectedContextAssistantTurnState.response]);
+
+  const clearUnpinnedAnswerCitationFocus = useCallback(() => {
+    setAnswerCitationGraphFocus((current) => current?.mode === "pinned" ? current : null);
+  }, []);
+
+  const closeTransientPanels = useCallback(() => {
+    setGraphSearchVisible(false);
+    setSourceViewVisible(false);
+    clearUnpinnedAnswerCitationFocus();
+  }, [clearUnpinnedAnswerCitationFocus]);
+
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") {
+        return;
+      }
+      setGraphSearchVisible(false);
+      setSourceViewVisible(false);
+      clearUnpinnedAnswerCitationFocus();
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [clearUnpinnedAnswerCitationFocus]);
+
+  const handleVaultResizeStart = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const startX = eventCoordinate(event.clientX, 0);
+    const startWidth = vaultWidth;
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const nextX = eventCoordinate(moveEvent.clientX, startX);
+      setVaultWidth(clamp(startWidth + nextX - startX, minVaultWidth, maxVaultWidth));
+    };
+    const handlePointerUp = () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+  }, [vaultWidth]);
+
+  const handleProvenanceResizeStart = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const startX = eventCoordinate(event.clientX, 0);
+    const startWidth = provenanceWidth;
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const nextX = eventCoordinate(moveEvent.clientX, startX);
+      setProvenanceWidth(clamp(startWidth - (nextX - startX), minProvenanceWidth, maxProvenanceWidth));
+    };
+    const handlePointerUp = () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+  }, [provenanceWidth]);
+
+  const handleAssistantRailResizeStart = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const startY = eventCoordinate(event.clientY, 0);
+    const startHeight = assistantRailHeight;
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const minHeight = Math.round(window.innerHeight * 0.2);
+      const maxHeight = Math.round(window.innerHeight * 0.55);
+      const nextY = eventCoordinate(moveEvent.clientY, startY);
+      setAssistantRailHeight(clamp(startHeight + startY - nextY, minHeight, maxHeight));
+      setAssistantRailHeightState("resized");
+    };
+    const handlePointerUp = () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+  }, [assistantRailHeight]);
 
   const selectNodeById = useCallback((nodeId: string, options: SelectNodeOptions = {}) => {
     if (!model) {
@@ -424,6 +487,73 @@ export function GuidelineGraphCanvas() {
     setWorkbenchQuery(event.target.value);
   }, []);
 
+  const handleSelectedContextQuestionChange = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setSelectedContextQuestion(event.target.value);
+  }, []);
+
+  const handleSelectedContextQuestionSubmit = useCallback(async (event: SelectedContextQuestionSubmitEvent) => {
+    event.preventDefault();
+    const question = selectedContextQuestion.trim();
+
+    if (!selectedSourceContext) {
+      setSelectedContextAssistantTurnState({
+        status: "idle",
+        request: null,
+        response: null,
+        message: "Select a source-backed graph item to ask."
+      });
+      return;
+    }
+
+    if (!question) {
+      setSelectedContextAssistantTurnState({
+        status: "idle",
+        request: null,
+        response: null,
+        message: "Enter one concise question for the selected source context."
+      });
+      return;
+    }
+
+    const request = {
+      question,
+      source_span_id: selectedSourceContext.sourceSpanId,
+      selected_node_id: selectedSourceContext.selectedNodeId,
+      resource_id: selectedSourceContext.resourceId
+    };
+
+    setSelectedContextAssistantTurnState({
+      status: "loading",
+      request,
+      response: null,
+      message: "Requesting a cited draft from selected source context only."
+    });
+
+    try {
+      const response = await loadCorpusConversationTurn(request);
+      setSelectedContextAssistantTurnState({
+        status: "success",
+        request,
+        response,
+        message: response.status === "draft"
+          ? "Cited draft returned for the selected source context."
+          : response.status === "unavailable"
+            ? "Generation is unavailable for the selected source context."
+            : "The selected-context assistant refused this question."
+      });
+    } catch (error: unknown) {
+      const message = error instanceof CorpusAtlasClientError
+        ? error.message
+        : "Corpus conversation turn API unavailable.";
+      setSelectedContextAssistantTurnState({
+        status: "error",
+        request,
+        response: null,
+        message
+      });
+    }
+  }, [selectedContextQuestion, selectedSourceContext]);
+
   const handleWorkbenchSearchSubmit = useCallback(async (event: WorkbenchSearchSubmitEvent) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -475,13 +605,39 @@ export function GuidelineGraphCanvas() {
     focusResourceById(result.resourceId, result.spanId, { preserveLookupSelection: true });
   }, [focusResourceById]);
 
+  const buildAnswerCitationFocus = useCallback((citation: CorpusConversationCitation, mode: Exclude<AnswerCitationFocusMode, "none">): AnswerCitationGraphFocus => ({
+    citation,
+    mode,
+    resourceId: selectedSourceContext?.resourceId ?? selectedResource?.id ?? null,
+    selectedNodeId: selectedSourceContext?.selectedNodeId ?? retrievalGraphEvidence?.graphFocusNodeId ?? selectedNode?.id ?? null
+  }), [retrievalGraphEvidence?.graphFocusNodeId, selectedNode?.id, selectedResource?.id, selectedSourceContext?.resourceId, selectedSourceContext?.selectedNodeId]);
+
+  const handleAnswerCitationHover = useCallback((citation: CorpusConversationCitation) => {
+    setAnswerCitationGraphFocus((current) => current?.mode === "pinned" ? current : buildAnswerCitationFocus(citation, "transient"));
+  }, [buildAnswerCitationFocus]);
+
+  const handleAnswerCitationFocus = useCallback((citation: CorpusConversationCitation) => {
+    setAnswerCitationGraphFocus((current) => current?.mode === "pinned" ? current : buildAnswerCitationFocus(citation, "transient"));
+  }, [buildAnswerCitationFocus]);
+
+  const handleAnswerCitationClick = useCallback((citation: CorpusConversationCitation) => {
+    const nextFocus = buildAnswerCitationFocus(citation, "pinned");
+    setAnswerCitationGraphFocus(nextFocus);
+    if (nextFocus.resourceId) {
+      focusResourceById(nextFocus.resourceId, citation.source_span_id, { preserveLookupSelection: true });
+    } else {
+      setActiveSpanId(citation.source_span_id);
+    }
+    setSourceViewVisible(true);
+  }, [buildAnswerCitationFocus, focusResourceById]);
+
   const handleExplainSelection = useCallback(async () => {
     if (!explainSelectionRequest) {
       setExplainSelectionTraceState({
         status: "idle",
         request: null,
         response: null,
-        message: "Explain Selection needs a selected graph resource, graph node, or source-span-backed result."
+        message: "Trace details need a selected graph resource, graph node, or source-span-backed result."
       });
       return;
     }
@@ -491,8 +647,8 @@ export function GuidelineGraphCanvas() {
       request: explainSelectionRequest,
       response: null,
       message: explainSelectionRequest.source_span_id
-        ? "Running Explain Selection for the selected source-span context."
-        : "Running Explain Selection as a blocked metadata-only trace."
+        ? "Running selected-source trace details for the source-span context."
+        : "Running trace details as a blocked metadata-only trace."
     });
 
     try {
@@ -501,12 +657,12 @@ export function GuidelineGraphCanvas() {
         status: "success",
         request: explainSelectionRequest,
         response,
-        message: "Explain Selection returned trace-only metadata from the local corpus API."
+        message: "Selected-source trace details returned metadata from the local corpus API."
       });
     } catch (error: unknown) {
       const message = error instanceof CorpusAtlasClientError
         ? error.message
-        : "Corpus Explain Selection API unavailable.";
+        : "Corpus selected-source trace API unavailable.";
       setExplainSelectionTraceState({ status: "error", request: explainSelectionRequest, response: null, message });
     }
   }, [explainSelectionRequest]);
@@ -532,54 +688,32 @@ export function GuidelineGraphCanvas() {
   }, [nodeViews, selectNodeById, selectedNodeId]);
 
   return (
-    <section className="graph-workbench" aria-label="Public corpus guideline graph atlas">
-      <div className="graph-layout">
-        <aside className="atlas-sidebar" aria-label="Atlas resource and topic navigation">
-          <div className="sidebar-section">
-            <p className="eyebrow">Vault</p>
-            <h2>Evidence Atlas</h2>
-            <span className="sidebar-caption">API-backed public corpus graph</span>
-          </div>
-          <nav className="atlas-nav" aria-label="Knowledgebase resources">
-            {visibleResources.map((resource) => (
-              <button
-                key={resource.id}
-                type="button"
-                data-active={resource.id === selectedResource?.id}
-                aria-pressed={resource.id === selectedResource?.id}
-                onClick={() => handleResourceSelect(resource.id)}
-              >
-                <span>{resource.title}</span>
-                <small>{resource.diseaseSite} · {resource.documentType}</small>
-                <StatusChip tone={offlineStatusTone(surveillanceStatusByResourceId.get(resource.id)?.reviewStatus)}>
-                  {offlineResourceStatusLabel(surveillanceStatusByResourceId.get(resource.id)?.changeState)}
-                </StatusChip>
-              </button>
-            ))}
-          </nav>
-          <nav className="atlas-topic-nav" aria-label="Knowledgebase topics">
-            <p className="eyebrow">Topics</p>
-            {diseaseSiteClusters.slice(0, 10).map((cluster) => (
-              <button
-                key={cluster.id}
-                type="button"
-                data-active={cluster.id === selectedNodeId}
-                aria-pressed={cluster.id === selectedNodeId}
-                onClick={() => selectNodeById(cluster.id)}
-              >
-                {cluster.title} · {cluster.aggregateCount}
-              </button>
-            ))}
-          </nav>
-          <LayerStatusPanel model={model} loadState={loadState} surveillanceStatus={surveillanceStatus} />
-        </aside>
-
-        <div
-          className="graph-canvas"
-          data-testid="guideline-graph-canvas"
-          tabIndex={0}
-          role="application"
-          aria-label="Interactive public corpus guideline graph with live pan, zoom, selection, and local node positioning."
+    <GraphWorkbenchLayout
+      atlasSidebar={(
+        <AtlasSidebar
+          visibleResources={visibleResources}
+          selectedResource={selectedResource}
+          selectedNodeId={selectedNodeId}
+          diseaseSiteClusters={diseaseSiteClusters}
+          model={model}
+          loadState={loadState}
+          surveillanceStatus={surveillanceStatus}
+          surveillanceStatusByResourceId={surveillanceStatusByResourceId}
+          onResourceSelect={handleResourceSelect}
+          onNodeSelect={selectNodeById}
+          onCollapse={() => setVaultPanelMode("collapsed")}
+          onDismiss={() => setVaultPanelMode("dismissed")}
+        />
+      )}
+      graphCanvas={(
+        <GraphCanvasViewport
+          title={selectedNode?.title ?? selectedResource?.title ?? "Public corpus atlas"}
+          subtitle={selectedNode?.type ?? "public corpus graph"}
+          graphSearchVisible={graphSearchVisible}
+          sourceViewVisible={sourceViewVisible}
+          onShowGraphSearch={() => setGraphSearchVisible(true)}
+          onShowSourceView={() => setSourceViewVisible(true)}
+          onCloseTransientPanels={closeTransientPanels}
           onKeyDown={handleKeyboardSelect}
         >
           {loadState.status === "success" && model ? (
@@ -588,7 +722,7 @@ export function GuidelineGraphCanvas() {
               nodeViews={nodeViews}
               selectedNodeId={selectedNodeId}
               hoveredNodeId={hoveredNodeId}
-              retrievalEvidence={retrievalGraphEvidence}
+              retrievalEvidence={activeRetrievalGraphEvidence}
               onNodeSelectAction={selectNodeById}
               onNodeHoverAction={setHoveredNodeId}
               onZoomLevelChangeAction={() => undefined}
@@ -597,32 +731,34 @@ export function GuidelineGraphCanvas() {
             <AtlasStateCard loadState={loadState} />
           )}
 
-          <div className="graph-view-title" aria-label="Graph view status">
-            <span>Graph view</span>
-            <strong>{selectedNode?.title ?? selectedResource?.title ?? "Public corpus atlas"}</strong>
-            <small>{selectedNode?.type ?? "public corpus graph"}</small>
-          </div>
-
-          <GraphSettingsPanel
-            model={model}
-            searchQuery={searchQuery}
-            searchResults={searchResults}
-            selectedNode={selectedNode}
-            onSearchChange={handleSearchChange}
-            onSearchSubmit={handleSearchSubmit}
-            onResultSelect={selectSearchResult}
-          />
-          <SourceDocumentPanel
-            selectedResource={selectedResource}
-            sourceSpans={sourceSpans}
-            activeSpanId={activeSpan?.span_id ?? null}
-            coverageCount={model?.sourceSpanCoverage.count ?? 0}
-            coverageNote={model?.sourceSpanCoverage.note ?? "Source-span coverage is unavailable until the API responds."}
-            onSpanSelect={setActiveSpanId}
-          />
+          {graphSearchVisible ? (
+            <GraphSearchPanel
+              model={model}
+              searchQuery={searchQuery}
+              searchResults={searchResults}
+              selectedNode={selectedNode}
+              onSearchChange={handleSearchChange}
+              onSearchSubmit={handleSearchSubmit}
+              onResultSelect={selectSearchResult}
+              onClose={() => setGraphSearchVisible(false)}
+            />
+          ) : null}
+          {sourceViewVisible ? (
+            <SourceViewPanel
+              selectedResource={selectedResource}
+              sourceSpans={sourceSpansForSourceView(sourceSpans, activeSpan)}
+              activeSpanId={activeSpan?.span_id ?? null}
+              coverageCount={model?.sourceSpanCoverage.count ?? 0}
+              coverageNote={model?.sourceSpanCoverage.note ?? "Source-span coverage is unavailable until the API responds."}
+              onSpanSelect={setActiveSpanId}
+              onClose={() => setSourceViewVisible(false)}
+            />
+          ) : null}
           {hoveredNode ? <NodeHoverCard node={hoveredNode} /> : null}
-        </div>
-        <ProvenanceInspector
+        </GraphCanvasViewport>
+      )}
+      provenancePanel={(
+        <ProvenancePanel
           node={selectedNode}
           resource={selectedResource}
           activeSpan={activeSpan}
@@ -634,1598 +770,104 @@ export function GuidelineGraphCanvas() {
           reviewQueueLocalAction={reviewQueueLocalAction}
           onReviewQueueFocus={handleReviewQueueFocus}
           onReviewQueueLocalAction={handleReviewQueueLocalAction}
+          reviewPanelMode={reviewPanelMode}
+          onCollapse={() => setProvenancePanelMode("collapsed")}
+          onDismiss={() => setProvenancePanelMode("dismissed")}
+          onCollapseReview={() => setReviewPanelMode("collapsed")}
+          onDismissReview={() => setReviewPanelMode("dismissed")}
+          onShowReview={() => setReviewPanelMode("visible")}
         />
-      </div>
-      <BottomCorpusSearchWorkbench
-        model={model}
-        loadState={loadState}
-        selectedResource={selectedResource}
-        lookupSelection={lookupSelection}
-        retrievalEvidence={retrievalGraphEvidence}
-        query={workbenchQuery}
-        searchState={workbenchSearchState}
-        traceState={workbenchTraceState}
-        explainSelectionState={explainSelectionTraceState}
-        canExplainSelection={Boolean(explainSelectionRequest)}
-        explainSelectionHasSourceSpan={Boolean(explainSelectionRequest?.source_span_id)}
-        onQueryChange={handleWorkbenchQueryChange}
-        onSearchSubmit={handleWorkbenchSearchSubmit}
-        onMetadataSelect={handleMetadataSearchSelect}
-        onSourceSpanSelect={handleSourceSpanSearchSelect}
-        onExplainSelection={handleExplainSelection}
-      />
-    </section>
-  );
-}
-
-function LayerStatusPanel({
-  model,
-  loadState,
-  surveillanceStatus
-}: {
-  model: CorpusAtlasModel | null;
-  loadState: AtlasLoadState;
-  surveillanceStatus: CompactAtlasSurveillanceStatus | null;
-}) {
-  return (
-    <div className="sidebar-section sidebar-section--compact">
-      <p className="eyebrow">Layer status</p>
-      <ul className="layer-list">
-        <li><span className="layer-dot layer-dot--cyan" /> {model?.metadata.resource_node_count ?? 0} public resources</li>
-        <li><span className="layer-dot layer-dot--gold" /> {model?.sourceSpanCoverage.count ?? 0} parsed-subset coverage</li>
-        <li><span className="layer-dot layer-dot--violet" /> {offlineSurveillanceSummary(surveillanceStatus)}</li>
-        <li><span className="layer-dot layer-dot--green" /> {loadStateLabel(loadState.status)}</li>
-        <li><span className="layer-dot layer-dot--red" /> No clinical advice</li>
-      </ul>
-    </div>
-  );
-}
-
-function StatusChip({ tone, children }: { tone: string; children: React.ReactNode }) {
-  return <small className="status-chip" data-tone={tone}>{children}</small>;
-}
-
-function AtlasStateCard({ loadState }: { loadState: AtlasLoadState }) {
-  const title = loadState.status === "loading"
-    ? "Loading corpus atlas"
-    : loadState.status === "empty"
-      ? "No atlas resources returned"
-      : "Corpus API unavailable";
-
-  return (
-    <aside className="atlas-state-card" role="status" aria-live="polite">
-      <p className="eyebrow">Atlas state</p>
-      <h2>{title}</h2>
-      <p>{loadState.message}</p>
-      <p>No patient data and no clinical advice are shown in this state. {modelDisabledNote}</p>
-    </aside>
-  );
-}
-
-function GraphSettingsPanel({
-  model,
-  searchQuery,
-  searchResults,
-  selectedNode,
-  onSearchChange,
-  onSearchSubmit,
-  onResultSelect
-}: {
-  model: CorpusAtlasModel | null;
-  searchQuery: string;
-  searchResults: SearchOption[];
-  selectedNode: AtlasNodeView | null;
-  onSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  onSearchSubmit: (event: SearchSubmitEvent) => void;
-  onResultSelect: (result: SearchOption) => void;
-}) {
-  return (
-    <aside className="graph-settings" aria-label="Graph search and corpus context">
-      <div className="graph-settings__header">
-        <span className="eyebrow">Graph search</span>
-        <strong>{selectedNode?.type ?? "Corpus graph"}</strong>
-      </div>
-      <form className="filter-field" role="search" onSubmit={onSearchSubmit}>
-        <label htmlFor="atlas-node-search">Search resources and clusters...</label>
-        <input
-          id="atlas-node-search"
-          name="atlas-node-search"
-          type="search"
-          value={searchQuery}
-          onChange={onSearchChange}
-          aria-label="Search public corpus graph nodes"
-          placeholder="Adjuvant Radiotherapy for Invasive Breast Cancer"
-        />
-      </form>
-      {searchResults.length > 0 ? (
-        <div className="sigma-search-results" aria-label="Graph search results">
-          {searchResults.map((result) => (
-            <button key={result.id} type="button" onClick={() => onResultSelect(result)}>
-              <span>{result.label}</span>
-              <small>{result.detail}</small>
-            </button>
-          ))}
-        </div>
-      ) : null}
-      <section className="graph-context-card" aria-label="Graph corpus context">
-        <div><span>Resources</span><strong>{model?.metadata.resource_node_count ?? 0}</strong></div>
-        <div><span>Source-span nodes</span><strong>{model?.metadata.source_span_node_count ?? 0}</strong></div>
-        <div><span>Selected</span><strong>{selectedNode ? `${selectedNode.title} · ${selectedNode.aggregateCount || 1}` : "none"}</strong></div>
-      </section>
-    </aside>
-  );
-}
-
-function SourceDocumentPanel({
-  selectedResource,
-  sourceSpans,
-  activeSpanId,
-  coverageCount,
-  coverageNote,
-  onSpanSelect
-}: {
-  selectedResource: CompactAtlasResource | null;
-  sourceSpans: CorpusSourceSpan[];
-  activeSpanId: string | null;
-  coverageCount: number;
-  coverageNote: string;
-  onSpanSelect: (spanId: string) => void;
-}) {
-  return (
-    <aside className="source-document-panel" data-testid="source-document-panel" aria-label="Source document and span browser">
-      <div className="source-document-panel__header">
-        <span className="eyebrow">Source view</span>
-        <strong>{coverageCount} parsed-subset coverage</strong>
-      </div>
-      <dl className="source-document-meta">
-        <div>
-          <dt>Selected resource</dt>
-          <dd>{selectedResource?.title ?? "Resource pending"}</dd>
-        </div>
-        <div>
-          <dt>Coverage note</dt>
-          <dd>{coverageNote}</dd>
-        </div>
-      </dl>
-      <div className="source-span-list" role="list" aria-label="Source spans for selected resource">
-        {sourceSpans.length > 0 ? sourceSpans.map((span) => (
-          <button
-            key={span.span_id}
-            type="button"
-            data-active={span.span_id === activeSpanId}
-            onClick={() => onSpanSelect(span.span_id)}
-          >
-            <span>{span.stable_locator}</span>
-            <strong>{span.span_id}</strong>
-          </button>
-        )) : (
-          <p className="source-span-empty">No source-span records are available for this resource in the current parsed subset output.</p>
-        )}
-      </div>
-    </aside>
-  );
-}
-
-function BottomCorpusSearchWorkbench({
-  model,
-  loadState,
-  selectedResource,
-  lookupSelection,
-  retrievalEvidence,
-  query,
-  searchState,
-  traceState,
-  explainSelectionState,
-  canExplainSelection,
-  explainSelectionHasSourceSpan,
-  onQueryChange,
-  onSearchSubmit,
-  onMetadataSelect,
-  onSourceSpanSelect,
-  onExplainSelection
-}: {
-  model: CorpusAtlasModel | null;
-  loadState: AtlasLoadState;
-  selectedResource: CompactAtlasResource | null;
-  lookupSelection: LookupSelection | null;
-  retrievalEvidence: RetrievalGraphEvidenceState | null;
-  query: string;
-  searchState: WorkbenchSearchState;
-  traceState: WorkbenchTraceState;
-  explainSelectionState: ExplainSelectionTraceState;
-  canExplainSelection: boolean;
-  explainSelectionHasSourceSpan: boolean;
-  onQueryChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  onSearchSubmit: (event: WorkbenchSearchSubmitEvent) => void;
-  onMetadataSelect: (result: CompactAtlasMetadataSearchResult) => void;
-  onSourceSpanSelect: (result: CompactAtlasSourceSpanSearchResult) => void;
-  onExplainSelection: () => void;
-}) {
-  const response = searchState.response;
-  const resultsRef = React.useRef<HTMLElement | null>(null);
-  const hasSearched = searchState.status === "success" && Boolean(response);
-  const hasResults = Boolean(response && (response.metadataResults.length > 0 || response.sourceSpanResults.length > 0));
-  const resourceById = useMemo(() => new Map((model?.resources ?? []).map((resource) => [resource.id, resource])), [model]);
-  const terminalState = useMemo(
-    () => buildRetrievalTerminalState(response, lookupSelection, selectedResource, retrievalEvidence),
-    [lookupSelection, response, retrievalEvidence, selectedResource]
-  );
-
-  useEffect(() => {
-    if (resultsRef.current) {
-      resultsRef.current.scrollTop = 0;
-    }
-  }, [response?.query, searchState.status]);
-
-  return (
-    <footer className="atlas-workbench" aria-label="Corpus search workbench" data-testid="atlas-workbench">
-      <section className="atlas-workbench__search" aria-label="Graph-RAG retrieval query">
-        <div className="atlas-workbench__header">
-          <span className="eyebrow">Retrieval query</span>
-          <strong>{model ? `${model.metadata.resource_node_count} public resources` : loadState.status}</strong>
-          <small>{model ? `${model.sourceSpanCoverage.count} parsed-subset coverage` : "source spans pending"}</small>
-        </div>
-        <form className="atlas-workbench__form" role="search" aria-label="Search public corpus metadata and source spans" onSubmit={onSearchSubmit}>
-          <label htmlFor="atlas-workbench-search">Retrieval query</label>
-          <input
-            id="atlas-workbench-search"
-            name="atlas-workbench-search"
-            type="search"
-            value={query}
-            onChange={onQueryChange}
-            aria-label="Search public corpus metadata and parsed source spans"
-            placeholder="Search title, resource ID, disease site, or parsed excerpt"
-          />
-          <button type="submit" disabled={searchState.status === "loading" || loadState.status === "loading"}>Search</button>
-        </form>
-        <dl className="atlas-workbench__context" aria-label="Selected resource context">
-          <div><dt>Selected resource context</dt><dd className="wrap-anywhere">{selectedResource?.id ?? "resource pending"}</dd></div>
-          <div><dt>Graph focus / trust path</dt><dd>Search hits focus the graph, trust drawer, and source-span provenance when available.</dd></div>
-        </dl>
-        <div className="atlas-workbench__form atlas-workbench__explain-action" aria-label="Explain Selection action">
-          <button
-            type="button"
-            onClick={onExplainSelection}
-            disabled={!canExplainSelection || explainSelectionState.status === "loading"}
-          >
-            Explain Selection
-          </button>
-          <span>
-            {canExplainSelection
-              ? explainSelectionHasSourceSpan
-                ? "Source-span-backed selection: trace will include digests, gateway outcome, verifier status, warnings, and evidence IDs."
-                : "Selection lacks validated source-span context; Explain Selection will render a blocked trace only."
-              : "Select a resource, graph node, or source-span result before running Explain Selection."}
-          </span>
-        </div>
-        <p className="atlas-workbench__model-note">{modelDisabledNote} Local-only deterministic mode; no external large-language-model routing or approved guidance text is shown.</p>
-      </section>
-
-      <section ref={resultsRef} className="atlas-workbench__results" aria-live="polite" aria-label="Graph-RAG retrieval trace">
-        <div className="atlas-workbench__status">
-          <span>Graph-RAG retrieval trace</span>
-          <span>{searchState.status === "loading" ? "searching local API" : searchState.message}</span>
-          {response ? <span>{response.modelRouting}</span> : null}
-        </div>
-
-        {searchState.status === "error" ? <p className="atlas-workbench__empty">{searchState.message}</p> : null}
-        {hasSearched && !hasResults ? <p className="atlas-workbench__empty">No results for this query in public metadata or parsed source spans.</p> : null}
-
-        {response ? (
-          <div className="atlas-workbench__result-grid">
-            <ResultGroup title="Metadata retrieval" count={response.metadataResultCount}>
-              {response.metadataResults.length > 0 ? response.metadataResults.map((result) => (
-                <button key={result.resourceId} type="button" className="atlas-workbench-result" onClick={() => onMetadataSelect(result)}>
-                  <span>{result.title}</span>
-                  <small>{result.locator} · {result.archiveStatus} · {result.parseStatus}</small>
-                  <small>Graph focus action: resource neighborhood + trust drawer</small>
-                  <small>{relationshipSummaryFromFocus(result)}</small>
-                  <small>{coverageStatusCopy(result.coverageStatus)}</small>
-                  <small className="wrap-anywhere">{result.resourceId}</small>
-                </button>
-              )) : <p className="atlas-workbench__empty">No metadata results for this query.</p>}
-            </ResultGroup>
-
-            <ResultGroup title="Source-span retrieval" count={response.sourceSpanResultCount}>
-              {response.sourceSpanResults.length > 0 ? response.sourceSpanResults.map((result) => {
-                const resource = resourceById.get(result.resourceId);
-                return (
-                  <button key={result.spanId} type="button" className="atlas-workbench-result atlas-workbench-result--span" onClick={() => onSourceSpanSelect(result)}>
-                    <span>{resource?.title ?? result.resourceId}</span>
-                    <small>Stable/page locator: {result.stableLocator}</small>
-                    <small>{result.documentId} · source status: {result.outputStatus} · parse status: {resource?.parseStatus ?? "unknown"}</small>
-                    <small>Checksum/status: {result.checksumSha256 ?? "checksum not returned"} · {result.coverageStatus}</small>
-                    <small>Graph focus action: parent resource + source-span provenance drawer</small>
-                    <small>{relationshipSummaryFromFocus(result)}</small>
-                    {result.excerpt ? <q>{result.excerpt}</q> : <small>No excerpt returned by deterministic source-span search.</small>}
-                  </button>
-                );
-              }) : (
-                <p className="atlas-workbench__empty">
-                  No source-span records returned for this query. Search is scoped to the five-document parsed subset when derived source-span records exist.
-                </p>
-              )}
-            </ResultGroup>
-          </div>
-        ) : null}
-
-        {terminalState ? <RetrievalTerminalState state={terminalState} onMetadataSelect={onMetadataSelect} onSourceSpanSelect={onSourceSpanSelect} /> : null}
-        <WorkbenchTraceTerminal traceState={traceState} retrievalEvidence={retrievalEvidence} />
-        <ExplainSelectionTraceTerminal explainState={explainSelectionState} />
-      </section>
-    </footer>
-  );
-}
-
-type RetrievalTraceEntry = "metadata result" | "source-span result" | "blocked source-span context" | "provenance drawer focus";
-
-type RetrievalTerminalStateModel = {
-  query: string;
-  highlightedResources: string[];
-  highlightedSourceSpans: string[];
-  selectedGraphPath: string;
-  selectedSourceSpanContext: string;
-  blockedEvidenceLabel: string | null;
-  traceEntries: RetrievalTraceEntry[];
-  graphFocusNodeId: string;
-  graphResourceNodeId: string;
-  graphContextNodeIds: string[];
-  graphPathNodeIds: string[];
-  edgeTypes: string[];
-  focusMode: RetrievalGraphEvidenceState["focusMode"];
-  retrievalMode: string;
-  metadataResults: CompactAtlasMetadataSearchResult[];
-  sourceSpanResults: CompactAtlasSourceSpanSearchResult[];
-  selectedMetadataResult: CompactAtlasMetadataSearchResult | null;
-  selectedSourceSpanResult: CompactAtlasSourceSpanSearchResult | null;
-  rawTrace: unknown;
-};
-
-function RetrievalTerminalState({
-  state,
-  onMetadataSelect,
-  onSourceSpanSelect
-}: {
-  state: RetrievalTerminalStateModel;
-  onMetadataSelect: (result: CompactAtlasMetadataSearchResult) => void;
-  onSourceSpanSelect: (result: CompactAtlasSourceSpanSearchResult) => void;
-}) {
-  return (
-    <section
-      className="atlas-workbench-group"
-      aria-label="Retrieval terminal state"
-      data-testid="retrieval-terminal-state"
-      data-selected-query={state.query}
-      data-highlighted-resource-ids={state.highlightedResources.join(",") || "none"}
-      data-highlighted-source-span-ids={state.highlightedSourceSpans.join(",") || "none"}
-      data-graph-focus-node-id={state.graphFocusNodeId}
-      data-graph-resource-node-id={state.graphResourceNodeId}
-      data-graph-context-node-ids={state.graphContextNodeIds.join(",") || "none"}
-      data-graph-path-node-ids={state.graphPathNodeIds.join(",") || "none"}
-      data-focus-mode={state.focusMode}
-      data-blocked-reason={state.blockedEvidenceLabel ?? "none"}
-    >
-      <div className="atlas-workbench-group__title">
-        <strong>Retrieval terminal state</strong>
-        <span>{state.retrievalMode}</span>
-      </div>
-      <dl className="atlas-workbench__context" aria-label="Retrieval terminal state fields">
-        <div><dt>Query text</dt><dd className="wrap-anywhere">{state.query || "no submitted query"}</dd></div>
-        <div><dt>Highlighted resources</dt><dd className="wrap-anywhere">Highlighted resources: {state.highlightedResources.join(", ") || "none"}</dd></div>
-        <div><dt>Highlighted source spans</dt><dd className="wrap-anywhere">Highlighted source spans: {state.highlightedSourceSpans.join(", ") || "none"}</dd></div>
-        <div><dt>Selected source-span context</dt><dd>{state.selectedSourceSpanContext}</dd></div>
-        <div><dt>Selected graph path</dt><dd className="wrap-anywhere">Selected graph path: {state.selectedGraphPath}</dd></div>
-        <div><dt>Graph focus IDs</dt><dd className="wrap-anywhere">Focus: {state.graphFocusNodeId}; resource: {state.graphResourceNodeId}; context: {state.graphContextNodeIds.join(", ") || "none"}</dd></div>
-        <div><dt>Graph path IDs</dt><dd className="wrap-anywhere">Path/context IDs: {state.graphPathNodeIds.join(", ") || "none"}</dd></div>
-        <div><dt>Graph focus mode</dt><dd>{state.focusMode}</dd></div>
-        <div><dt>Graph edge context</dt><dd className="wrap-anywhere">{state.edgeTypes.map(edgeTypeLabel).join(" / ") || "resource neighborhood pending"}</dd></div>
-        <div><dt>Retrieval trace</dt><dd>Retrieval trace entries: {state.traceEntries.join(", ")}</dd></div>
-        {state.blockedEvidenceLabel ? <div><dt>Blocked reason</dt><dd>{state.blockedEvidenceLabel}</dd></div> : null}
-      </dl>
-      <p className="atlas-workbench__model-note">Generated answers are disabled. The graph shows visual evidence for retrieval only; draft metadata and source spans are not approved guidance.</p>
-      <TerminalResultGroup title="Retrieved resources" count={state.metadataResults.length}>
-        {state.metadataResults.length > 0 ? state.metadataResults.map((result, index) => (
-          <TerminalMetadataResult key={result.resourceId} result={result} index={index} selected={result.resourceId === state.selectedMetadataResult?.resourceId} onSelect={onMetadataSelect} />
-        )) : <p className="atlas-workbench__empty">No metadata resources in the current terminal trace.</p>}
-      </TerminalResultGroup>
-      <TerminalResultGroup title="Source-span hits" count={state.sourceSpanResults.length}>
-        {state.sourceSpanResults.length > 0 ? state.sourceSpanResults.map((result, index) => (
-          <TerminalSourceSpanResult key={result.spanId} result={result} index={index} selected={result.spanId === state.selectedSourceSpanResult?.spanId} onSelect={onSourceSpanSelect} />
-        )) : <p className="atlas-workbench__empty">Metadata-only / blocked: no source span returned, so no claim text is rendered.</p>}
-      </TerminalResultGroup>
-      <details className="inspector-details">
-        <summary>Raw local deterministic retrieval trace JSON</summary>
-        <pre className="wrap-anywhere">{JSON.stringify(state.rawTrace, null, 2)}</pre>
-      </details>
-    </section>
-  );
-}
-
-function WorkbenchTraceTerminal({
-  traceState,
-  retrievalEvidence
-}: {
-  traceState: WorkbenchTraceState;
-  retrievalEvidence: RetrievalGraphEvidenceState | null;
-}) {
-  const trace = traceState.response;
-  const warningLabels = trace?.warnings ?? [];
-
-  return (
-    <section
-      className="atlas-workbench-group atlas-workbench-trace"
-      aria-label="Task 6 workbench trace"
-      data-testid="workbench-trace-terminal"
-      data-trace-status={traceState.status}
-      data-command-label={trace?.command_label ?? "none"}
-      data-gateway-outcome={trace?.gateway_decision.outcome ?? "none"}
-      data-abstention-status={trace?.abstention_status ?? "none"}
-      data-citation-verifier-status={trace?.citation_verifier_status ?? "none"}
-    >
-      <div className="atlas-workbench-group__title">
-        <strong>Workbench trace</strong>
-        <span>{traceState.status === "loading" ? "loading" : trace?.model_routing ?? traceState.message}</span>
-      </div>
-      {traceState.status === "error" ? <p className="atlas-workbench__empty">{traceState.message}</p> : null}
-      {trace ? (
-        <>
-          <dl className="atlas-workbench__context" aria-label="Workbench trace fields">
-            <div><dt>Command label</dt><dd className="wrap-anywhere">{trace.command_label}</dd></div>
-            <div><dt>Trace query</dt><dd className="wrap-anywhere">{trace.query || "empty query"}</dd></div>
-            <div><dt>Graph focus</dt><dd className="wrap-anywhere">Focus: {retrievalEvidence?.graphFocusNodeId ?? "no focus"}; resource: {retrievalEvidence?.graphResourceNodeId ?? "no resource"}; mode: {retrievalEvidence?.focusMode ?? "no retrieval focus"}</dd></div>
-            <div><dt>Graph context</dt><dd className="wrap-anywhere">{retrievalEvidence?.graphPathNodeIds.join(", ") || "no graph path nodes"}</dd></div>
-            <div><dt>Source spans used/rejected</dt><dd>{trace.source_ids_used.length} used / {trace.source_ids_rejected.length} rejected</dd></div>
-            <div><dt>Gateway decision</dt><dd className="wrap-anywhere">{trace.gateway_decision.outcome}; allowed: {String(trace.gateway_decision.allowed)}; reason: {trace.gateway_decision.reason_code ?? "none"}; external API used: {String(trace.gateway_decision.external_api_used)}</dd></div>
-            <div><dt>Model class</dt><dd>{trace.model_class}</dd></div>
-            <div><dt>Citation verifier status</dt><dd>{trace.citation_verifier_status}</dd></div>
-            <div><dt>Warnings</dt><dd>{warningLabels.length > 0 ? warningLabels.join(", ") : "none"}</dd></div>
-            <div><dt>Abstention</dt><dd>{String(trace.abstained)} · {trace.abstention_status} · no claim: {String(trace.no_claim)}</dd></div>
-          </dl>
-          <p className="atlas-workbench__model-note">Generated answers disabled until retrieval/source-span verification is implemented.</p>
-          <div className="atlas-workbench-trace__grid">
-            <TraceRecordGroup title="Retrieval steps" count={trace.retrieval_steps.length}>
-              {trace.retrieval_steps.map((step) => <TraceStepRow key={step.step_id} step={step} />)}
-            </TraceRecordGroup>
-            <TraceRecordGroup title="Source spans used" count={trace.source_ids_used.length}>
-              {trace.source_ids_used.length > 0 ? trace.source_ids_used.map((record) => <TraceSourceRecordRow key={record.evidence_id} record={record} />) : <p className="atlas-workbench__empty">No source spans used by this trace.</p>}
-            </TraceRecordGroup>
-            <TraceRecordGroup title="Source spans rejected" count={trace.source_ids_rejected.length}>
-              {trace.source_ids_rejected.length > 0 ? trace.source_ids_rejected.map((record) => <TraceSourceRecordRow key={record.evidence_id} record={record} />) : <p className="atlas-workbench__empty">No rejected source-span or metadata context records.</p>}
-            </TraceRecordGroup>
-          </div>
-          <details className="inspector-details">
-            <summary>Raw local workbench trace JSON</summary>
-            <pre className="wrap-anywhere">{JSON.stringify(trace, null, 2)}</pre>
-          </details>
-        </>
-      ) : traceState.status === "idle" ? (
-        <p className="atlas-workbench__empty">{traceState.message}</p>
-      ) : null}
-    </section>
-  );
-}
-
-function ExplainSelectionTraceTerminal({ explainState }: { explainState: ExplainSelectionTraceState }) {
-  const trace = explainState.response;
-  const warnings = trace?.warnings ?? [];
-  const sourceSpanIds = trace?.source_span_ids ?? (explainState.request?.source_span_id ? [explainState.request.source_span_id] : []);
-
-  return (
-    <section
-      className="atlas-workbench-group atlas-workbench-trace"
-      aria-label="Explain Selection trace"
-      data-testid="explain-selection-trace-terminal"
-      data-trace-status={explainState.status}
-      data-command-label={trace?.command_label ?? "none"}
-      data-gateway-outcome={trace?.gateway_decision.outcome ?? "none"}
-      data-runner-status={trace?.runner_status ?? "none"}
-      data-citation-verifier-status={trace?.model_trace.citation_verifier_status ?? "none"}
-      data-raw-output-included={trace ? String(trace.raw_output_included) : "none"}
-    >
-      <div className="atlas-workbench-group__title">
-        <strong>Explain Selection trace</strong>
-        <span>{explainState.status === "loading" ? "loading" : trace?.model_routing ?? explainState.message}</span>
-      </div>
-      {explainState.status === "error" ? <p className="atlas-workbench__empty">{explainState.message}</p> : null}
-      {trace ? (
-        <>
-          <dl className="atlas-workbench__context" aria-label="Explain Selection trace fields">
-            <div><dt>Command label</dt><dd className="wrap-anywhere">{trace.command_label}</dd></div>
-            <div><dt>Selected node ID</dt><dd className="wrap-anywhere">{trace.selected_node_id}</dd></div>
-            <div><dt>Selected node type</dt><dd>{trace.selected_node_type}</dd></div>
-            <div><dt>Selected resource ID</dt><dd className="wrap-anywhere">{trace.resource_id ?? explainState.request?.resource_id ?? "resource not returned"}</dd></div>
-            <div><dt>Selected source-span IDs</dt><dd className="wrap-anywhere">{sourceSpanIds.join(", ") || "none"}</dd></div>
-            <div><dt>Context digest</dt><dd className="wrap-anywhere">{trace.context_digest}</dd></div>
-            <div><dt>Output digest</dt><dd className="wrap-anywhere">{trace.output_digest}</dd></div>
-            <div><dt>Runner status</dt><dd>{trace.runner_status}</dd></div>
-            <div><dt>Gateway outcome</dt><dd className="wrap-anywhere">{trace.gateway_decision.outcome}; allowed: {String(trace.gateway_decision.allowed)}; reason: {trace.gateway_decision.reason_code ?? "none"}; external API used: {String(trace.gateway_decision.external_api_used)}</dd></div>
-            <div><dt>Citation/verifier status</dt><dd>{trace.model_trace.citation_verifier_status}</dd></div>
-            <div><dt>raw_output_included</dt><dd>{String(trace.raw_output_included)}</dd></div>
-            <div><dt>Warnings</dt><dd>{warnings.length > 0 ? warnings.join(", ") : "none"}</dd></div>
-            <div><dt>Evidence IDs</dt><dd className="wrap-anywhere">{trace.evidence_ids.join(", ") || "none"}</dd></div>
-            <div><dt>Safety boundary</dt><dd>no claim: {String(trace.no_claim)}; generated-answer-disabled trace only</dd></div>
-          </dl>
-          <p className="atlas-workbench__model-note">Generated answers disabled until retrieval/source-span verification is implemented. Explain Selection shows command trace metadata only; raw model text is withheld by default.</p>
-          <div className="atlas-workbench-trace__grid">
-            <TraceRecordGroup title="Source spans used" count={trace.source_ids_used.length}>
-              {trace.source_ids_used.length > 0 ? trace.source_ids_used.map((record) => <TraceSourceRecordRow key={record.evidence_id} record={record} />) : <p className="atlas-workbench__empty">No source spans used by this explain-selection trace.</p>}
-            </TraceRecordGroup>
-            <TraceRecordGroup title="Source spans rejected" count={trace.source_ids_rejected.length}>
-              {trace.source_ids_rejected.length > 0 ? trace.source_ids_rejected.map((record) => <TraceSourceRecordRow key={record.evidence_id} record={record} />) : <p className="atlas-workbench__empty">No rejected source-span or metadata context records.</p>}
-            </TraceRecordGroup>
-          </div>
-        </>
-      ) : explainState.status === "idle" ? (
-        <p className="atlas-workbench__empty">{explainState.message}</p>
-      ) : null}
-    </section>
-  );
-}
-
-function TraceRecordGroup({ title, count, children }: { title: string; count: number; children: React.ReactNode }) {
-  return (
-    <section className="atlas-workbench-group" aria-label={title}>
-      <div className="atlas-workbench-group__title">
-        <strong>{title}</strong>
-        <span>{count}</span>
-      </div>
-      <div className="atlas-workbench-group__body">
-        {children}
-      </div>
-    </section>
-  );
-}
-
-function TraceStepRow({ step }: { step: CorpusWorkbenchTraceStep }) {
-  return (
-    <article className="atlas-workbench-trace-row">
-      <span>{step.step_id}</span>
-      <small className="wrap-anywhere">{traceStepSummary(step)}</small>
-    </article>
-  );
-}
-
-function TraceSourceRecordRow({ record }: { record: CorpusWorkbenchTraceSourceRecord }) {
-  return (
-    <article className="atlas-workbench-trace-row">
-      <span>{record.source_span_id ?? record.resource_id ?? record.evidence_id}</span>
-      <small className="wrap-anywhere">{record.status} · {record.reason ?? "accepted"} · {record.stable_locator ?? "stable locator unavailable"}</small>
-      <small className="wrap-anywhere">Evidence ID: {record.evidence_id}</small>
-    </article>
-  );
-}
-
-function TerminalResultGroup({ title, count, children }: { title: "Retrieved resources" | "Source-span hits"; count: number; children: React.ReactNode }) {
-  return (
-    <section className="atlas-workbench-group" aria-label={title}>
-      <div className="atlas-workbench-group__title">
-        <strong>{title}</strong>
-        <span>{count}</span>
-      </div>
-      <div className="atlas-workbench-group__body">
-        {children}
-      </div>
-    </section>
-  );
-}
-
-function TerminalMetadataResult({
-  result,
-  index,
-  selected,
-  onSelect
-}: {
-  result: CompactAtlasMetadataSearchResult;
-  index: number;
-  selected: boolean;
-  onSelect: (result: CompactAtlasMetadataSearchResult) => void;
-}) {
-  const rankScore = optionalRankScore(result, index);
-  return (
-    <button type="button" className="atlas-workbench-result" aria-label={`Metadata terminal result ${result.resourceId}`} data-active={selected ? "true" : undefined} onClick={() => onSelect(result)}>
-      <span>{result.title}</span>
-      <small>{rankScore} · {result.documentType} · {result.documentStatus} · {result.diseaseSite}</small>
-      <small>{result.archiveStatus} · {result.parseStatus} · {result.responseState}</small>
-      <small className="wrap-anywhere">Resource ID: {result.resourceId}</small>
-      <small className="wrap-anywhere">Graph focus: {result.focusNodeId}; resource node: {result.resourceNodeId}</small>
-      <small className="wrap-anywhere">Path/context node IDs: {result.neighborNodeIds.join(", ") || "none"}</small>
-      <small>{result.sourceSpanIds.length > 0 ? `Linked source spans: ${result.sourceSpanIds.join(", ")}` : "metadata-only blocked: source spans are absent from this hit"}</small>
-      <small>{coverageStatusCopy(result.coverageStatus)}</small>
-    </button>
-  );
-}
-
-function TerminalSourceSpanResult({
-  result,
-  index,
-  selected,
-  onSelect
-}: {
-  result: CompactAtlasSourceSpanSearchResult;
-  index: number;
-  selected: boolean;
-  onSelect: (result: CompactAtlasSourceSpanSearchResult) => void;
-}) {
-  const provenance = sourceSpanProvenance(result);
-  return (
-    <button type="button" className="atlas-workbench-result atlas-workbench-result--span" aria-label={`Source-span terminal result ${result.spanId}`} data-active={selected ? "true" : undefined} onClick={() => onSelect(result)}>
-      <span>{result.stableLocator}</span>
-      <small>{optionalRankScore(result, index)} · source status: {result.outputStatus}</small>
-      <small className="wrap-anywhere">Source-span ID: {result.spanId}; parent resource: {result.resourceId}</small>
-      <small className="wrap-anywhere">Source document ID: {provenance.sourceDocumentId}</small>
-      <small>Checksum/status: {provenance.excerptChecksum} · {result.outputStatus}</small>
-      <small>Prompt/model version: {provenance.promptOrModelVersion}</small>
-      <small>Reviewer: {provenance.reviewer} · {provenance.reviewStatus} · {provenance.timestamp}</small>
-      <small className="wrap-anywhere">Graph path/trust context: {sourceSpanGraphPath(result)}</small>
-      {result.excerpt ? <q>{result.quotedSpan ?? result.excerpt}</q> : <small>Source-span record returned without an allowed excerpt; no claim text is rendered.</small>}
-    </button>
-  );
-}
-
-function ResultGroup({ title, count, children }: { title: "Metadata retrieval" | "Source-span retrieval"; count: number; children: React.ReactNode }) {
-  return (
-    <section className="atlas-workbench-group" aria-label={title}>
-      <div className="atlas-workbench-group__title">
-        <strong>{title}</strong>
-        <span>{count}</span>
-      </div>
-      <div className="atlas-workbench-group__body">
-        {children}
-      </div>
-    </section>
-  );
-}
-
-function NodeHoverCard({ node }: { node: AtlasNodeView }) {
-  return (
-    <aside className="node-hover-card" data-testid="node-hover-card" aria-live="polite">
-      <span>{node.type}</span>
-      <strong>{node.title}</strong>
-      <p>{node.summary}</p>
-      <p>{node.sourceLabel}</p>
-    </aside>
-  );
-}
-
-function ProvenanceInspector({
-  node,
-  resource,
-  activeSpan,
-  model,
-  loadState,
-  interpretabilityState,
-  lookupSelection,
-  surveillanceStatus,
-  reviewQueueLocalAction,
-  onReviewQueueFocus,
-  onReviewQueueLocalAction
-}: {
-  node: AtlasNodeView | null;
-  resource: CompactAtlasResource | null;
-  activeSpan: CorpusSourceSpan | null;
-  model: CorpusAtlasModel | null;
-  loadState: AtlasLoadState;
-  interpretabilityState: InterpretabilityLoadState;
-  lookupSelection: LookupSelection | null;
-  surveillanceStatus: CompactAtlasSurveillanceStatus | null;
-  reviewQueueLocalAction: ReviewQueueLocalAction | null;
-  onReviewQueueFocus: (resourceId: string, spanId?: string) => void;
-  onReviewQueueLocalAction: (reviewTaskId: string, label: string) => void;
-}) {
-  const isResourceSelection = node?.kind === "resource";
-  const interpretabilityModel = interpretabilityState.model?.resource.id === resource?.id ? interpretabilityState.model : null;
-  const lookupFocus = lookupSelection && resource && lookupSelection.resourceId === resource.id ? lookupSelection.focus : null;
-  const activeFocus = lookupFocus ?? interpretabilityModel?.resource ?? null;
-  const coverageStatus = effectiveCoverageStatus(resource, activeFocus?.coverageStatus, interpretabilityModel?.coverageStatus);
-  const relationshipRows = buildRelationshipRows(resource, activeFocus, interpretabilityModel, model, activeSpan);
-  const reviewQueueItems = interpretabilityModel?.reviewQueueItems ?? [];
-  const selectedOfflineStatus = surveillanceStatus?.resourceStatuses.find((status) => status.resourceId === resource?.id);
-  const sourceAvailability = model
-    ? `${model.sourceSpanCoverage.count} parsed-subset resources · ${model.metadata.source_span_node_count} span nodes`
-    : "Coverage pending";
-  const graphCounts = model ? `${model.graph.order} nodes · ${model.graph.size} edges` : "Graph pending";
-  const selectionCount = node
-    ? node.aggregateCount > 0 ? `${node.aggregateCount} public resources` : "Single graph node"
-    : "Selection pending";
-
-  return (
-    <aside
-      className="node-inspector"
-      data-testid="node-inspector"
-      aria-label={node ? `Provenance inspector for ${node.title}` : "Provenance inspector"}
-    >
-      <header className="node-inspector__header">
-        <p className="eyebrow">Provenance inspector</p>
-        <h2>{node ? node.title : "No graph node selected"}</h2>
-        <p>{node?.summary ?? loadState.message}</p>
-      </header>
-
-      <div className="inspector-card-grid" data-testid="compact-inspector-summary">
-        <section className="inspector-card" aria-label="Selected graph node summary">
-          <span className="inspector-card__label">Selected graph node</span>
-          <strong>{node?.type ?? "pending"}</strong>
-          <small>{selectionCount}</small>
-        </section>
-        <section className="inspector-card" aria-label="Archive and parse state">
-          <span className="inspector-card__label">Archive and parse state</span>
-          <strong>{isResourceSelection && resource ? resource.responseState : loadState.status}</strong>
-          <small>{isResourceSelection && resource ? `${resource.archiveStatus} · ${resource.parseStatus}` : loadState.message}</small>
-        </section>
-        <section className="inspector-card" aria-label="Source-span availability">
-          <span className="inspector-card__label">Source availability</span>
-          <strong>{sourceAvailability}</strong>
-          <small>{activeSpan ? activeSpan.stable_locator : "No source-span records are available for this resource in the current parsed subset output."}</small>
-        </section>
-        <section className="inspector-card inspector-card--safety" aria-label="Safety and provenance boundary">
-          <span className="inspector-card__label">Safety and provenance</span>
-          <strong>{node?.provenanceStatus ?? "Draft atlas view"}</strong>
-          <small>No patient data, no clinical advice, and no approved clinical claim.</small>
-        </section>
-      </div>
-
-      <div className="inspector-compact-rows" aria-label="Graph metadata summary">
-        <div>
-          <span>Atlas load state</span>
-          <strong>{loadState.status} · {loadState.message}</strong>
-        </div>
-        <div>
-          <span>Graphology model</span>
-          <strong>{graphCounts}</strong>
-        </div>
-        <div>
-          <span>Reviewer status</span>
-          <strong>{node?.reviewerStatus ?? "Draft atlas view"}</strong>
-        </div>
-      </div>
-
-        <section className="trust-drawer" data-testid="trust-provenance-drawer" aria-label="Trust and provenance drawer">
-        <div className="trust-drawer__header">
-          <span className="eyebrow">Trust drawer</span>
-          <strong>{resource?.title ?? "Resource pending"}</strong>
-          <small>{interpretabilityState.status} · {interpretabilityState.message}</small>
-        </div>
-
-        <div className="trust-status-grid">
-          <article>
-            <span>Coverage status</span>
-            <strong>{coverageStatus}</strong>
-            <p>{coverageStatusCopy(coverageStatus)}</p>
-          </article>
-          <article>
-            <span>Local routing</span>
-            <strong>{activeFocus?.interpretabilitySummary.modelRouting ?? interpretabilityModel?.modelRouting ?? "none-local-deterministic-search-only"}</strong>
-            <p>Generated model answers stay disabled; this drawer shows deterministic metadata, graph links, and source-span provenance only.</p>
-          </article>
-          <article>
-            <span>Offline archive status</span>
-            <strong>{offlineResourceStatusLabel(selectedOfflineStatus?.changeState)}</strong>
-            <p>{offlineResourceStatusCopy(selectedOfflineStatus, surveillanceStatus)}</p>
-            <div className="status-chip-row" aria-label="Offline local archive status chips">
-              <StatusChip tone={offlineStatusTone(selectedOfflineStatus?.reviewStatus)}>{selectedOfflineStatus?.reviewStatus ?? "local_pending"}</StatusChip>
-              <StatusChip tone="neutral">changed {surveillanceStatus?.changedCount ?? 0}</StatusChip>
-              <StatusChip tone="warning">missing {surveillanceStatus?.missingCount ?? 0}</StatusChip>
-              <StatusChip tone="success">unchanged {surveillanceStatus?.unchangedCount ?? 0}</StatusChip>
-              <StatusChip tone="warning">needs review {surveillanceStatus?.needsReviewCount ?? 0}</StatusChip>
-            </div>
-          </article>
-        </div>
-
-        <section className="relationship-trace" data-testid="lookup-relationship-trace" aria-label="Lookup graph relationship trace">
-          <div className="relationship-trace__title">
-            <strong>Why this result is connected</strong>
-            <span>{activeFocus?.interpretabilitySummary.graphNeighborCount ?? relationshipRows.length} relations</span>
-          </div>
-          <ol>
-            {relationshipRows.map((row) => (
-              <li key={`${row.kind}:${row.label}`} data-relation-kind={row.kind}>
-                <span>{row.kind}</span>
-                <strong>{row.label}</strong>
-                <small>{row.detail}</small>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <section className="source-span-provenance" aria-label="Active source-span provenance">
-          <div>
-            <span>Source-span provenance</span>
-            <strong>{activeSpan?.stable_locator ?? "Source spans unavailable for this selection"}</strong>
-          </div>
-          <dl>
-            <div>
-              <dt>Parent resource</dt>
-              <dd className="wrap-anywhere">{resource?.id ?? "resource pending"}</dd>
-            </div>
-            <div>
-              <dt>Checksum/status</dt>
-              <dd className="wrap-anywhere">{activeSpan ? `${activeSpan.checksum_sha256 ?? "checksum not returned"} · ${activeSpan.output_status}` : coverageStatusCopy(coverageStatus)}</dd>
-            </div>
-            <div>
-              <dt>Stable locator</dt>
-              <dd className="wrap-anywhere">{activeSpan?.stable_locator ?? "No parsed source-span locator is available for this coverage state."}</dd>
-            </div>
-            <div>
-              <dt>Source document</dt>
-              <dd className="wrap-anywhere">{activeSpan ? `Source document ID: ${sourceSpanProvenance(activeSpan).sourceDocumentId}` : "metadata-only blocked: no clinical claim rendered"}</dd>
-            </div>
-            <div>
-              <dt>Prompt/model</dt>
-              <dd className="wrap-anywhere">{activeSpan ? `Prompt/model version: ${sourceSpanProvenance(activeSpan).promptOrModelVersion}` : "none-local-deterministic-search-only"}</dd>
-            </div>
-            <div>
-              <dt>Reviewer</dt>
-              <dd className="wrap-anywhere">{activeSpan ? `Reviewer: ${sourceSpanProvenance(activeSpan).reviewer} · ${sourceSpanProvenance(activeSpan).reviewStatus} · ${sourceSpanProvenance(activeSpan).timestamp}` : "metadata-only blocked: no clinical claim rendered"}</dd>
-            </div>
-          </dl>
-        </section>
-
-        <ReviewQueueRelation
-          items={reviewQueueItems}
-          resource={resource}
-          sourceSpans={sourceSpansForReviewQueue(interpretabilityModel, activeSpan)}
-          localAction={reviewQueueLocalAction}
-          onFocus={onReviewQueueFocus}
-          onLocalAction={onReviewQueueLocalAction}
-        />
-      </section>
-
-      {isResourceSelection && resource ? (
-        <details className="inspector-details" data-testid="resource-identifier-details">
-          <summary>Resource identifiers and URL</summary>
-          <dl>
-            <div>
-              <dt>Resource ID</dt>
-              <dd className="wrap-anywhere">{resource.id}</dd>
-            </div>
-            <div>
-              <dt>Source URL</dt>
-              <dd className="wrap-anywhere">{resource.url}</dd>
-            </div>
-            <div>
-              <dt>Resource metadata</dt>
-              <dd>{resource.title} · {resource.diseaseSite} · {resource.documentType}</dd>
-            </div>
-          </dl>
-        </details>
-      ) : null}
-
-      <details className="inspector-details" data-testid="source-span-details">
-        <summary>Source span locator and excerpt</summary>
-        <dl>
-          <div>
-            <dt>Active source span ID</dt>
-            <dd className="wrap-anywhere">{activeSpan?.span_id ?? "No source-span result for this resource"}</dd>
-          </div>
-          <div>
-            <dt>Stable locator</dt>
-            <dd className="wrap-anywhere">{activeSpan?.stable_locator ?? "No locator available"}</dd>
-          </div>
-          <div>
-            <dt>Quoted span</dt>
-            <dd className="wrap-anywhere">{activeSpan?.excerpt ?? "No quoted span is displayed when derived source-span files are absent."}</dd>
-          </div>
-        </dl>
-      </details>
-    </aside>
-  );
-}
-
-function ReviewQueueRelation({
-  items,
-  resource,
-  sourceSpans,
-  localAction,
-  onFocus,
-  onLocalAction
-}: {
-  items: CompactAtlasReviewQueueItem[];
-  resource: CompactAtlasResource | null;
-  sourceSpans: CorpusSourceSpan[];
-  localAction: ReviewQueueLocalAction | null;
-  onFocus: (resourceId: string, spanId?: string) => void;
-  onLocalAction: (reviewTaskId: string, label: string) => void;
-}) {
-  const sourceSpanById = useMemo(() => new Map(sourceSpans.map((span) => [span.span_id, span])), [sourceSpans]);
-
-  return (
-    <section className="review-queue-relation" data-testid="review-queue-section" aria-label="Review Queue">
-      <div className="relationship-trace__title">
-        <strong>Review Queue</strong>
-        <span>{items.length}</span>
-      </div>
-      <p className="review-queue-relation__note">Source-span-backed local review metadata. Actions update this view only and do not write to a backend.</p>
-      {items.length > 0 ? (
-        <ul>
-          {items.map((item) => {
-            const primarySpanId = item.sourceSpanIds[0];
-            const primarySpan = primarySpanId ? sourceSpanById.get(primarySpanId) : undefined;
-            const isSourceBacked = Boolean(primarySpan && item.sourceSpanIds.length > 0 && item.resourceId === resource?.id);
-            const localStatus = localAction?.reviewTaskId === item.reviewTaskId ? localAction.label : null;
-            const cardLabel = isSourceBacked
-              ? `Focus review queue item ${item.reviewTaskId}`
-              : `Blocked review queue item ${item.reviewTaskId}`;
-
-            return (
-              <li
-                key={item.reviewTaskId}
-                className="review-queue-card"
-                data-testid={isSourceBacked ? `review-queue-card-${item.reviewTaskId}` : "review-queue-card-blocked"}
-                data-blocked={isSourceBacked ? "false" : "true"}
-                aria-disabled={isSourceBacked ? undefined : true}
-                role={isSourceBacked ? "button" : undefined}
-                tabIndex={isSourceBacked ? 0 : undefined}
-                aria-label={cardLabel}
-                onClick={isSourceBacked ? () => onFocus(item.resourceId, primarySpanId) : undefined}
-                onKeyDown={isSourceBacked ? (event) => {
-                  if (event.key !== "Enter" && event.key !== " ") {
-                    return;
-                  }
-                  event.preventDefault();
-                  onFocus(item.resourceId, primarySpanId);
-                } : undefined}
-              >
-                <div className="review-queue-card__topline">
-                  <span>{item.reviewStatus} · {item.stalenessStatus}</span>
-                  <StatusChip tone={reviewQueueStatusTone(isSourceBacked, item.stalenessStatus)}>{isSourceBacked ? "source-backed" : "blocked"}</StatusChip>
-                </div>
-                <strong className="wrap-anywhere">{resource?.title ?? item.resourceId}</strong>
-                <small className="wrap-anywhere">Task: {item.reviewTaskId}</small>
-                <small className="wrap-anywhere">Source-span locator: {primarySpan?.stable_locator ?? "blocked until a returned source span backs this item"}</small>
-                <small className="wrap-anywhere">Checksum/status: {primarySpan ? `${primarySpan.checksum_sha256 ?? "checksum not returned"} · ${primarySpan.output_status}` : "unbacked item blocked"}</small>
-                <dl className="review-queue-metadata" aria-label="Source-backed review metadata">
-                  <div><dt>Backing source spans</dt><dd>{item.sourceSpanIds.length}</dd></div>
-                  <div><dt>Review status</dt><dd>{item.reviewStatus}</dd></div>
-                  <div><dt>Local state</dt><dd>{item.stalenessStatus}</dd></div>
-                  <div><dt>Allowed local actions</dt><dd>{item.allowedActions.length}</dd></div>
-                </dl>
-                {isSourceBacked && primarySpan?.excerpt ? <q>{primarySpan.excerpt}</q> : null}
-                {!isSourceBacked ? <p className="review-queue-card__blocked-copy">Blocked local fixture state: no source-backed review content is displayed and no finding is implied.</p> : null}
-                {isSourceBacked ? (
-                  <div className="review-queue-actions" aria-label={`Allowed local actions for ${item.reviewTaskId}`}>
-                    {item.allowedActions.map((action) => {
-                      const label = reviewQueueActionLabel(action);
-                      return (
-                        <button
-                          key={action}
-                          type="button"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            if (action === "inspect_source") {
-                              onFocus(item.resourceId, primarySpanId);
-                            }
-                            onLocalAction(item.reviewTaskId, label);
-                          }}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : null}
-                {localStatus ? <small role="status" className="review-queue-local-state">Local UI state: {localStatus}</small> : null}
-              </li>
-            );
-          })}
-        </ul>
-      ) : (
-        <p className="review-queue-relation__empty">No source-backed local review queue items returned for this resource.</p>
       )}
-    </section>
+      retrievalRail={assistantRailMode === "visible" ? (
+        <RetrievalAssistantRail
+          model={model}
+          loadState={loadState}
+          selectedResource={selectedResource}
+          lookupSelection={lookupSelection}
+          retrievalEvidence={activeRetrievalGraphEvidence}
+          query={workbenchQuery}
+          searchState={workbenchSearchState}
+          traceState={workbenchTraceState}
+          explainSelectionState={explainSelectionTraceState}
+          selectedSourceContext={selectedSourceContext}
+          selectedContextQuestion={selectedContextQuestion}
+          selectedContextAssistantTurnState={selectedContextAssistantTurnState}
+          canExplainSelection={Boolean(explainSelectionRequest)}
+          explainSelectionHasSourceSpan={Boolean(explainSelectionRequest?.source_span_id)}
+          hasSelectedSourceSpanContext={Boolean(selectedSourceContext)}
+          onQueryChange={handleWorkbenchQueryChange}
+          onSearchSubmit={handleWorkbenchSearchSubmit}
+          onMetadataSelect={handleMetadataSearchSelect}
+          onSourceSpanSelect={handleSourceSpanSearchSelect}
+          onSelectedContextQuestionChange={handleSelectedContextQuestionChange}
+          onSelectedContextQuestionSubmit={handleSelectedContextQuestionSubmit}
+          onAnswerCitationHover={handleAnswerCitationHover}
+          onAnswerCitationLeave={clearUnpinnedAnswerCitationFocus}
+          onAnswerCitationFocus={handleAnswerCitationFocus}
+          onAnswerCitationBlur={clearUnpinnedAnswerCitationFocus}
+          onAnswerCitationClick={handleAnswerCitationClick}
+          answerCitationFocusMode={answerCitationGraphFocus?.mode ?? "none"}
+          onExplainSelection={handleExplainSelection}
+          height={assistantRailHeight}
+          heightState={assistantRailHeightState}
+          onResizeStart={handleAssistantRailResizeStart}
+          onCollapse={() => setAssistantRailMode("collapsed")}
+          onDismiss={() => setAssistantRailMode("dismissed")}
+        />
+      ) : assistantRailMode === "collapsed" ? (
+        <div className="assistant-rail assistant-rail--collapsed" data-testid="assistant-rail" data-height-state="collapsed" data-resizable="vertical" data-min-height="20vh" data-max-height="55vh">
+          <button type="button" onClick={() => setAssistantRailMode("visible")}>Expand assistant rail</button>
+          <button type="button" onClick={() => setAssistantRailMode("dismissed")}>Dismiss assistant rail</button>
+        </div>
+      ) : (
+        <div className="assistant-rail-reopen" aria-label="Dismissed assistant rail">
+          <button type="button" onClick={() => setAssistantRailMode("visible")}>Show assistant rail</button>
+        </div>
+      )}
+      vaultPanelMode={vaultPanelMode}
+      provenancePanelMode={provenancePanelMode}
+      vaultWidth={vaultWidth}
+      provenanceWidth={provenanceWidth}
+      onVaultResizeStart={handleVaultResizeStart}
+      onProvenanceResizeStart={handleProvenanceResizeStart}
+      onExpandVault={() => setVaultPanelMode("visible")}
+      onExpandProvenance={() => setProvenancePanelMode("visible")}
+      onShowVault={() => setVaultPanelMode("visible")}
+      onShowProvenance={() => setProvenancePanelMode("visible")}
+    />
   );
 }
 
-function sourceSpansForReviewQueue(interpretabilityModel: CompactAtlasInterpretabilityModel | null, activeSpan: CorpusSourceSpan | null) {
-  const spans = interpretabilityModel?.sourceSpans ?? [];
-  if (!activeSpan || spans.some((span) => span.span_id === activeSpan.span_id)) {
-    return spans;
-  }
-  return [activeSpan, ...spans];
-}
-
-function reviewQueueActionLabel(action: CompactAtlasReviewQueueItem["allowedActions"][number]) {
-  if (action === "inspect_source") {
-    return "Inspect source";
-  }
-  if (action === "mark_needs_review_local") {
-    return "Mark needs review (local)";
-  }
-  return "Link source (local)";
-}
-
-function reviewQueueStatusTone(isSourceBacked: boolean, stalenessStatus: string) {
-  if (!isSourceBacked) {
-    return "warning";
-  }
-  if (stalenessStatus.includes("stale") || stalenessStatus.includes("invalid")) {
-    return "warning";
-  }
-  return "success";
-}
-
-function sourceSpanFromSearchResult(result: CompactAtlasSourceSpanSearchResult): CorpusSourceSpan {
-  return {
-    span_id: result.spanId,
-    resource_id: result.resourceId,
-    document_id: result.documentId,
-    stable_locator: result.stableLocator,
-    excerpt: result.excerpt,
-    checksum_sha256: result.checksumSha256,
-    output_status: result.outputStatus
-  };
-}
-
-function buildExplainSelectionRequest(
-  retrievalEvidence: RetrievalGraphEvidenceState | null,
-  selectedNode: AtlasNodeView | null,
-  selectedResource: CompactAtlasResource | null,
-  activeSpan: CorpusSourceSpan | null
-): CorpusExplainSelectionRequest | null {
-  const sourceSpanId = retrievalEvidence?.selectedSourceSpanId ?? activeSpan?.span_id ?? (selectedNode?.kind === "sourceSpan" ? selectedNode.id : null);
-  const resourceId = retrievalEvidence?.selectedResourceId ?? selectedResource?.id ?? selectedNode?.resourceId ?? null;
-  const selectedNodeId = retrievalEvidence?.graphFocusNodeId ?? selectedNode?.id ?? (resourceId ? `resource.${resourceId}` : null);
-
-  if (!sourceSpanId && !resourceId && !selectedNodeId) {
+function buildAnswerCitationGraphEvidenceState(focus: AnswerCitationGraphFocus | null, model: NonNullable<AtlasLoadState["model"]> | null): RetrievalGraphEvidenceState | null {
+  if (!focus || !model) {
     return null;
   }
 
-  return {
-    ...(sourceSpanId ? { source_span_id: sourceSpanId } : {}),
-    ...(selectedNodeId ? { selected_node_id: selectedNodeId } : {}),
-    ...(resourceId ? { resource_id: resourceId } : {}),
-    command_metadata: {
-      ui_surface: "graph_workbench",
-      selection_source: sourceSpanId ? "source_span" : "graph_or_metadata_selection",
-      focus_mode: retrievalEvidence?.focusMode ?? selectedNode?.kind ?? "resource",
-      raw_output_requested: false
-    }
-  };
-}
-
-function buildRetrievalGraphEvidenceState(
-  response: CompactAtlasSearchResponse | null,
-  lookupSelection: LookupSelection | null,
-  selectedResource: CompactAtlasResource | null,
-  selectedNode: AtlasNodeView | null,
-  activeSpan: CorpusSourceSpan | null,
-  model: CorpusAtlasModel | null
-): RetrievalGraphEvidenceState | null {
-  if (!response || !model) {
-    return null;
-  }
-
-  const selectedMetadataResult = lookupSelection?.kind === "metadata"
-    ? response.metadataResults.find((result) => result.resourceId === lookupSelection.resourceId) ?? null
-    : null;
-  const selectedSourceSpanResult = lookupSelection?.kind === "source_span"
-    ? response.sourceSpanResults.find((result) => result.spanId === lookupSelection.sourceSpan?.span_id) ?? null
-    : null;
-  const graphSelectedSourceSpanResult = activeSpan
-    ? response.sourceSpanResults.find((result) => result.spanId === activeSpan.span_id) ?? null
-    : null;
-  const graphSelectedMetadataResult = selectedResource
-    ? response.metadataResults.find((result) => result.resourceId === selectedResource.id) ?? null
-    : null;
-  const focus = selectedSourceSpanResult
-    ?? selectedMetadataResult
-    ?? graphSelectedSourceSpanResult
-    ?? graphSelectedMetadataResult
-    ?? response.sourceSpanResults[0]
-    ?? response.metadataResults[0]
-    ?? null;
-  const selectedSourceSpanId = (selectedSourceSpanResult ?? graphSelectedSourceSpanResult)?.spanId
-    ?? (selectedNode?.kind === "sourceSpan" ? activeSpan?.span_id ?? selectedNode.id : null);
-  const selectedResourceId = focus?.resourceId ?? selectedResource?.id ?? null;
-  const resourceNodeId = focus?.resourceNodeId ?? (selectedResourceId ? `resource.${selectedResourceId}` : null);
-  const highlightedSourceSpanIds = dedupe(response.sourceSpanResults.map((result) => result.spanId));
-  const representedSourceSpanNodeIds = sourceSpanGraphNodeIds(model, highlightedSourceSpanIds);
-  const selectedSourceSpanNodeIds = selectedSourceSpanId ? sourceSpanGraphNodeIds(model, [selectedSourceSpanId]) : [];
-  const hasSelectedSourceSpanNode = selectedSourceSpanNodeIds.length > 0;
-  const selectedSourceSpanResultForMode = selectedSourceSpanId
-    ? response.sourceSpanResults.find((result) => result.spanId === selectedSourceSpanId) ?? null
-    : null;
-  const graphFocusNodeId = selectedSourceSpanResultForMode
-    ? hasSelectedSourceSpanNode ? selectedSourceSpanNodeIds[0] : resourceNodeId
-    : focus?.focusNodeId ?? selectedNode?.id ?? resourceNodeId;
-  const highlightedResourceIds = dedupe([
-    ...response.metadataResults.map((result) => result.resourceId),
-    ...response.sourceSpanResults.map((result) => result.resourceId),
-    ...(selectedResourceId ? [selectedResourceId] : [])
-  ]);
-  const graphContextNodeIds = dedupe([
-    ...(focus?.neighborNodeIds ?? []),
-    ...representedSourceSpanNodeIds,
-    ...(selectedNode && selectedNode.id !== graphFocusNodeId ? [selectedNode.id] : [])
-  ]);
-  const graphPathNodeIds = dedupe([
-    ...(resourceNodeId ? [resourceNodeId] : []),
-    ...(hasSelectedSourceSpanNode ? selectedSourceSpanNodeIds : []),
-    ...graphContextNodeIds
-  ]);
-  const metadataBlocked = Boolean(selectedResourceId && !selectedSourceSpanResultForMode && highlightedSourceSpanIds.length === 0);
-  const focusMode: RetrievalGraphEvidenceState["focusMode"] = selectedSourceSpanResultForMode
-    ? hasSelectedSourceSpanNode ? "source-span-node" : "source-span-parent-fallback"
-    : metadataBlocked ? "metadata-only-blocked" : "metadata-query-hit";
+  const sourceSpanNodeIds = sourceSpanGraphNodeIds(model, [focus.citation.source_span_id]);
+  const resourceNodeId = focus.resourceId ? `resource.${focus.resourceId}` : null;
+  const graphFocusNodeId = sourceSpanNodeIds[0] ?? focus.selectedNodeId ?? resourceNodeId;
+  const graphContextNodeIds = [resourceNodeId, focus.selectedNodeId].filter((nodeId): nodeId is string => Boolean(nodeId && nodeId !== graphFocusNodeId));
 
   return {
-    query: response.query,
-    highlightedResourceIds,
-    highlightedSourceSpanIds,
-    representedSourceSpanNodeIds,
-    selectedResourceId,
-    selectedSourceSpanId,
+    query: `Answer citation ${focus.citation.display_label}`,
+    highlightedResourceIds: focus.resourceId ? [focus.resourceId] : [],
+    highlightedSourceSpanIds: [focus.citation.source_span_id],
+    representedSourceSpanNodeIds: sourceSpanNodeIds,
+    selectedResourceId: focus.resourceId,
+    selectedSourceSpanId: focus.citation.source_span_id,
     graphFocusNodeId,
     graphResourceNodeId: resourceNodeId,
     graphContextNodeIds,
-    graphPathNodeIds,
-    edgeTypes: focus?.edgeTypes ?? [],
-    focusMode,
-    blockedReason: metadataBlocked ? "Blocked evidence label: metadata-only, no source span returned" : null
+    graphPathNodeIds: [resourceNodeId, ...sourceSpanNodeIds, ...graphContextNodeIds].filter((nodeId): nodeId is string => Boolean(nodeId)),
+    edgeTypes: sourceSpanNodeIds.length > 0 ? ["resource_to_source_span"] : [],
+    focusMode: sourceSpanNodeIds.length > 0 ? "source-span-node" : "source-span-parent-fallback",
+    blockedReason: null
   };
 }
 
-function buildRetrievalTerminalState(
-  response: CompactAtlasSearchResponse | null,
-  lookupSelection: LookupSelection | null,
-  selectedResource: CompactAtlasResource | null,
-  retrievalEvidence: RetrievalGraphEvidenceState | null
-): RetrievalTerminalStateModel | null {
-  if (!response) {
-    return null;
+function sourceSpansForSourceView(sourceSpans: CorpusSourceSpan[], activeSpan: CorpusSourceSpan | null) {
+  if (!activeSpan || sourceSpans.some((span) => span.span_id === activeSpan.span_id)) {
+    return sourceSpans;
   }
-
-  const selectedMetadataResult = lookupSelection?.kind === "metadata"
-    ? response.metadataResults.find((result) => result.resourceId === lookupSelection.resourceId) ?? null
-    : null;
-  const selectedSourceSpanResult = lookupSelection?.kind === "source_span"
-    ? response.sourceSpanResults.find((result) => result.spanId === lookupSelection.sourceSpan?.span_id) ?? null
-    : null;
-  const selectedResourceResult = selectedResource
-    ? response.metadataResults.find((result) => result.resourceId === selectedResource.id) ?? null
-    : null;
-  const selectedEvidenceSourceSpanResult = retrievalEvidence?.selectedSourceSpanId
-    ? response.sourceSpanResults.find((result) => result.spanId === retrievalEvidence.selectedSourceSpanId) ?? null
-    : null;
-  const selectedEvidenceMetadataResult = retrievalEvidence?.selectedResourceId
-    ? response.metadataResults.find((result) => result.resourceId === retrievalEvidence.selectedResourceId) ?? null
-    : null;
-  const selectedTerminalSourceSpanResult = selectedSourceSpanResult ?? selectedEvidenceSourceSpanResult;
-  const selectedTerminalMetadataResult = selectedMetadataResult ?? selectedEvidenceMetadataResult ?? selectedResourceResult;
-  const focus = selectedTerminalSourceSpanResult ?? selectedTerminalMetadataResult ?? response.sourceSpanResults[0] ?? response.metadataResults[0] ?? null;
-  const resourceId = retrievalEvidence?.selectedResourceId ?? focus?.resourceId ?? selectedResource?.id ?? null;
-  const sourceSpanIds = retrievalEvidence?.highlightedSourceSpanIds ?? (selectedTerminalSourceSpanResult
-    ? [selectedTerminalSourceSpanResult.spanId]
-    : selectedTerminalMetadataResult?.sourceSpanIds ?? []);
-  const reviewTaskIds = focus?.reviewTaskIds ?? [];
-  const isMetadataBlocked = Boolean(resourceId && sourceSpanIds.length === 0);
-  const selectedGraphPath = selectedTerminalSourceSpanResult
-    ? sourceSpanGraphPath(selectedTerminalSourceSpanResult)
-    : resourceId
-      ? `resource.${resourceId}`
-      : "no graph focus selected";
-
-  return {
-    query: response.query,
-    highlightedResources: retrievalEvidence?.highlightedResourceIds ?? (resourceId ? [resourceId] : []),
-    highlightedSourceSpans: sourceSpanIds,
-    selectedGraphPath,
-    selectedSourceSpanContext: selectedTerminalSourceSpanResult ? selectedTerminalSourceSpanResult.stableLocator : "Selected source-span context: metadata-only / blocked",
-    blockedEvidenceLabel: retrievalEvidence?.blockedReason ?? (isMetadataBlocked ? "Blocked evidence label: metadata-only, no source span returned" : null),
-    traceEntries: selectedTerminalSourceSpanResult
-      ? ["metadata result", "source-span result", "provenance drawer focus"]
-      : ["metadata result", "blocked source-span context", "provenance drawer focus"],
-    graphFocusNodeId: retrievalEvidence?.graphFocusNodeId ?? focus?.focusNodeId ?? "no-focus-node",
-    graphResourceNodeId: retrievalEvidence?.graphResourceNodeId ?? focus?.resourceNodeId ?? (resourceId ? `resource.${resourceId}` : "no-resource-node"),
-    graphContextNodeIds: retrievalEvidence?.graphContextNodeIds ?? focus?.neighborNodeIds ?? [],
-    graphPathNodeIds: retrievalEvidence?.graphPathNodeIds ?? [],
-    edgeTypes: retrievalEvidence?.edgeTypes ?? focus?.edgeTypes ?? [],
-    focusMode: retrievalEvidence?.focusMode ?? (selectedTerminalSourceSpanResult ? "source-span-parent-fallback" : "metadata-only-blocked"),
-    retrievalMode: response.modelRouting,
-    metadataResults: response.metadataResults,
-    sourceSpanResults: response.sourceSpanResults,
-    selectedMetadataResult: selectedTerminalMetadataResult,
-    selectedSourceSpanResult: selectedTerminalSourceSpanResult,
-    rawTrace: {
-      query: response.query,
-      model_routing: response.modelRouting,
-      counts: {
-        metadata_results: response.metadataResultCount,
-        source_span_results: response.sourceSpanResultCount,
-        source_span_coverage: response.sourceSpanCoverageCount,
-        total_resources: response.totalResourceCount
-      },
-      selected: {
-        kind: lookupSelection?.kind ?? "none",
-        resource_id: resourceId,
-        source_span_ids: sourceSpanIds,
-        review_task_ids: reviewTaskIds,
-        graph_path: selectedGraphPath,
-        graph_path_node_ids: retrievalEvidence?.graphPathNodeIds ?? [],
-        focus_mode: retrievalEvidence?.focusMode ?? null,
-        blocked_reason: isMetadataBlocked ? "metadata-only, no source span returned" : null
-      },
-      graph_focus: focus ? {
-        focus_node_id: focus.focusNodeId,
-        resource_node_id: focus.resourceNodeId,
-        neighbor_node_ids: focus.neighborNodeIds,
-        edge_types: focus.edgeTypes,
-        coverage_status: focus.coverageStatus
-      } : null
-    }
-  };
-}
-
-function sourceSpanGraphPath(result: CompactAtlasSourceSpanSearchResult) {
-  const reviewTaskId = result.reviewTaskIds[0];
-  return [`resource.${result.resourceId}`, result.spanId, reviewTaskId].filter(Boolean).join(" -> ");
-}
-
-function sourceSpanProvenance(span: CorpusSourceSpan | CompactAtlasSourceSpanSearchResult) {
-  const compactSpan = span as Partial<CompactAtlasSourceSpanSearchResult>;
-  const corpusSpan = span as Partial<CorpusSourceSpan>;
-  const documentId = compactSpan.documentId ?? corpusSpan.document_id ?? "source-document unavailable";
-  return {
-    sourceDocumentId: compactSpan.sourceDocumentId ?? documentId,
-    excerptChecksum: compactSpan.excerptChecksum ?? compactSpan.checksumSha256 ?? corpusSpan.checksum_sha256 ?? "checksum not returned",
-    promptOrModelVersion: compactSpan.promptOrModelVersion ?? "none-local-deterministic-parser",
-    reviewer: compactSpan.reviewer ?? "unreviewed",
-    reviewStatus: compactSpan.reviewStatus ?? compactSpan.outputStatus ?? corpusSpan.output_status ?? "draft",
-    timestamp: compactSpan.timestamp ?? "2026-06-15T12:00:00Z"
-  };
-}
-
-function optionalRankScore(result: CompactAtlasMetadataSearchResult | CompactAtlasSourceSpanSearchResult, index: number) {
-  const rankedResult = result as typeof result & { rank?: number; score?: number };
-  const rank = rankedResult.rank ?? index + 1;
-  const score = rankedResult.score;
-  return score === undefined ? `rank ${rank}` : `rank ${rank} · score ${score}`;
-}
-
-function traceStepSummary(step: CorpusWorkbenchTraceStep) {
-  const fields = [
-    `status: ${step.status}`,
-    step.command_label ? `command: ${step.command_label}` : null,
-    step.metadata_result_count !== undefined ? `metadata: ${step.metadata_result_count}` : null,
-    step.source_span_result_count !== undefined ? `source spans: ${step.source_span_result_count}` : null,
-    step.warning_labels && step.warning_labels.length > 0 ? `warnings: ${step.warning_labels.join(", ")}` : null,
-    step.abstained !== undefined ? `abstained: ${String(step.abstained)}` : null,
-    step.source_span_ids_used ? `used: ${step.source_span_ids_used.join(", ") || "none"}` : null,
-    step.rejected_count !== undefined ? `rejected: ${step.rejected_count}` : null,
-    step.model_class ? `model: ${step.model_class}` : null,
-    step.external_api_used !== undefined ? `external API used: ${String(step.external_api_used)}` : null
-  ].filter(Boolean);
-
-  return fields.join("; ");
-}
-
-function relationshipSummaryFromFocus(focus: CompactAtlasGraphFocusMetadata) {
-  const labels = focus.edgeTypes.map(edgeTypeLabel);
-  if (focus.sourceSpanIds.length > 0) {
-    labels.push("resource -> source span");
-  }
-  if (focus.reviewTaskIds.length > 0) {
-    labels.push("source span -> review item");
-  }
-
-  return `Trace: ${dedupe(labels).join(" / ") || "resource neighborhood pending"}`;
-}
-
-function buildRelationshipRows(
-  resource: CompactAtlasResource | null,
-  focus: CompactAtlasGraphFocusMetadata | null,
-  interpretabilityModel: CompactAtlasInterpretabilityModel | null,
-  atlasModel: CorpusAtlasModel | null,
-  activeSpan: CorpusSourceSpan | null
-) {
-  const rows: Array<{ kind: string; label: string; detail: string }> = [];
-  if (!resource) {
-    return rows;
-  }
-
-  rows.push({ kind: "resource", label: resource.title, detail: resource.id });
-  rows.push({ kind: "disease site", label: resource.diseaseSite, detail: "Resource metadata bucket" });
-  rows.push({ kind: "document type", label: resource.documentType, detail: "Document classification bucket" });
-  rows.push({ kind: "archive", label: `${resource.archiveStatus} · ${resource.parseStatus}`, detail: coverageStatusCopy(effectiveCoverageStatus(resource, focus?.coverageStatus, interpretabilityModel?.coverageStatus)) });
-
-  const neighborNodes = interpretabilityModel?.graphNeighborhood.neighborNodes
-    ?? (focus?.neighborNodeIds.map((nodeId) => atlasModel?.graphPayload.nodes.find((node) => node.id === nodeId)).filter(Boolean) as CorpusGraphNode[] | undefined)
-    ?? [];
-  const sourceSpanNode = neighborNodes.find((node) => node.type === "source_span");
-  const sourceSpanIds = dedupe([...(focus?.sourceSpanIds ?? []), ...(interpretabilityModel?.resource.sourceSpanIds ?? []), ...(activeSpan ? [activeSpan.span_id] : [])]);
-  if (activeSpan || sourceSpanNode || sourceSpanIds.length > 0) {
-    rows.push({
-      kind: "source span",
-      label: activeSpan?.stable_locator ?? sourceSpanNode?.label ?? sourceSpanIds[0],
-      detail: activeSpan ? `${activeSpan.span_id} · ${activeSpan.output_status}` : `${sourceSpanIds.length} source-span IDs linked by API metadata`
-    });
-  }
-
-  const reviewTaskIds = dedupe([...(focus?.reviewTaskIds ?? []), ...(interpretabilityModel?.reviewTaskIds ?? [])]);
-  if (reviewTaskIds.length > 0) {
-    rows.push({ kind: "review item", label: `${reviewTaskIds.length} local review queue item(s)`, detail: reviewTaskIds.join(", ") });
-  }
-
-  return rows;
-}
-
-function coverageStatusFromResource(resource: CompactAtlasResource | null) {
-  if (!resource) {
-    return "metadata_only";
-  }
-  if (resource.responseState === "download_failed") {
-    return "download_failed";
-  }
-  if (resource.responseState === "parse_failed") {
-    return "parse_failed";
-  }
-  if (resource.parseStatus === "checksum_mismatch") {
-    return "checksum_mismatch";
-  }
-  if (resource.sourceSpanCount > 0) {
-    return "source_span_ready";
-  }
-  return "metadata_only";
-}
-
-function effectiveCoverageStatus(resource: CompactAtlasResource | null, lookupStatus?: string, interpretabilityStatus?: string) {
-  if (lookupStatus === "source_span_ready" || lookupStatus === "partial_source_span") {
-    return lookupStatus;
-  }
-  const resourceStatus = coverageStatusFromResource(resource);
-  if (resourceStatus !== "metadata_only") {
-    return resourceStatus;
-  }
-  return lookupStatus ?? interpretabilityStatus ?? resourceStatus;
-}
-
-function coverageStatusCopy(status: string) {
-  if (status === "source_span_ready") {
-    return "Parsed source spans are available for deterministic provenance review.";
-  }
-  if (status === "partial_source_span") {
-    return "Some parsed source spans are available; coverage is partial and draft.";
-  }
-  if (status === "download_failed") {
-    return "Archive download failed, so source spans are unavailable until a local raw file is acquired.";
-  }
-  if (status === "checksum_mismatch") {
-    return "Checksum mismatch blocks source-span use until the local archive is reconciled.";
-  }
-  if (status === "parse_failed") {
-    return "Parser output is unavailable for this resource; metadata remains searchable without implying absent supporting material.";
-  }
-  return "Metadata-only coverage: source spans are unavailable/not parsed for this resource; this does not imply absence of supporting material.";
-}
-
-function offlineSurveillanceSummary(status: CompactAtlasSurveillanceStatus | null) {
-  if (!status) {
-    return "offline archive status pending";
-  }
-  return `${status.needsReviewCount ?? 0} needs review · ${status.unchangedCount ?? 0} unchanged local/archive`;
-}
-
-function loadStateLabel(status: LoadStatus) {
-  if (status === "success") {
-    return "local API loaded";
-  }
-  if (status === "loading") {
-    return "local API loading";
-  }
-  if (status === "empty") {
-    return "local API empty";
-  }
-  return "local API unavailable";
-}
-
-function offlineResourceStatusLabel(changeState?: string) {
-  if (changeState === "checksum_mismatch") {
-    return "changed local archive";
-  }
-  if (changeState === "changed" || changeState === "resource_added" || changeState === "resource_removed") {
-    return "changed local archive";
-  }
-  if (changeState === "missing") {
-    return "missing local archive";
-  }
-  if (changeState === "unchanged") {
-    return "unchanged local archive";
-  }
-  return "offline archive pending";
-}
-
-function offlineStatusTone(reviewStatus?: string) {
-  if (reviewStatus === "needs_review") {
-    return "warning";
-  }
-  if (reviewStatus === "no_change") {
-    return "success";
-  }
-  return "neutral";
-}
-
-function offlineResourceStatusCopy(
-  resourceStatus: CompactAtlasSurveillanceStatus["resourceStatuses"][number] | undefined,
-  surveillanceStatus: CompactAtlasSurveillanceStatus | null
-) {
-  if (!resourceStatus || !surveillanceStatus) {
-    return "Offline/local archive comparison is pending from the local manifest fixtures; no network check is shown.";
-  }
-  return `Offline/local manifest comparison only: ${resourceStatus.previousStatus ?? "none"} to ${resourceStatus.currentStatus ?? "none"}; ${resourceStatus.reviewStatus}. No network check or clinical inference is shown.`;
-}
-
-function edgeTypeLabel(edgeType: string) {
-  if (edgeType === "resource_to_disease_site") {
-    return "resource -> disease site";
-  }
-  if (edgeType === "resource_to_document_type") {
-    return "resource -> document type";
-  }
-  if (edgeType === "resource_to_archive_status") {
-    return "resource -> archive";
-  }
-  if (edgeType === "resource_to_source_span") {
-    return "resource -> source span";
-  }
-  if (edgeType === "source_span_to_review_item") {
-    return "source span -> review item";
-  }
-  return edgeType.replaceAll("_", " ");
-}
-
-function dedupe(values: string[]) {
-  return [...new Set(values.filter(Boolean))];
-}
-
-function sourceSpanGraphNodeIds(model: CorpusAtlasModel, sourceSpanIds: string[]) {
-  const sourceSpanIdSet = new Set(sourceSpanIds);
-  if (sourceSpanIdSet.size === 0) {
-    return [];
-  }
-
-  return model.graphPayload.nodes
-    .filter((node) => model.graph.hasNode(node.id) && (
-      sourceSpanIdSet.has(node.id)
-      || (node.type === "source_span" && (node.source_span_ids ?? []).some((spanId) => sourceSpanIdSet.has(spanId)))
-    ))
-    .map((node) => node.id)
-    .sort((left, right) => left.localeCompare(right));
-}
-
-function selectVisibleResources(resources: CompactAtlasResource[], selectedResourceId?: string) {
-  const firstResources = resources.slice(0, 24);
-  if (!selectedResourceId || firstResources.some((resource) => resource.id === selectedResourceId)) {
-    return firstResources;
-  }
-
-  const selectedResource = resources.find((resource) => resource.id === selectedResourceId);
-  return selectedResource ? [selectedResource, ...firstResources.slice(0, 23)] : firstResources;
-}
-
-function isInteractiveKeyboardTarget(target: EventTarget) {
-  return target instanceof HTMLElement && Boolean(target.closest("input, button, textarea, select, a, [role='search']"));
-}
-
-function buildClusterResourceCounts(model: CorpusAtlasModel) {
-  return model.graphPayload.edges.reduce<Record<string, number>>((counts, edge) => {
-    if (edge.type.startsWith("resource_to_") && edge.target) {
-      counts[edge.target] = (counts[edge.target] ?? 0) + 1;
-    }
-    return counts;
-  }, {});
-}
-
-function buildAtlasNodeViews(model: CorpusAtlasModel, clusterResourceCounts: Record<string, number>): AtlasNodeView[] {
-  return [...model.graphPayload.nodes]
-    .filter((node) => model.graph.hasNode(node.id))
-    .sort((left, right) => nodeSortKey(left).localeCompare(nodeSortKey(right)))
-    .map((node) => toAtlasNodeView(node, model, clusterResourceCounts[node.id] ?? 0));
-}
-
-function toAtlasNodeView(node: CorpusGraphNode, model: CorpusAtlasModel, aggregateCount: number): AtlasNodeView {
-  const attributes = model.graph.getNodeAttributes(node.id);
-  const kind = toNodeKind(attributes.nodeType);
-  const group = toNodeGroup(attributes.nodeType);
-
-  return {
-    id: node.id,
-    title: attributes.label,
-    type: toDisplayType(attributes.nodeType),
-    kind,
-    group,
-    priority: attributes.nodeType === "resource" ? "high" : "normal",
-    summary: toNodeSummary(node, aggregateCount),
-    sourceLabel: toSourceLabel(node),
-    provenanceStatus: attributes.nodeType === "resource" ? "Registry metadata" : "Derived metadata cluster",
-    reviewerStatus: "Draft atlas view",
-    resourceId: attributes.resourceId,
-    aggregateCount
-  };
-}
-
-function buildSearchOptions(nodeViews: AtlasNodeView[], query: string): SearchOption[] {
-  const normalizedQuery = query.trim().toLowerCase();
-  if (normalizedQuery.length < 2) {
-    return [];
-  }
-
-  return nodeViews
-    .filter((node) => `${node.title} ${node.type} ${node.sourceLabel}`.toLowerCase().includes(normalizedQuery))
-    .sort((left, right) => searchRank(left, normalizedQuery) - searchRank(right, normalizedQuery) || left.title.localeCompare(right.title))
-    .slice(0, 6)
-    .map((node) => ({
-      id: node.id,
-      label: node.title,
-      detail: `${nodeTypeLabels[node.kind]} · ${groupLabels[node.group]} · ${node.aggregateCount || 1}`
-    }));
-}
-
-function searchRank(node: AtlasNodeView, normalizedQuery: string) {
-  const title = node.title.toLowerCase();
-  if (title === normalizedQuery) {
-    return 0;
-  }
-  if (title.startsWith(normalizedQuery)) {
-    return 1;
-  }
-  return node.kind === "resource" ? 2 : 3;
-}
-
-function toNodeKind(nodeType: string): AtlasNodeKind {
-  if (nodeType === "resource") {
-    return "resource";
-  }
-  if (nodeType === "archive_status") {
-    return "archive";
-  }
-  if (nodeType === "source_span") {
-    return "sourceSpan";
-  }
-  return "cluster";
-}
-
-function toNodeGroup(nodeType: string): AtlasNodeGroup {
-  if (nodeType === "resource") {
-    return "resources";
-  }
-  if (nodeType === "disease_site_cluster") {
-    return "diseaseSites";
-  }
-  if (nodeType === "document_type_cluster") {
-    return "documents";
-  }
-  if (nodeType === "source_span") {
-    return "provenance";
-  }
-  return "archive";
-}
-
-function toDisplayType(nodeType: string) {
-  return nodeType.replaceAll("_", " ");
-}
-
-function toNodeSummary(node: CorpusGraphNode, aggregateCount: number) {
-  if (node.type === "resource") {
-    return `${node.disease_site ?? "unknown"} ${node.document_type ?? node.resource_type ?? "resource"} metadata row with ${node.response_state ?? "unknown"} response state.`;
-  }
-  if (node.type === "archive_status") {
-    return `Archive and parse status cluster for ${aggregateCount} public resources: ${node.archive_status ?? node.label}.`;
-  }
-  if (node.type === "disease_site_cluster") {
-    return `Disease-site cluster containing ${aggregateCount} public resources.`;
-  }
-  if (node.type === "document_type_cluster") {
-    return `Document-type cluster containing ${aggregateCount} public resources.`;
-  }
-  return `Corpus graph metadata cluster for ${node.label}.`;
-}
-
-function toSourceLabel(node: CorpusGraphNode) {
-  if (node.type === "resource") {
-    return `${node.resource_id ?? node.id} · ${node.archive_status ?? "metadata-only"} · ${node.parse_status ?? "not-parsed"}`;
-  }
-  return `${node.id} · metadata projection`;
-}
-
-function nodeSortKey(node: CorpusGraphNode) {
-  const typeRank = node.type === "resource" ? "1" : "0";
-  return `${typeRank}:${node.type}:${node.label ?? node.title ?? node.id}`;
+  return [activeSpan, ...sourceSpans];
 }
