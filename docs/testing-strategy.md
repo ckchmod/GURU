@@ -30,7 +30,7 @@ Maintain a full test baseline from the start. Every significant milestone must p
 - Grep assertions for PHI, secrets, and restricted file patterns.
 - Provenance metadata checks on generated graph nodes.
 - Git status checks to confirm no raw large files or credentials are staged.
-- Documentation grep checks for generated answers disabled, graph-first trace semantics, source-backed graph-linked retrieval, local/mockable/skippable dry-run ModelTrace behavior, opt-in Qwen3 4B/Ollama local runner boundaries, best-effort manifest-accounted acquisition, offline/local surveillance, source-span parent fallback, and draft/non-claim evidence-review wording.
+- Documentation grep checks for selected-context cited draft answer boundaries, graph-first trace semantics, source-backed graph-linked retrieval, local/mockable/skippable dry-run ModelTrace behavior, opt-in Qwen3 4B/Ollama local runner boundaries, best-effort manifest-accounted acquisition, offline/local surveillance, source-span parent fallback, and draft/non-claim evidence-review wording.
 - Documentation grep checks that overclaiming phrases are absent or explicitly scoped as disabled, excluded, blocked, local-only, or future-roadmap work.
 
 ## Commands
@@ -118,14 +118,14 @@ npm run dev:web
 
 For docs-only tasks that synchronize GURU identity and current Evidence Atlas language, do not run browser tests unless UI behavior changed. Use focused read and grep checks over the changed docs instead. The checks should prove that these statements are present:
 
-- Generated answers remain disabled.
-- Graph-linked retrieval is retrieval, provenance, and trace evidence only, source-backed where validated source spans exist.
-- Workbench command/eval/trace responses carry graph resources, source-span identifiers, path/context nodes, gateway/model-class status, citation-verifier status, warnings, abstention status, and evidence IDs, not generated answer text.
+- Only selected-context cited draft answer fragments are allowed, and only when grounded to one validated source span.
+- Graph-linked retrieval is retrieval, provenance, and trace evidence, source-backed where validated source spans exist.
+- Workbench command/eval/trace/conversation responses carry graph resources, source-span identifiers, path/context nodes, gateway/model-class status, citation-verifier status, warnings, abstention status, answer links, and evidence IDs, not whole-corpus answer text.
 - `local_open_weight_7b` is documented as a local, mockable, and skippable model class or dry-run path, not a hard-coded production model.
-- `Explain Selection` is documented as graph-attached trace-only eval infrastructure, not a chatbot, generated answer endpoint, approved guidance panel, or clinical recommendation workflow.
+- `Explain Selection` is documented as graph-attached trace-only eval infrastructure, and `conversation-turn` is documented as selected-context cited draft only, not a chatbot, full RAG answer endpoint, approved guidance panel, or clinical recommendation workflow.
 - Qwen3 4B through Ollama is documented as an opt-in v1 local runtime behind `services/api/app/model_gateway.py`, not a permanent model commitment.
-- Raw output is withheld by default; normal API, UI, evidence, and test surfaces expose trace metadata only.
-- Explain Selection trace results are ephemeral only: no persisted `ModelTrace`, graph mutation, database write, `localStorage`, or `sessionStorage` trace persistence.
+- Raw output is withheld by default; normal API, UI, evidence, and test surfaces expose trace metadata or cited draft fragments only.
+- Explain Selection trace results and conversation turns are ephemeral only: no persisted `ModelTrace`, graph mutation, database write, browser storage, prompts, transcripts, raw output, or conversation history.
 - Synthetic typed graph fixtures are test/eval contracts only; runtime context uses real public corpus metadata and validated local source spans.
 - External API routing is denied by default through `external_api_allowed: false`.
 - `docs/gpt5.5pro_6_15.md` is intent and strategy guidance only, not an authoritative implementation spec.

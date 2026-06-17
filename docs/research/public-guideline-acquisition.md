@@ -1,6 +1,6 @@
 # Public Guideline Acquisition Layout
 
-This note defines where Source-backed Evidence Atlas Workbench v2 keeps public AHS/GURU downloads, manifests, and derived records. It covers the 198 public metadata rows from the AHS cancer guideline page for graph, API, search, and archive-status metadata scope. It does not claim guaranteed all-198 parsed coverage, and it does not change the project safety rules: no PHI, no patient-specific advice, source span provenance for clinical claim-like records, generated answers disabled, and no default external LLM routing.
+This note defines where Source-backed Evidence Atlas Workbench v2 keeps public AHS/GURU downloads, manifests, and derived records. It covers the 198 public metadata rows from the AHS cancer guideline page for graph, API, search, and archive-status metadata scope. It does not claim guaranteed all-198 parsed coverage, and it does not change the project safety rules: no PHI, no patient-specific advice, source span provenance for clinical claim-like records, no whole-corpus/open chat or approved guidance, selected-context cited draft answers only when tied to one validated source span, and no default external LLM routing.
 
 The graph/archive vocabulary for the real public corpus atlas is defined in [`docs/real-corpus-graph-archive-contract.md`](../real-corpus-graph-archive-contract.md). Downstream parser, graph projection, API, data-client, UI, search, and safety tasks must use that contract for node classes, edge classes, archive statuses, parse statuses, and metadata provenance fields.
 
@@ -60,4 +60,4 @@ The Evidence Atlas currently uses Sigma.js plus Graphology for the default real-
 
 ## Roadmap Fit
 
-This layout supports the next product families after the knowledgebase foundation: live surveillance, PICO/evidence workflows, recommendation-impact diff, consensus workflow, Alberta-local overlays, and computable guideline compiler work. Those are roadmap families, not current milestone outputs. Each family must continue to use source spans for clinical claim-like records and must keep the no-PHI, no patient-specific advice, generated-answers-disabled, and no default external LLM routing safeguards.
+This layout supports the next product families after the knowledgebase foundation: live surveillance, PICO/evidence workflows, recommendation-impact diff, consensus workflow, Alberta-local overlays, and computable guideline compiler work. Those are roadmap families, not current milestone outputs. Each family must continue to use source spans for clinical claim-like records and must keep the no-PHI, no patient-specific advice, selected-context cited-draft-only, no whole-corpus/open chat, no approved guidance, and no default external LLM routing safeguards.
