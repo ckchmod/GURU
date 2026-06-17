@@ -100,12 +100,25 @@ GENERATED_ANSWER_FORBIDDEN_KEYS = {
     "output_text",
     "generated_answer",
     "generatedAnswer",
+    "clinical_summary",
+    "suggested_treatment",
     "raw_model_output",
 }
 GENERATED_ANSWER_FORBIDDEN_TEXT = re.compile(
     r"\b(?:chat transcript|assistant response|recommendation text|treatment advice|dosing|diagnosis)\b",
     re.IGNORECASE,
 )
+CONVERSATION_TURN_ALLOWED_REQUEST_KEYS = {"question", "turn_id", "source_span_id", "selected_node_id", "resource_id"}
+CONVERSATION_TURN_FORBIDDEN_REQUEST_KEYS = {
+    "messages",
+    "history",
+    "transcript",
+    "chat_prompt",
+    "global_corpus_chat",
+    "corpus_chat",
+    "raw_model_output",
+    "source_span_ids",
+}
 
 BLOCKED_PLACEHOLDER_LABELS = re.compile(
     r"\b(?:Synthetic|Packet Alpha|Model Trace Stub|Evidence Hub|Mock|Demo|Placeholder)\b",
@@ -153,7 +166,10 @@ README_REQUIRED_SAFETY_PATTERNS = [
     ("no patient-specific advice", re.compile(r"\bNo patient-specific\b", re.IGNORECASE)),
     ("no clinical claim without source span", re.compile(r"\bNo clinical claim without (?:a cited )?source span\b", re.IGNORECASE)),
     ("no default external LLM routing", re.compile(r"\bNo default external LLM routing\b", re.IGNORECASE)),
-    ("generated answers disabled", re.compile(r"\bGenerated answers remain disabled\b", re.IGNORECASE)),
+    (
+        "selected-context cited draft answers only",
+        re.compile(r"\bOnly selected-context cited draft answers are allowed\b", re.IGNORECASE),
+    ),
 ]
 
 
@@ -409,6 +425,127 @@ def iter_payload_records(value: Any, path: str = "$") -> list[tuple[str, Any]]:
     return records
 
 
+def validate_conversation_turn_request_shape(label: str, payload: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    request_keys = set(payload)
+    forbidden_keys = request_keys & CONVERSATION_TURN_FORBIDDEN_REQUEST_KEYS
+    unexpected_keys = request_keys - CONVERSATION_TURN_ALLOWED_REQUEST_KEYS
+    if forbidden_keys:
+        errors.append(f"{label} request includes forbidden whole-corpus/transcript/raw-output keys: {sorted(forbidden_keys)!r}")
+    if unexpected_keys:
+        errors.append(f"{label} request includes non-allowlisted keys: {sorted(unexpected_keys)!r}")
+    if not isinstance(payload.get("question"), str) or not payload.get("question", "").strip():
+        errors.append(f"{label} request must include a non-empty question")
+    if "turn_id" in payload and not isinstance(payload["turn_id"], str):
+        errors.append(f"{label} request turn_id must be a string when present")
+    return errors
+
+
+def validate_conversation_turn_response(label: str, payload: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    status = payload.get("status")
+    if payload.get("raw_output_included") is not False:
+        errors.append(f"{label} must report raw_output_included=false")
+    gateway_decision = payload.get("gateway_decision")
+    if not isinstance(gateway_decision, dict) or gateway_decision.get("external_api_used") is not False:
+        errors.append(f"{label} must report gateway_decision.external_api_used=false")
+    persistence = payload.get("persistence")
+    if not isinstance(persistence, dict):
+        errors.append(f"{label} must include explicit non-persistence metadata")
+    elif persistence.get("stored") is not False or persistence.get("transcript_persisted") is not False:
+        errors.append(f"{label} must not persist answer or transcript state")
+
+    for path, value in iter_payload_records(payload):
+        if isinstance(value, dict):
+            forbidden_keys = GENERATED_ANSWER_FORBIDDEN_KEYS & set(value)
+            if forbidden_keys:
+                errors.append(f"{label} exposes forbidden generated-answer/raw-output keys at {path}: {sorted(forbidden_keys)!r}")
+        elif isinstance(value, str) and GENERATED_ANSWER_FORBIDDEN_TEXT.search(value):
+            errors.append(f"{label} exposes forbidden answer/advice text at {path}")
+
+    fragments = payload.get("answer_fragments")
+    citations = payload.get("citations")
+    if not isinstance(fragments, list) or not isinstance(citations, list):
+        errors.append(f"{label} must include answer_fragments and citations arrays")
+        return errors
+
+    if status != "draft":
+        if fragments or citations or payload.get("graph_links"):
+            errors.append(f"{label} non-draft response must not include answer fragments, citations, or graph links")
+        return errors
+
+    if payload.get("answer_mode") != "selected_context_cited_draft":
+        errors.append(f"{label} draft response must use selected_context_cited_draft mode")
+    citations_by_span_id = {
+        citation.get("source_span_id"): citation
+        for citation in citations
+        if isinstance(citation, dict) and isinstance(citation.get("source_span_id"), str)
+    }
+    if not fragments:
+        errors.append(f"{label} draft response must include at least one cited fragment")
+    for index, fragment in enumerate(fragments):
+        if not isinstance(fragment, dict):
+            errors.append(f"{label} answer fragment {index} must be an object")
+            continue
+        fragment_id = fragment.get("fragment_id")
+        source_span_ids = fragment.get("source_span_ids")
+        if fragment.get("unsupported") is True:
+            errors.append(f"{label} draft fragment {fragment_id!r} must not be marked unsupported")
+        if not isinstance(fragment_id, str) or not isinstance(source_span_ids, list) or not source_span_ids:
+            errors.append(f"{label} draft fragment {index} must carry source_span_ids")
+            continue
+        for source_span_id in source_span_ids:
+            citation = citations_by_span_id.get(source_span_id)
+            if citation is None:
+                errors.append(f"{label} draft fragment {fragment_id!r} lacks citation for source span {source_span_id!r}")
+                continue
+            if fragment_id not in citation.get("answer_fragment_ids", []):
+                errors.append(f"{label} citation {source_span_id!r} does not support fragment {fragment_id!r}")
+            for required_key in ("source_document_id", "stable_locator", "display_label", "quoted_span", "excerpt_digest"):
+                if not citation.get(required_key):
+                    errors.append(f"{label} citation {source_span_id!r} missing {required_key}")
+    return errors
+
+
+def invalid_conversation_turn_examples() -> dict[str, dict[str, Any]]:
+    base_gateway = {
+        "allowed": True,
+        "outcome": "executed",
+        "reason_code": None,
+        "policy_request_id": "policy-request-invalid-example",
+        "external_api_used": False,
+    }
+    base = {
+        "status": "draft",
+        "answer_mode": "selected_context_cited_draft",
+        "answer_fragments": [
+            {
+                "fragment_id": "fragment-1",
+                "text": "For the selected question, the Page 1 · Span 1 source span states: \"Local deterministic parsed excerpt.\" Local gateway trace status: executed.",
+                "source_span_ids": ["source-span.invalid"],
+                "unsupported": False,
+            }
+        ],
+        "citations": [{"source_span_id": "source-span.invalid", "source_document_id": "source-document.invalid", "stable_locator": "page:1;span:1", "display_label": "Page 1 · Span 1", "quoted_span": "Local deterministic parsed excerpt.", "excerpt_digest": "sha256:invalid", "answer_fragment_ids": ["fragment-1"]}],
+        "graph_links": [{"source_span_id": "source-span.invalid", "highlight_node_ids": ["resource.invalid"]}],
+        "safety_notice": "Draft answer for selected source context only; not medical advice.",
+        "gateway_decision": base_gateway,
+        "evidence_ids": ["source-span.invalid"],
+        "raw_output_included": False,
+        "persistence": {"stored": False, "transcript_persisted": False},
+        "model_routing": "none-local-deterministic-search-only",
+    }
+    return {
+        "uncited draft answer example": {**base, "citations": []},
+        "raw output example": {**base, "raw_output_included": True, "raw_model_output": "unsafe raw output"},
+        "external routing example": {**base, "gateway_decision": {**base_gateway, "external_api_used": True}},
+        "missing persistence example": {key: value for key, value in base.items() if key != "persistence"},
+        "non-dict persistence example": {**base, "persistence": None},
+        "persisted answer example": {**base, "persistence": {"stored": True, "transcript_persisted": True}},
+        "patient advice example": {**base, "answer_fragments": [{"fragment_id": "fragment-1", "text": "treatment advice with dosing", "source_span_ids": ["source-span.invalid"], "unsupported": False}]},
+    }
+
+
 def validate_no_generated_answer_drift() -> list[str]:
     from fastapi.testclient import TestClient
 
@@ -419,6 +556,12 @@ def validate_no_generated_answer_drift() -> list[str]:
     os.environ["GURU_LOCAL_DEBUG_MODEL_OUTPUT"] = "0"
     try:
         client = TestClient(app)
+        source_spans_response = client.get("/knowledgebase/corpus/source-spans")
+        source_span_id = None
+        if source_spans_response.status_code == 200:
+            source_spans = source_spans_response.json().get("source_spans", [])
+            if source_spans:
+                source_span_id = source_spans[0].get("span_id")
         responses = {
             "corpus search": client.get("/knowledgebase/corpus/search", params={"q": "adjuvant radiotherapy"}),
             "workbench trace": client.get("/knowledgebase/corpus/workbench/trace", params={"q": "adjuvant radiotherapy"}),
@@ -426,7 +569,24 @@ def validate_no_generated_answer_drift() -> list[str]:
                 "/knowledgebase/corpus/workbench/explain-selection",
                 json={"resource_id": "ahs-guru-breast-br005-adjuvant-rt-invasive-breast"},
             ),
+            "conversation selected-context required": client.post(
+                "/knowledgebase/corpus/workbench/conversation-turn",
+                json={"question": "Summarize the selected source context.", "turn_id": "turn-safety-selected-context-required"},
+            ),
+            "conversation patient advice refusal": client.post(
+                "/knowledgebase/corpus/workbench/conversation-turn",
+                json={"question": "what should someone choose for treatment", "turn_id": "turn-safety-patient-advice", "source_span_id": source_span_id or "source-span.missing"},
+            ),
+            "conversation broad source set refusal": client.post(
+                "/knowledgebase/corpus/workbench/conversation-turn",
+                json={"question": "Summarize the selected source context.", "turn_id": "turn-safety-broad-source-set", "source_span_ids": [source_span_id or "source-span.missing", "source-span.extra"]},
+            ),
         }
+        if isinstance(source_span_id, str):
+            responses["conversation selected-context cited draft"] = client.post(
+                "/knowledgebase/corpus/workbench/conversation-turn",
+                json={"question": "Summarize the selected source context.", "turn_id": "turn-safety-cited-draft", "source_span_id": source_span_id},
+            )
     finally:
         if previous_debug_gate is None:
             os.environ.pop("GURU_LOCAL_DEBUG_MODEL_OUTPUT", None)
@@ -448,6 +608,27 @@ def validate_no_generated_answer_drift() -> list[str]:
                     errors.append(f"{label} reports external_api_used=true at {path}")
             elif isinstance(value, str) and GENERATED_ANSWER_FORBIDDEN_TEXT.search(value):
                 errors.append(f"{label} exposes forbidden answer/advice text at {path}")
+        if label.startswith("conversation "):
+            errors.extend(validate_conversation_turn_response(label, response.json()))
+
+    valid_request = {
+        "question": "Summarize the selected source context.",
+        "turn_id": "turn-safety-request-shape",
+        "source_span_id": "source-span.valid",
+        "selected_node_id": "resource.valid",
+        "resource_id": "resource.valid",
+    }
+    errors.extend(validate_conversation_turn_request_shape("conversation selected-context allowlist", valid_request))
+    for label, request_payload in {
+        "conversation whole-corpus/open-chat request": {**valid_request, "messages": [], "global_corpus_chat": True},
+        "conversation transcript persistence request": {**valid_request, "transcript": "persist me"},
+        "conversation raw-output request": {**valid_request, "raw_model_output": "include raw output"},
+    }.items():
+        if not validate_conversation_turn_request_shape(label, request_payload):
+            errors.append(f"{label} unexpectedly passed request-shape validation")
+    for label, payload in invalid_conversation_turn_examples().items():
+        if not validate_conversation_turn_response(label, payload):
+            errors.append(f"{label} unexpectedly passed conversation-turn safety validation")
     return errors
 
 
