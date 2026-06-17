@@ -11,6 +11,7 @@ GURU treats guideline resources as a structured knowledge graph: resources, dise
 - Not a generic chatbot or generated-answer RAG system.
 - Not a full 198-PDF parser or generated-answer system.
 - Not a generated clinical summary system. Generated answers remain disabled.
+- Not an approved guidance panel, full RAG answer endpoint, or clinical recommendation workflow.
 - Not a source of patient-specific treatment advice.
 - Not a source of approved clinical recommendations.
 - Not a repository for PHI, real patient records, or raw public guideline downloads in normal Git history.
@@ -83,6 +84,12 @@ The non-mutating evidence-review shell is draft workflow metadata only unless a 
 Surveillance in this milestone is an offline/local manifest scaffold. It compares committed local manifest files and surfaces archive status chips; it does not crawl live sources, check live reachability, infer practice impact, or run recommendation-impact diff.
 
 Generated answers remain disabled. The current product is a graph-linked retrieval and provenance surface for guideline exploration, source-backed only where validated source spans exist.
+
+`Explain Selection` is graph-attached trace-only eval infrastructure for a selected node, resource, or source span. It returns trace metadata, digests, statuses, warnings, and evidence IDs, not answer text, raw model output, approved guidance, or clinical recommendations. Results are ephemeral in this milestone: no persisted `ModelTrace`, graph mutation, database write, or browser storage trace persistence.
+
+The local instruction path stays behind `services/api/app/model_gateway.py`. The default remains the mockable dry-run. Qwen3 4B through Ollama is an opt-in v1 local runtime when explicitly enabled, not a permanent model commitment, and external LLM routing stays disabled by default.
+
+Synthetic typed graph fixtures are test and eval contracts only. Runtime context uses real public corpus metadata and validated local source spans.
 
 The remaining safeguards are no PHI, no patient-specific advice, no clinical claim without a source span, and no default external LLM routing.
 

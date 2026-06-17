@@ -30,7 +30,7 @@ Maintain a full test baseline from the start. Every significant milestone must p
 - Grep assertions for PHI, secrets, and restricted file patterns.
 - Provenance metadata checks on generated graph nodes.
 - Git status checks to confirm no raw large files or credentials are staged.
-- Documentation grep checks for generated answers disabled, graph-first trace semantics, source-backed graph-linked retrieval, local/mockable/skippable dry-run ModelTrace behavior, best-effort manifest-accounted acquisition, offline/local surveillance, source-span parent fallback, and draft/non-claim evidence-review wording.
+- Documentation grep checks for generated answers disabled, graph-first trace semantics, source-backed graph-linked retrieval, local/mockable/skippable dry-run ModelTrace behavior, opt-in Qwen3 4B/Ollama local runner boundaries, best-effort manifest-accounted acquisition, offline/local surveillance, source-span parent fallback, and draft/non-claim evidence-review wording.
 - Documentation grep checks that overclaiming phrases are absent or explicitly scoped as disabled, excluded, blocked, local-only, or future-roadmap work.
 
 ## Commands
@@ -122,6 +122,11 @@ For docs-only tasks that synchronize GURU identity and current Evidence Atlas la
 - Graph-linked retrieval is retrieval, provenance, and trace evidence only, source-backed where validated source spans exist.
 - Workbench command/eval/trace responses carry graph resources, source-span identifiers, path/context nodes, gateway/model-class status, citation-verifier status, warnings, abstention status, and evidence IDs, not generated answer text.
 - `local_open_weight_7b` is documented as a local, mockable, and skippable model class or dry-run path, not a hard-coded production model.
+- `Explain Selection` is documented as graph-attached trace-only eval infrastructure, not a chatbot, generated answer endpoint, approved guidance panel, or clinical recommendation workflow.
+- Qwen3 4B through Ollama is documented as an opt-in v1 local runtime behind `services/api/app/model_gateway.py`, not a permanent model commitment.
+- Raw output is withheld by default; normal API, UI, evidence, and test surfaces expose trace metadata only.
+- Explain Selection trace results are ephemeral only: no persisted `ModelTrace`, graph mutation, database write, `localStorage`, or `sessionStorage` trace persistence.
+- Synthetic typed graph fixtures are test/eval contracts only; runtime context uses real public corpus metadata and validated local source spans.
 - External API routing is denied by default through `external_api_allowed: false`.
 - `docs/gpt5.5pro_6_15.md` is intent and strategy guidance only, not an authoritative implementation spec.
 - All-public acquisition is best-effort and manifest-accounted, not guaranteed all-198 parsed coverage.
@@ -130,7 +135,7 @@ For docs-only tasks that synchronize GURU identity and current Evidence Atlas la
 - Source-span retrieval hits fall back to the parent resource when the graph lacks source-span nodes.
 - The evidence-review shell is draft/non-claim unless source-span-backed.
 
-The same docs-only check should search for overclaims such as full RAG answers, generated clinical summaries, recommendation-impact diff, guaranteed all-198 parsing, approved recommendations, patient-specific advice, live surveillance, crawler behavior, or clinical inference. Matches are acceptable only when the surrounding text says the capability is disabled, excluded, blocked, local-only, or future-roadmap work.
+The same docs-only check should search for overclaims such as full RAG answers, generated answers, generated clinical summaries, recommendation-impact diff, impact scanner, guaranteed all-198 parsing, approved recommendations, patient-specific advice, live surveillance, crawler behavior, clinical inference, all-real typed clinical graph extraction, or production model serving. Matches are acceptable only when the surrounding text says the capability is disabled, excluded, blocked, local-only, ephemeral-only, test-only, or future-roadmap work.
 
 ## Test data
 

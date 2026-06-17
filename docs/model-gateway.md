@@ -2,7 +2,7 @@
 
 This document defines the model gateway policy for the CCA GURU Guideline Graph Workbench. It is an engineering policy, not a model-selection decision or a vendor recommendation. The gateway exists to make every model call explicit, bounded, traceable, and accountable before any token is consumed.
 
-The current Graph-RAG foundation uses the gateway for trace semantics only. Workbench traces may record a command, eval result, retrieval context, source-span IDs, gateway decision, model-class status, citation-verifier status, warnings, abstention status, and evidence IDs. They do not return generated answer text, approved guidance, patient-specific advice, generated clinical summaries, or full RAG answers.
+The current Graph-RAG foundation uses the gateway for trace semantics only. Workbench traces may record a command, eval result, retrieval context, source-span IDs, gateway decision, model-class status, citation-verifier status, warnings, abstention status, and evidence IDs. They do not return generated answer text, approved guidance, patient-specific advice, generated clinical summaries, or full RAG answers. `Explain Selection` is graph-attached trace and eval infrastructure, not a chatbot, answer endpoint, approved guidance panel, or clinical recommendation workflow.
 
 ## Default direction: local, open-weight, customer-owned, or private deployment
 
@@ -79,6 +79,8 @@ This object is a starting template. Each field is tightened or loosened by task 
 
 For the current dry-run trace path, `local_open_weight_7b` is a model class and testable policy label. It is not a hard-coded production model, a downloaded weight, or a vendor choice.
 
+The v1 real local instruction runtime is opt-in only. When `GURU_ENABLE_REAL_LOCAL_INSTRUCTION_MODEL=1` and `GURU_LOCAL_INSTRUCTION_PROVIDER=ollama` are set, the gateway may call a loopback Ollama runner for Qwen3 4B. Qwen3 4B is the first local runner target for this milestone, not a permanent model commitment or benchmark winner. With the default environment, the mockable dry-run remains active.
+
 ## Gateway decision flow
 
 When a component requests a model call, the gateway performs these checks in order:
@@ -150,6 +152,16 @@ The dry-run path:
 
 This path supports trace evaluation for the Graph-RAG foundation. It is not a delivered chatbot, a full RAG answer product, clinical decision support, or an approved recommendation system.
 
+## Opt-in v1 local runner
+
+The opt-in v1 runner keeps real local inference behind `services/api/app/model_gateway.py`. It does not bypass the policy envelope, and it keeps `external_api_allowed=false` and `external_api_used=false`. Ollama access is loopback-only before network I/O; non-loopback URLs are rejected. Missing runtime, missing model, timeout, malformed response, and non-loopback URL failures are trace runner statuses, not reasons to route externally.
+
+Normal responses withhold raw model output by default. API payloads, UI surfaces, evidence files, and tests expose trace metadata, digests, statuses, warnings, and evidence IDs only. `raw_model_output` is allowed only when `GURU_LOCAL_DEBUG_MODEL_OUTPUT=1` and request-level debug permission are both present. Response fields named `answer_text` or `output_text` remain forbidden.
+
+The runner result is ephemeral in this milestone. The gateway does not persist a `ModelTrace`, mutate the graph, write inference trace data to a database, or store trace results in browser `localStorage` or `sessionStorage`. Any later persisted trace workflow needs a separate schema, review, and test plan.
+
+Runtime context must use real public corpus metadata and validated local source spans. Synthetic typed graph fixtures exist only for tests and eval contracts; they do not stand in for all-real typed clinical graph extraction.
+
 ## Trace logging
 
 Trace logging records:
@@ -181,13 +193,15 @@ Approval records include the service or model class, the content class, the purp
 
 This policy does not:
 
-- integrate real model serving;
+- provide production model serving;
 - download model weights;
 - call external APIs;
 - hard-code a named model as the permanent default;
 - treat `local_open_weight_7b` as a production model commitment;
+- treat Qwen3 4B through Ollama as a permanent model commitment;
 - promote GPT 5.5 Pro strategy notes to implementation authority;
 - return generated answer text from the current dry-run trace path;
+- persist `ModelTrace` records, write graph mutations, or save inference trace payloads to browser storage in this milestone;
 - generate patient-specific advice or clinical recommendations;
 - route prompts, documents, or embeddings to external LLM APIs by default.
 
