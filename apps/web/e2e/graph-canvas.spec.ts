@@ -113,6 +113,20 @@ const forbiddenGeneratedAnswerStrings = [
   "assistant response"
 ];
 
+const forbiddenExplainSelectionFields = [
+  "answer_text",
+  "output_text",
+  "generated_answer",
+  "generatedAnswer",
+  "raw_model_output",
+  "chat transcript",
+  "assistant response",
+  "recommendation text",
+  "treatment advice",
+  "dosing",
+  "diagnosis"
+];
+
 type CorpusGraphScalePayload = {
   nodes: unknown[];
   edges: unknown[];
@@ -126,11 +140,13 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
   const consoleFindings: string[] = [];
   const mutationRequests: string[] = [];
   const traceRequests: string[] = [];
+  const explainSelectionRequests: string[] = [];
   const performanceEvidence: Record<string, number | string | boolean> = {
     graphReadyThresholdMs: 10000,
     searchVisibleThresholdMs: 2500,
     mockedCorpusApi: true
   };
+  await installStorageSetItemSpy(page);
   page.on("console", (message) => {
     if (message.type() === "error" || message.type() === "warning") {
       if (isKnownBrowserConsoleNoise(message.text())) {
@@ -140,10 +156,14 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
     }
   });
   page.on("request", (request) => {
+    if (request.method() !== "GET" && request.url().includes("/api/knowledgebase/corpus/workbench/explain-selection")) {
+      explainSelectionRequests.push(`${request.method()} ${request.url()}`);
+      return;
+    }
     if (request.url().includes("/api/knowledgebase/corpus/workbench/trace")) {
       traceRequests.push(`${request.method()} ${request.url()}`);
     }
-    if (request.method() !== "GET" && /review|queue|interpretability|mutation/i.test(request.url())) {
+    if (request.method() !== "GET" && request.url().includes("/api/knowledgebase/corpus")) {
       mutationRequests.push(`${request.method()} ${request.url()}`);
     }
   });
@@ -334,8 +354,45 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
   await expect(page.getByTestId("workbench-trace-terminal")).toContainText("Source spans used/rejected");
   await expect(page.getByTestId("workbench-trace-terminal")).toContainText("1 used / 0 rejected");
   await expect(page.getByTestId("workbench-trace-terminal")).toContainText("local_open_weight_7b");
+  await resetStorageSetItemSpy(page);
+  const explainRequestCountBefore = explainSelectionRequests.length;
+  const mutationRequestCountBeforeExplain = mutationRequests.length;
+  await expect(workbench.getByRole("button", { name: "Explain Selection" })).toBeEnabled();
+  await workbench.getByRole("button", { name: "Explain Selection" }).click();
+  const explainTrace = page.getByTestId("explain-selection-trace-terminal");
+  await expect(explainTrace).toHaveAttribute("data-command-label", "explain-selection");
+  await expect(explainTrace).toHaveAttribute("data-gateway-outcome", "executed");
+  await expect(explainTrace).toHaveAttribute("data-runner-status", "dry_run_completed");
+  await expect(explainTrace).toHaveAttribute("data-citation-verifier-status", "pass");
+  await expect(explainTrace).toHaveAttribute("data-raw-output-included", "false");
+  await expect(explainTrace).toContainText("Command label");
+  await expect(explainTrace).toContainText("explain-selection");
+  await expect(explainTrace).toContainText("Selected node ID");
+  await expect(explainTrace).toContainText(`resource.${breastResourceId}`);
+  await expect(explainTrace).toContainText("Selected source-span IDs");
+  await expect(explainTrace).toContainText("source-span.local-test");
+  await expect(explainTrace).toContainText("Context digest");
+  await expect(explainTrace).toContainText("sha256:context-source-span-local-test");
+  await expect(explainTrace).toContainText("Output digest");
+  await expect(explainTrace).toContainText("sha256:output-source-span-local-test");
+  await expect(explainTrace).toContainText("Runner status");
+  await expect(explainTrace).toContainText("Gateway outcome");
+  await expect(explainTrace).toContainText("Citation/verifier status");
+  await expect(explainTrace).toContainText("Warnings");
+  await expect(explainTrace).toContainText("none");
+  await expect(explainTrace).toContainText("Evidence IDs");
+  await expect(explainTrace).toContainText("evidence.explain.source-span.local-test");
+  await expect(explainTrace).toContainText("raw_output_included");
+  await expect(explainTrace).toContainText("false");
+  await expect(explainTrace).toContainText("no claim: true");
+  await expectNoForbiddenExplainSelectionText(page);
+  const storageSetItemCalls = await readStorageSetItemCalls(page);
+  expect(storageSetItemCalls, "Explain Selection inference trace must not persist to localStorage/sessionStorage").toEqual([]);
+  expect(explainSelectionRequests.slice(explainRequestCountBefore)).toEqual([expect.stringContaining("POST")]);
+  expect(mutationRequests.slice(mutationRequestCountBeforeExplain), "Explain Selection must not issue corpus mutation/write requests").toEqual([]);
+  await screenshotExpandedExplainSelectionTrace(page, "../../.omo/evidence/task-7-explain-selection-trace-ui.png");
   await screenshotExpandedWorkbenchTrace(page, "../../.omo/evidence/task-7-workbench-trace-ui.png");
-  writeTask7WorkbenchTraceText(await readTask7WorkbenchTraceEvidence(page, consoleFindings, traceRequests));
+  writeTask7WorkbenchTraceText(await readTask7WorkbenchTraceEvidence(page, consoleFindings, traceRequests, explainSelectionRequests, storageSetItemCalls));
   await expect(page.getByTestId("lookup-relationship-trace")).toContainText("source span");
   await expect(page.getByTestId("lookup-relationship-trace")).toContainText("review item");
   await expectNoForbiddenGeneratedAnswerText(page);
@@ -1063,6 +1120,59 @@ async function screenshotExpandedWorkbenchTrace(page: Page, path: string) {
   });
 }
 
+async function screenshotExpandedExplainSelectionTrace(page: Page, path: string) {
+  await page.evaluate(() => {
+    document.getElementById("task-7-evidence-screenshot-style")?.remove();
+    const style = document.createElement("style");
+    style.id = "task-7-evidence-screenshot-style";
+    style.textContent = ".atlas-workbench{max-height:none!important;overflow:visible!important}.atlas-workbench__results{overflow:visible!important}";
+    document.head.append(style);
+    const results = document.querySelector(".atlas-workbench__results");
+    if (results) {
+      results.scrollTop = 0;
+    }
+  });
+  await page.getByTestId("explain-selection-trace-terminal").screenshot({ path });
+  await page.evaluate(() => {
+    document.getElementById("task-7-evidence-screenshot-style")?.remove();
+  });
+}
+
+async function installStorageSetItemSpy(page: Page) {
+  await page.addInitScript(() => {
+    const calls: Array<{ area: string; key: string; valuePreview: string }> = [];
+    Object.defineProperty(window, "__guruStorageSetItemCalls", {
+      configurable: true,
+      value: calls
+    });
+    const originalSetItem = Storage.prototype.setItem;
+    Storage.prototype.setItem = function setItemSpy(key: string, value: string) {
+      calls.push({
+        area: this === window.localStorage ? "localStorage" : this === window.sessionStorage ? "sessionStorage" : "unknownStorage",
+        key: String(key),
+        valuePreview: String(value).slice(0, 80)
+      });
+      return originalSetItem.call(this, key, value);
+    };
+  });
+}
+
+async function resetStorageSetItemSpy(page: Page) {
+  await page.evaluate(() => {
+    const calls = (window as typeof window & { __guruStorageSetItemCalls?: unknown[] }).__guruStorageSetItemCalls;
+    if (Array.isArray(calls)) {
+      calls.length = 0;
+    }
+  });
+}
+
+async function readStorageSetItemCalls(page: Page) {
+  return page.evaluate(() => {
+    const calls = (window as typeof window & { __guruStorageSetItemCalls?: unknown[] }).__guruStorageSetItemCalls;
+    return Array.isArray(calls) ? calls : [];
+  });
+}
+
 async function readTask8GraphTerminalContext(page: Page) {
   return page.evaluate(() => {
     const graph = document.querySelector('[data-testid="sigma-corpus-graph"]');
@@ -1099,20 +1209,32 @@ async function readTask8GraphTerminalContext(page: Page) {
   });
 }
 
-async function readTask7WorkbenchTraceEvidence(page: Page, consoleFindings: string[], traceRequests: string[]) {
+async function readTask7WorkbenchTraceEvidence(
+  page: Page,
+  consoleFindings: string[],
+  traceRequests: string[],
+  explainSelectionRequests: string[],
+  storageSetItemCalls: unknown[]
+) {
   const visibleState = await page.evaluate(() => {
     const workbench = document.querySelector('[data-testid="atlas-workbench"]');
     const trace = document.querySelector('[data-testid="workbench-trace-terminal"]');
+    const explainTrace = document.querySelector('[data-testid="explain-selection-trace-terminal"]');
     const terminal = document.querySelector('[data-testid="retrieval-terminal-state"]');
     return {
       workbenchText: workbench?.textContent?.trim() ?? "",
       traceText: trace?.textContent?.trim() ?? "",
+      explainTraceText: explainTrace?.textContent?.trim() ?? "",
       retrievalText: terminal?.textContent?.trim() ?? "",
       commandLabel: trace?.getAttribute("data-command-label") ?? null,
+      explainCommandLabel: explainTrace?.getAttribute("data-command-label") ?? null,
+      explainGatewayOutcome: explainTrace?.getAttribute("data-gateway-outcome") ?? null,
+      explainRunnerStatus: explainTrace?.getAttribute("data-runner-status") ?? null,
+      explainRawOutputIncluded: explainTrace?.getAttribute("data-raw-output-included") ?? null,
       gatewayOutcome: trace?.getAttribute("data-gateway-outcome") ?? null,
       abstentionStatus: trace?.getAttribute("data-abstention-status") ?? null,
       citationVerifierStatus: trace?.getAttribute("data-citation-verifier-status") ?? null,
-      forbiddenSurfacePresent: /clinical answer|treatment advice|dosing|diagnosis|assistant response|chat transcript/i.test(workbench?.textContent ?? "")
+      forbiddenSurfacePresent: /answer_text|output_text|generated_answer|generatedAnswer|raw_model_output|clinical answer|treatment advice|dosing|diagnosis|assistant response|chat transcript|recommendation text/i.test(workbench?.textContent ?? "")
     };
   });
 
@@ -1122,10 +1244,18 @@ async function readTask7WorkbenchTraceEvidence(page: Page, consoleFindings: stri
     visibleState,
     consoleFindings,
     traceRequests,
+    explainSelectionRequests,
+    storageSetItemCalls,
     pass: visibleState.commandLabel === "run-evals:corpus-workbench-trace"
+      && visibleState.explainCommandLabel === "explain-selection"
+      && visibleState.explainGatewayOutcome === "executed"
+      && visibleState.explainRunnerStatus === "dry_run_completed"
+      && visibleState.explainRawOutputIncluded === "false"
       && visibleState.gatewayOutcome === "executed"
       && visibleState.abstentionStatus === "abstained_no_answer_text"
       && visibleState.citationVerifierStatus === "pass"
+      && explainSelectionRequests.some((request) => request.startsWith("POST "))
+      && storageSetItemCalls.length === 0
       && !visibleState.forbiddenSurfacePresent
   };
 }
@@ -1134,6 +1264,13 @@ async function expectNoForbiddenGeneratedAnswerText(page: Page, queryToIgnore = 
   const safetyText = await readVisibleSafetyText(page, queryToIgnore);
   for (const forbiddenString of forbiddenGeneratedAnswerStrings) {
     expect(safetyText.toLowerCase(), `visible retrieval/graph safety surface must not include ${forbiddenString}`).not.toContain(forbiddenString.toLowerCase());
+  }
+}
+
+async function expectNoForbiddenExplainSelectionText(page: Page) {
+  const safetyText = (await readVisibleSafetyText(page)).split("abstained_no_answer_text").join("");
+  for (const forbiddenField of forbiddenExplainSelectionFields) {
+    expect(safetyText, `Explain Selection normal UI must not include ${forbiddenField}`).not.toContain(forbiddenField);
   }
 }
 
@@ -1461,6 +1598,10 @@ async function mockCorpusApi(page: Page) {
     const requestUrl = new URL(route.request().url());
     await route.fulfill({ json: buildWorkbenchTracePayload(requestUrl.searchParams.get("q") ?? "") });
   });
+  await page.route("**/api/knowledgebase/corpus/workbench/explain-selection", async (route) => {
+    const payload = route.request().postDataJSON() as { source_span_id?: string; selected_node_id?: string; resource_id?: string };
+    await route.fulfill({ json: buildExplainSelectionPayload(payload) });
+  });
   await page.route("**/api/knowledgebase/corpus/interpretability?**", async (route) => {
     const requestUrl = new URL(route.request().url());
     await route.fulfill({ json: buildInterpretabilityPayload(requestUrl.searchParams.get("resource_id") ?? breastResourceId, interpretabilitySourceSpans, reviewQueueItems) });
@@ -1728,6 +1869,79 @@ function buildWorkbenchTracePayload(query: string) {
     warnings,
     abstained: true,
     abstention_status: abstentionStatus,
+    evidence_ids: [...sourceIdsUsed, ...sourceIdsRejected].map((record) => record.evidence_id),
+    no_claim: true,
+    model_routing: "none-local-deterministic-search-only"
+  };
+}
+
+function buildExplainSelectionPayload(request: { source_span_id?: string; selected_node_id?: string; resource_id?: string }) {
+  const hasSourceSpanContext = request.source_span_id === sourceSpanSearchResult.span_id;
+  const selectedNodeId = request.selected_node_id ?? (request.source_span_id ? request.source_span_id : `resource.${request.resource_id ?? breastResourceId}`);
+  const sourceSpanIds = hasSourceSpanContext ? [sourceSpanSearchResult.span_id] : [];
+  const sourceIdsUsed = hasSourceSpanContext ? [{
+    source_span_id: sourceSpanSearchResult.span_id,
+    resource_id: sourceSpanSearchResult.resource_id,
+    source_document_id: sourceSpanSearchResult.document_id,
+    stable_locator: sourceSpanSearchResult.stable_locator,
+    status: "used",
+    evidence_id: "evidence.explain.source-span.local-test"
+  }] : [];
+  const sourceIdsRejected = hasSourceSpanContext ? [] : [{
+    resource_id: request.resource_id ?? breastResourceId,
+    status: "rejected",
+    reason: "missing_validated_source_span_context",
+    evidence_id: `evidence.blocked.${request.resource_id ?? breastResourceId}`
+  }];
+  const gatewayDecision = hasSourceSpanContext ? {
+    allowed: true,
+    outcome: "executed",
+    reason_code: null,
+    policy_request_id: "policy-request-explain-selection-local-test",
+    external_api_used: false
+  } : {
+    allowed: false,
+    outcome: "blocked_before_gateway",
+    reason_code: "missing_validated_source_span_context",
+    policy_request_id: "policy-request-explain-selection-local-test",
+    external_api_used: false
+  };
+  const runnerStatus = hasSourceSpanContext ? "dry_run_completed" : "not_invoked";
+  const citationVerifierStatus = hasSourceSpanContext ? "pass" : "not_run";
+
+  return {
+    command_label: "explain-selection",
+    selected_node_id: selectedNodeId,
+    selected_node_type: hasSourceSpanContext ? "resource" : "Resource",
+    resource_id: request.resource_id ?? breastResourceId,
+    source_span_ids: sourceSpanIds,
+    context_digest: hasSourceSpanContext ? "sha256:context-source-span-local-test" : "sha256:context-blocked-metadata-only",
+    output_digest: hasSourceSpanContext ? "sha256:output-source-span-local-test" : "sha256:output-blocked-metadata-only",
+    gateway_decision: gatewayDecision,
+    model_class: "local_open_weight_7b",
+    model_trace: {
+      model_class: "local_open_weight_7b",
+      provider_kind: "local",
+      trace_status: hasSourceSpanContext ? "abstained" : "blocked",
+      runner_status: runnerStatus,
+      policy_request_id: "policy-request-explain-selection-local-test",
+      gateway_outcome: gatewayDecision.outcome,
+      gateway_reason_code: gatewayDecision.reason_code,
+      citation_verifier_status: citationVerifierStatus,
+      abstention_status: hasSourceSpanContext ? "abstained_no_answer_text" : "abstained_no_model_execution",
+      input_digest: hasSourceSpanContext ? "sha256:context-source-span-local-test" : "sha256:context-blocked-metadata-only",
+      output_digest: hasSourceSpanContext ? "sha256:output-source-span-local-test" : "sha256:output-blocked-metadata-only",
+      source_span_ids: sourceSpanIds,
+      output_tokens: 0,
+      gpu_seconds: 0,
+      raw_output_included: false
+    },
+    runner_status: runnerStatus,
+    raw_output_included: false,
+    cost_ledger_entry: hasSourceSpanContext ? { external_api_used: false, outcome: "executed" } : null,
+    source_ids_used: sourceIdsUsed,
+    source_ids_rejected: sourceIdsRejected,
+    warnings: hasSourceSpanContext ? [] : ["missing_validated_source_span_context"],
     evidence_ids: [...sourceIdsUsed, ...sourceIdsRejected].map((record) => record.evidence_id),
     no_claim: true,
     model_routing: "none-local-deterministic-search-only"
