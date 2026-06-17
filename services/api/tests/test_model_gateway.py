@@ -32,6 +32,7 @@ from services.api.app.model_gateway import (
     validate_local_model_trace,
     validate_policy_envelope,
 )
+from services.api.scripts import qwen_ollama_preflight
 
 
 TASK_ID = "11111111-1111-4111-8111-111111111111"
@@ -410,6 +411,83 @@ def test_policy_envelope_validation_matches_schema_required_fields_and_external_
     invalid["external_api_allowed"] = True
     with pytest.raises(GatewayPolicyError, match="external_api_allowed"):
         validate_policy_envelope(invalid)
+
+
+def test_qwen_ollama_preflight_missing_runtime_is_actionable_and_ci_safe(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv(LOCAL_INSTRUCTION_REAL_RUNNER_ENV, raising=False)
+    monkeypatch.delenv(LOCAL_INSTRUCTION_PROVIDER_ENV, raising=False)
+    monkeypatch.delenv(OLLAMA_BASE_URL_ENV, raising=False)
+    monkeypatch.delenv(OLLAMA_MODEL_ENV, raising=False)
+
+    def fake_urlopen(request: object, timeout: float) -> FakeOllamaResponse:
+        assert getattr(request, "full_url") == "http://127.0.0.1:11434/api/tags"
+        raise urllib.error.URLError("connection refused")
+
+    result = qwen_ollama_preflight.run_preflight(run_smoke=True, urlopen=fake_urlopen)
+
+    assert result["external_api_used"] is False
+    assert result["ready"] is False
+    assert result["environment"][LOCAL_INSTRUCTION_REAL_RUNNER_ENV]["ok"] is False
+    assert result["environment"][LOCAL_INSTRUCTION_PROVIDER_ENV]["expected"] == OLLAMA_PROVIDER
+    assert result["environment"][OLLAMA_BASE_URL_ENV]["loopback_only"] is True
+    assert result["environment"][OLLAMA_MODEL_ENV]["value"] == "qwen3:4b"
+    assert result["ollama"]["reachable"] is False
+    assert result["ollama"]["model_present"] is False
+    assert result["smoke"] == {"attempted": False, "reason": "preflight_not_ready", "external_api_used": False}
+    assert f"export {LOCAL_INSTRUCTION_REAL_RUNNER_ENV}=1" in result["actions"]
+    assert f"export {LOCAL_INSTRUCTION_PROVIDER_ENV}=ollama" in result["actions"]
+    assert f"export {OLLAMA_BASE_URL_ENV}=http://127.0.0.1:11434" in result["actions"]
+    assert f"export {OLLAMA_MODEL_ENV}=qwen3:4b" in result["actions"]
+    assert "ollama pull qwen3:4b" in result["actions"]
+    assert any("ollama serve" in action for action in result["actions"])
+
+
+def test_qwen_ollama_preflight_rejects_non_loopback_before_tags_network(monkeypatch: pytest.MonkeyPatch) -> None:
+    enable_mocked_ollama(monkeypatch)
+    monkeypatch.setenv(OLLAMA_BASE_URL_ENV, "http://192.0.2.10:11434")
+
+    def fail_if_called(request: object, timeout: float) -> FakeOllamaResponse:
+        raise AssertionError("non-loopback tags URL must not call network")
+
+    result = qwen_ollama_preflight.run_preflight(urlopen=fail_if_called)
+
+    assert result["external_api_used"] is False
+    assert result["environment"][OLLAMA_BASE_URL_ENV]["loopback_only"] is False
+    assert result["ollama"]["status"] == LOCAL_QWEN_NON_LOOPBACK_BASE_URL
+    assert result["ready"] is False
+    assert f"export {OLLAMA_BASE_URL_ENV}=http://127.0.0.1:11434" in result["actions"]
+
+
+def test_qwen_ollama_preflight_available_smoke_routes_through_gateway(monkeypatch: pytest.MonkeyPatch) -> None:
+    enable_mocked_ollama(monkeypatch)
+
+    def fake_urlopen(request: object, timeout: float) -> FakeOllamaResponse:
+        assert timeout == model_gateway.OLLAMA_REQUEST_TIMEOUT_SECONDS
+        url = getattr(request, "full_url")
+        if url == "http://127.0.0.1:11434/api/tags":
+            return FakeOllamaResponse(b'{"models":[{"name":"qwen3:4b"},{"name":"other-local:latest"}]}')
+        if url == "http://127.0.0.1:11434/api/generate":
+            body = getattr(request, "data").decode("utf-8")
+            assert "source-span.qwen-preflight-smoke" in body
+            return FakeOllamaResponse(b'{"response":"preflight trace metadata only"}')
+        raise AssertionError(f"unexpected URL: {url}")
+
+    monkeypatch.setattr(model_gateway.urllib.request, "urlopen", fake_urlopen)
+
+    result = qwen_ollama_preflight.run_preflight(run_smoke=True, urlopen=fake_urlopen)
+
+    assert result["ready"] is True
+    assert result["external_api_used"] is False
+    assert result["ollama"]["reachable"] is True
+    assert result["ollama"]["model_present"] is True
+    assert result["smoke"]["attempted"] is True
+    assert result["smoke"]["trace_status"] == "executed"
+    assert result["smoke"]["runner_status"] == "ollama_qwen_executed"
+    assert result["smoke"]["source_span_ids"] == ["source-span.qwen-preflight-smoke"]
+    assert result["smoke"]["raw_output_included"] is False
+    assert result["smoke"]["raw_output_withheld"] is True
+    assert result["smoke"]["external_api_used"] is False
+    assert result["smoke"]["output_digest"].startswith("sha256:")
 
 
 def enable_mocked_ollama(monkeypatch: pytest.MonkeyPatch) -> None:
