@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import {
   CorpusAtlasClientError,
+  loadCorpusExplainSelection,
   loadCorpusAtlas,
   loadCorpusInterpretability,
   loadCorpusWorkbenchTrace,
@@ -17,6 +18,8 @@ import {
   type CompactAtlasSearchResponse,
   type CompactAtlasSourceSpanSearchResult,
   type CompactAtlasSurveillanceStatus,
+  type CorpusExplainSelectionRequest,
+  type CorpusExplainSelectionTraceResponse,
   type CorpusGraphNode,
   type CorpusAtlasModel,
   type CorpusSourceSpan,
@@ -123,6 +126,13 @@ type WorkbenchTraceState = {
   message: string;
 };
 
+type ExplainSelectionTraceState = {
+  status: SearchStatus;
+  request: CorpusExplainSelectionRequest | null;
+  response: CorpusExplainSelectionTraceResponse | null;
+  message: string;
+};
+
 type LookupSelection = {
   kind: "metadata" | "source_span";
   resourceId: string;
@@ -162,6 +172,13 @@ const initialWorkbenchTraceState: WorkbenchTraceState = {
   message: "Run a retrieval query to inspect the local workbench trace."
 };
 
+const initialExplainSelectionTraceState: ExplainSelectionTraceState = {
+  status: "idle",
+  request: null,
+  response: null,
+  message: "Select a graph resource or source-span result, then run Explain Selection for a trace-only command."
+};
+
 const modelDisabledNote = "Generated answers disabled until retrieval/source-span verification is implemented.";
 
 const groupLabels: Record<AtlasNodeGroup, string> = {
@@ -189,6 +206,7 @@ export function GuidelineGraphCanvas() {
   const [workbenchQuery, setWorkbenchQuery] = useState("");
   const [workbenchSearchState, setWorkbenchSearchState] = useState<WorkbenchSearchState>(initialWorkbenchSearchState);
   const [workbenchTraceState, setWorkbenchTraceState] = useState<WorkbenchTraceState>(initialWorkbenchTraceState);
+  const [explainSelectionTraceState, setExplainSelectionTraceState] = useState<ExplainSelectionTraceState>(initialExplainSelectionTraceState);
   const [interpretabilityState, setInterpretabilityState] = useState<InterpretabilityLoadState>(initialInterpretabilityState);
   const [lookupSelection, setLookupSelection] = useState<LookupSelection | null>(null);
   const [reviewQueueLocalAction, setReviewQueueLocalAction] = useState<ReviewQueueLocalAction | null>(null);
@@ -321,6 +339,10 @@ export function GuidelineGraphCanvas() {
     () => buildRetrievalGraphEvidenceState(workbenchSearchState.response, lookupSelection, selectedResource, selectedNode, activeSpan, model),
     [activeSpan, lookupSelection, model, selectedNode, selectedResource, workbenchSearchState.response]
   );
+  const explainSelectionRequest = useMemo(
+    () => buildExplainSelectionRequest(retrievalGraphEvidence, selectedNode, selectedResource, activeSpan),
+    [activeSpan, retrievalGraphEvidence, selectedNode, selectedResource]
+  );
 
   const selectNodeById = useCallback((nodeId: string, options: SelectNodeOptions = {}) => {
     if (!model) {
@@ -410,6 +432,7 @@ export function GuidelineGraphCanvas() {
     if (!submittedQuery) {
       setWorkbenchSearchState(initialWorkbenchSearchState);
       setWorkbenchTraceState(initialWorkbenchTraceState);
+      setExplainSelectionTraceState(initialExplainSelectionTraceState);
       return;
     }
 
@@ -451,6 +474,42 @@ export function GuidelineGraphCanvas() {
     });
     focusResourceById(result.resourceId, result.spanId, { preserveLookupSelection: true });
   }, [focusResourceById]);
+
+  const handleExplainSelection = useCallback(async () => {
+    if (!explainSelectionRequest) {
+      setExplainSelectionTraceState({
+        status: "idle",
+        request: null,
+        response: null,
+        message: "Explain Selection needs a selected graph resource, graph node, or source-span-backed result."
+      });
+      return;
+    }
+
+    setExplainSelectionTraceState({
+      status: "loading",
+      request: explainSelectionRequest,
+      response: null,
+      message: explainSelectionRequest.source_span_id
+        ? "Running Explain Selection for the selected source-span context."
+        : "Running Explain Selection as a blocked metadata-only trace."
+    });
+
+    try {
+      const response = await loadCorpusExplainSelection(explainSelectionRequest);
+      setExplainSelectionTraceState({
+        status: "success",
+        request: explainSelectionRequest,
+        response,
+        message: "Explain Selection returned trace-only metadata from the local corpus API."
+      });
+    } catch (error: unknown) {
+      const message = error instanceof CorpusAtlasClientError
+        ? error.message
+        : "Corpus Explain Selection API unavailable.";
+      setExplainSelectionTraceState({ status: "error", request: explainSelectionRequest, response: null, message });
+    }
+  }, [explainSelectionRequest]);
 
   const handleKeyboardSelect = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
     if (isInteractiveKeyboardTarget(event.target)) {
@@ -586,10 +645,14 @@ export function GuidelineGraphCanvas() {
         query={workbenchQuery}
         searchState={workbenchSearchState}
         traceState={workbenchTraceState}
+        explainSelectionState={explainSelectionTraceState}
+        canExplainSelection={Boolean(explainSelectionRequest)}
+        explainSelectionHasSourceSpan={Boolean(explainSelectionRequest?.source_span_id)}
         onQueryChange={handleWorkbenchQueryChange}
         onSearchSubmit={handleWorkbenchSearchSubmit}
         onMetadataSelect={handleMetadataSearchSelect}
         onSourceSpanSelect={handleSourceSpanSearchSelect}
+        onExplainSelection={handleExplainSelection}
       />
     </section>
   );
@@ -752,10 +815,14 @@ function BottomCorpusSearchWorkbench({
   query,
   searchState,
   traceState,
+  explainSelectionState,
+  canExplainSelection,
+  explainSelectionHasSourceSpan,
   onQueryChange,
   onSearchSubmit,
   onMetadataSelect,
-  onSourceSpanSelect
+  onSourceSpanSelect,
+  onExplainSelection
 }: {
   model: CorpusAtlasModel | null;
   loadState: AtlasLoadState;
@@ -765,10 +832,14 @@ function BottomCorpusSearchWorkbench({
   query: string;
   searchState: WorkbenchSearchState;
   traceState: WorkbenchTraceState;
+  explainSelectionState: ExplainSelectionTraceState;
+  canExplainSelection: boolean;
+  explainSelectionHasSourceSpan: boolean;
   onQueryChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onSearchSubmit: (event: WorkbenchSearchSubmitEvent) => void;
   onMetadataSelect: (result: CompactAtlasMetadataSearchResult) => void;
   onSourceSpanSelect: (result: CompactAtlasSourceSpanSearchResult) => void;
+  onExplainSelection: () => void;
 }) {
   const response = searchState.response;
   const resultsRef = React.useRef<HTMLElement | null>(null);
@@ -811,6 +882,22 @@ function BottomCorpusSearchWorkbench({
           <div><dt>Selected resource context</dt><dd className="wrap-anywhere">{selectedResource?.id ?? "resource pending"}</dd></div>
           <div><dt>Graph focus / trust path</dt><dd>Search hits focus the graph, trust drawer, and source-span provenance when available.</dd></div>
         </dl>
+        <div className="atlas-workbench__form atlas-workbench__explain-action" aria-label="Explain Selection action">
+          <button
+            type="button"
+            onClick={onExplainSelection}
+            disabled={!canExplainSelection || explainSelectionState.status === "loading"}
+          >
+            Explain Selection
+          </button>
+          <span>
+            {canExplainSelection
+              ? explainSelectionHasSourceSpan
+                ? "Source-span-backed selection: trace will include digests, gateway outcome, verifier status, warnings, and evidence IDs."
+                : "Selection lacks validated source-span context; Explain Selection will render a blocked trace only."
+              : "Select a resource, graph node, or source-span result before running Explain Selection."}
+          </span>
+        </div>
         <p className="atlas-workbench__model-note">{modelDisabledNote} Local-only deterministic mode; no external large-language-model routing or approved guidance text is shown.</p>
       </section>
 
@@ -864,6 +951,7 @@ function BottomCorpusSearchWorkbench({
 
         {terminalState ? <RetrievalTerminalState state={terminalState} onMetadataSelect={onMetadataSelect} onSourceSpanSelect={onSourceSpanSelect} /> : null}
         <WorkbenchTraceTerminal traceState={traceState} retrievalEvidence={retrievalEvidence} />
+        <ExplainSelectionTraceTerminal explainState={explainSelectionState} />
       </section>
     </footer>
   );
@@ -1017,7 +1105,64 @@ function WorkbenchTraceTerminal({
   );
 }
 
-function TraceRecordGroup({ title, count, children }: { title: "Retrieval steps" | "Source spans used" | "Source spans rejected"; count: number; children: React.ReactNode }) {
+function ExplainSelectionTraceTerminal({ explainState }: { explainState: ExplainSelectionTraceState }) {
+  const trace = explainState.response;
+  const warnings = trace?.warnings ?? [];
+  const sourceSpanIds = trace?.source_span_ids ?? (explainState.request?.source_span_id ? [explainState.request.source_span_id] : []);
+
+  return (
+    <section
+      className="atlas-workbench-group atlas-workbench-trace"
+      aria-label="Explain Selection trace"
+      data-testid="explain-selection-trace-terminal"
+      data-trace-status={explainState.status}
+      data-command-label={trace?.command_label ?? "none"}
+      data-gateway-outcome={trace?.gateway_decision.outcome ?? "none"}
+      data-runner-status={trace?.runner_status ?? "none"}
+      data-citation-verifier-status={trace?.model_trace.citation_verifier_status ?? "none"}
+      data-raw-output-included={trace ? String(trace.raw_output_included) : "none"}
+    >
+      <div className="atlas-workbench-group__title">
+        <strong>Explain Selection trace</strong>
+        <span>{explainState.status === "loading" ? "loading" : trace?.model_routing ?? explainState.message}</span>
+      </div>
+      {explainState.status === "error" ? <p className="atlas-workbench__empty">{explainState.message}</p> : null}
+      {trace ? (
+        <>
+          <dl className="atlas-workbench__context" aria-label="Explain Selection trace fields">
+            <div><dt>Command label</dt><dd className="wrap-anywhere">{trace.command_label}</dd></div>
+            <div><dt>Selected node ID</dt><dd className="wrap-anywhere">{trace.selected_node_id}</dd></div>
+            <div><dt>Selected node type</dt><dd>{trace.selected_node_type}</dd></div>
+            <div><dt>Selected resource ID</dt><dd className="wrap-anywhere">{trace.resource_id ?? explainState.request?.resource_id ?? "resource not returned"}</dd></div>
+            <div><dt>Selected source-span IDs</dt><dd className="wrap-anywhere">{sourceSpanIds.join(", ") || "none"}</dd></div>
+            <div><dt>Context digest</dt><dd className="wrap-anywhere">{trace.context_digest}</dd></div>
+            <div><dt>Output digest</dt><dd className="wrap-anywhere">{trace.output_digest}</dd></div>
+            <div><dt>Runner status</dt><dd>{trace.runner_status}</dd></div>
+            <div><dt>Gateway outcome</dt><dd className="wrap-anywhere">{trace.gateway_decision.outcome}; allowed: {String(trace.gateway_decision.allowed)}; reason: {trace.gateway_decision.reason_code ?? "none"}; external API used: {String(trace.gateway_decision.external_api_used)}</dd></div>
+            <div><dt>Citation/verifier status</dt><dd>{trace.model_trace.citation_verifier_status}</dd></div>
+            <div><dt>raw_output_included</dt><dd>{String(trace.raw_output_included)}</dd></div>
+            <div><dt>Warnings</dt><dd>{warnings.length > 0 ? warnings.join(", ") : "none"}</dd></div>
+            <div><dt>Evidence IDs</dt><dd className="wrap-anywhere">{trace.evidence_ids.join(", ") || "none"}</dd></div>
+            <div><dt>Safety boundary</dt><dd>no claim: {String(trace.no_claim)}; generated-answer-disabled trace only</dd></div>
+          </dl>
+          <p className="atlas-workbench__model-note">Generated answers disabled until retrieval/source-span verification is implemented. Explain Selection shows command trace metadata only; raw model text is withheld by default.</p>
+          <div className="atlas-workbench-trace__grid">
+            <TraceRecordGroup title="Source spans used" count={trace.source_ids_used.length}>
+              {trace.source_ids_used.length > 0 ? trace.source_ids_used.map((record) => <TraceSourceRecordRow key={record.evidence_id} record={record} />) : <p className="atlas-workbench__empty">No source spans used by this explain-selection trace.</p>}
+            </TraceRecordGroup>
+            <TraceRecordGroup title="Source spans rejected" count={trace.source_ids_rejected.length}>
+              {trace.source_ids_rejected.length > 0 ? trace.source_ids_rejected.map((record) => <TraceSourceRecordRow key={record.evidence_id} record={record} />) : <p className="atlas-workbench__empty">No rejected source-span or metadata context records.</p>}
+            </TraceRecordGroup>
+          </div>
+        </>
+      ) : explainState.status === "idle" ? (
+        <p className="atlas-workbench__empty">{explainState.message}</p>
+      ) : null}
+    </section>
+  );
+}
+
+function TraceRecordGroup({ title, count, children }: { title: string; count: number; children: React.ReactNode }) {
   return (
     <section className="atlas-workbench-group" aria-label={title}>
       <div className="atlas-workbench-group__title">
@@ -1506,6 +1651,33 @@ function sourceSpanFromSearchResult(result: CompactAtlasSourceSpanSearchResult):
     excerpt: result.excerpt,
     checksum_sha256: result.checksumSha256,
     output_status: result.outputStatus
+  };
+}
+
+function buildExplainSelectionRequest(
+  retrievalEvidence: RetrievalGraphEvidenceState | null,
+  selectedNode: AtlasNodeView | null,
+  selectedResource: CompactAtlasResource | null,
+  activeSpan: CorpusSourceSpan | null
+): CorpusExplainSelectionRequest | null {
+  const sourceSpanId = retrievalEvidence?.selectedSourceSpanId ?? activeSpan?.span_id ?? (selectedNode?.kind === "sourceSpan" ? selectedNode.id : null);
+  const resourceId = retrievalEvidence?.selectedResourceId ?? selectedResource?.id ?? selectedNode?.resourceId ?? null;
+  const selectedNodeId = retrievalEvidence?.graphFocusNodeId ?? selectedNode?.id ?? (resourceId ? `resource.${resourceId}` : null);
+
+  if (!sourceSpanId && !resourceId && !selectedNodeId) {
+    return null;
+  }
+
+  return {
+    ...(sourceSpanId ? { source_span_id: sourceSpanId } : {}),
+    ...(selectedNodeId ? { selected_node_id: selectedNodeId } : {}),
+    ...(resourceId ? { resource_id: resourceId } : {}),
+    command_metadata: {
+      ui_surface: "graph_workbench",
+      selection_source: sourceSpanId ? "source_span" : "graph_or_metadata_selection",
+      focus_mode: retrievalEvidence?.focusMode ?? selectedNode?.kind ?? "resource",
+      raw_output_requested: false
+    }
   };
 }
 

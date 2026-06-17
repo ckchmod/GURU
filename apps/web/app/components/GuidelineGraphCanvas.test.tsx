@@ -509,6 +509,90 @@ describe("GuidelineGraphCanvas", () => {
     expect(traceTerminal).not.toHaveTextContent(/clinical answer|recommendation text|treatment advice|dosing|diagnosis|assistant response|chat transcript/i);
   });
 
+  it("runs Explain Selection for a source-span-backed graph selection as trace-only UI", async () => {
+    const fetchSpy = mockCorpusFetch();
+
+    render(<GuidelineGraphCanvas />);
+
+    await screen.findByText(/Public corpus metadata loaded from the local API/);
+    const workbench = screen.getByTestId("atlas-workbench");
+    fireEvent.change(within(workbench).getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }), {
+      target: { value: "deterministic parsed excerpt" }
+    });
+    fireEvent.submit(within(workbench).getByRole("search", { name: "Search public corpus metadata and source spans" }));
+    fireEvent.click(await within(workbench).findByRole("button", { name: /Local deterministic parsed excerpt/i }));
+
+    await waitFor(() => expect(screen.getByTestId("retrieval-terminal-state")).toHaveAttribute("data-highlighted-source-span-ids", "source-span.local-test"));
+    expect(workbench).toHaveTextContent("Source-span-backed selection: trace will include digests, gateway outcome, verifier status, warnings, and evidence IDs.");
+    fireEvent.click(within(workbench).getByRole("button", { name: "Explain Selection" }));
+
+    const explainTrace = await screen.findByTestId("explain-selection-trace-terminal");
+    expect(explainTrace).toHaveAttribute("data-command-label", "explain-selection");
+    expect(explainTrace).toHaveAttribute("data-gateway-outcome", "executed");
+    expect(explainTrace).toHaveAttribute("data-runner-status", "dry_run_completed");
+    expect(explainTrace).toHaveAttribute("data-citation-verifier-status", "pass");
+    expect(explainTrace).toHaveAttribute("data-raw-output-included", "false");
+    expect(explainTrace).toHaveTextContent("Selected node ID");
+    expect(explainTrace).toHaveTextContent(`resource.${breastResourceId}`);
+    expect(explainTrace).toHaveTextContent("Selected source-span IDs");
+    expect(explainTrace).toHaveTextContent("source-span.local-test");
+    expect(explainTrace).toHaveTextContent("Context digest");
+    expect(explainTrace).toHaveTextContent("sha256:context-source-span-local-test");
+    expect(explainTrace).toHaveTextContent("Output digest");
+    expect(explainTrace).toHaveTextContent("sha256:output-source-span-local-test");
+    expect(explainTrace).toHaveTextContent("Gateway outcome");
+    expect(explainTrace).toHaveTextContent("Citation/verifier status");
+    expect(explainTrace).toHaveTextContent("Warnings");
+    expect(explainTrace).toHaveTextContent("none");
+    expect(explainTrace).toHaveTextContent("Evidence IDs");
+    expect(explainTrace).toHaveTextContent("evidence.explain.source-span.local-test");
+    expect(explainTrace).toHaveTextContent("raw_output_included");
+    expect(explainTrace).toHaveTextContent("false");
+    expect(explainTrace).toHaveTextContent("Generated answers disabled until retrieval/source-span verification is implemented.");
+    expect(fetchSpy).toHaveBeenCalledWith("/api/knowledgebase/corpus/workbench/explain-selection", expect.objectContaining({
+      method: "POST",
+      body: expect.stringContaining("source-span.local-test")
+    }));
+    expect(within(workbench).queryByRole("textbox", { name: /prompt|ask|chat/i })).toBeNull();
+    expect(explainTrace).not.toHaveTextContent(/chat transcript|assistant response|recommendation text|treatment advice|dosing|diagnosis|raw_model_output|raw model output/i);
+  });
+
+  it("renders metadata-only Explain Selection as a blocked trace without a model answer panel", async () => {
+    mockCorpusFetch();
+
+    render(<GuidelineGraphCanvas />);
+
+    await screen.findByText(/Public corpus metadata loaded from the local API/);
+    const workbench = screen.getByTestId("atlas-workbench");
+    fireEvent.change(within(workbench).getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }), {
+      target: { value: "Adjuvant Radiotherapy for Invasive Breast Cancer" }
+    });
+    fireEvent.submit(within(workbench).getByRole("search", { name: "Search public corpus metadata and source spans" }));
+    fireEvent.click(await within(workbench).findByRole("button", { name: /Adjuvant Radiotherapy for Invasive Breast Cancer/i }));
+
+    await waitFor(() => expect(screen.getByTestId("retrieval-terminal-state")).toHaveAttribute("data-focus-mode", "metadata-only-blocked"));
+    expect(workbench).toHaveTextContent("Selection lacks validated source-span context; Explain Selection will render a blocked trace only.");
+    fireEvent.click(within(workbench).getByRole("button", { name: "Explain Selection" }));
+
+    const explainTrace = await screen.findByTestId("explain-selection-trace-terminal");
+    expect(explainTrace).toHaveAttribute("data-command-label", "explain-selection");
+    expect(explainTrace).toHaveAttribute("data-gateway-outcome", "blocked_before_gateway");
+    expect(explainTrace).toHaveAttribute("data-runner-status", "not_invoked");
+    expect(explainTrace).toHaveAttribute("data-citation-verifier-status", "not_run");
+    expect(explainTrace).toHaveAttribute("data-raw-output-included", "false");
+    expect(explainTrace).toHaveTextContent("Selected source-span IDs");
+    expect(explainTrace).toHaveTextContent("none");
+    expect(explainTrace).toHaveTextContent("missing_validated_source_span_context");
+    expect(explainTrace).toHaveTextContent("Context digest");
+    expect(explainTrace).toHaveTextContent("sha256:context-blocked-metadata-only");
+    expect(explainTrace).toHaveTextContent("Output digest");
+    expect(explainTrace).toHaveTextContent("sha256:output-blocked-metadata-only");
+    expect(explainTrace).toHaveTextContent("Evidence IDs");
+    expect(explainTrace).toHaveTextContent(`evidence.blocked.${breastResourceId}`);
+    expect(explainTrace).toHaveTextContent("No source spans used by this explain-selection trace.");
+    expect(document.body).not.toHaveTextContent(/chat transcript|assistant response|recommendation text|treatment advice|dosing|diagnosis|raw_model_output|raw model output/i);
+  });
+
   it("renders unsupported advice-like trace as an abstained no-answer workbench state", async () => {
     mockCorpusFetch();
 
@@ -732,13 +816,15 @@ function mockCorpusFetch(overrides: {
     "/api/knowledgebase/corpus/source-spans": overrides.sourceSpans ?? sourceSpansPayload
   };
 
-  const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation((input: RequestInfo | URL) => {
+  const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation((input: RequestInfo | URL, init?: RequestInit) => {
     const url = input.toString();
     const parsedUrl = new URL(url, "http://localhost");
     const payload = parsedUrl.pathname === "/api/knowledgebase/corpus/search"
       ? buildSearchPayload(parsedUrl.searchParams.get("q") ?? "")
       : parsedUrl.pathname === "/api/knowledgebase/corpus/workbench/trace"
         ? buildWorkbenchTracePayload(parsedUrl.searchParams.get("q") ?? "")
+      : parsedUrl.pathname === "/api/knowledgebase/corpus/workbench/explain-selection"
+        ? buildExplainSelectionPayload(JSON.parse(String(init?.body ?? "{}")))
       : parsedUrl.pathname === "/api/knowledgebase/corpus/interpretability"
         ? buildInterpretabilityPayload(parsedUrl.searchParams.get("resource_id") ?? breastResourceId, overrides.interpretabilitySourceSpans, overrides.reviewQueueItems)
       : payloads[parsedUrl.pathname];
@@ -751,6 +837,83 @@ function mockCorpusFetch(overrides: {
   });
 
   return fetchSpy;
+}
+
+function buildExplainSelectionPayload(request: { source_span_id?: string; selected_node_id?: string; resource_id?: string }) {
+  const hasSourceSpanContext = request.source_span_id === sourceSpanSearchResult.span_id;
+  const selectedNodeId = request.selected_node_id ?? (request.resource_id ? `resource.${request.resource_id}` : sourceSpanSearchResult.span_id);
+  const resourceId = request.resource_id ?? (hasSourceSpanContext ? sourceSpanSearchResult.resource_id : breastResourceId);
+  const selectedNodeType = hasSourceSpanContext ? "source_span" : "resource";
+  const gatewayDecision = hasSourceSpanContext ? {
+    allowed: true,
+    outcome: "executed",
+    reason_code: null,
+    policy_request_id: "policy-request-explain-selection-local-test",
+    external_api_used: false
+  } : {
+    allowed: false,
+    outcome: "blocked_before_gateway",
+    reason_code: "missing_validated_source_span_context",
+    policy_request_id: "policy-request-explain-selection-local-test",
+    external_api_used: false
+  };
+  const sourceIdsUsed = hasSourceSpanContext ? [{
+    source_span_id: sourceSpanSearchResult.span_id,
+    selected_node_id: selectedNodeId,
+    resource_id: resourceId,
+    source_document_id: sourceSpanSearchResult.document_id,
+    stable_locator: sourceSpanSearchResult.stable_locator,
+    status: "used",
+    evidence_id: "evidence.explain.source-span.local-test"
+  }] : [];
+  const sourceIdsRejected = hasSourceSpanContext ? [] : [{
+    selected_node_id: selectedNodeId,
+    resource_id: resourceId,
+    status: "rejected",
+    reason: "missing_validated_source_span_context",
+    evidence_id: `evidence.blocked.${resourceId}`
+  }];
+  const citationVerifierStatus = hasSourceSpanContext ? "pass" : "not_run";
+  const runnerStatus = hasSourceSpanContext ? "dry_run_completed" : "not_invoked";
+  const sourceSpanIds = hasSourceSpanContext ? [sourceSpanSearchResult.span_id] : [];
+
+  return {
+    command_label: "explain-selection",
+    selected_node_id: selectedNodeId,
+    selected_node_type: selectedNodeType,
+    resource_id: resourceId,
+    source_span_ids: sourceSpanIds,
+    context_digest: hasSourceSpanContext ? "sha256:context-source-span-local-test" : "sha256:context-blocked-metadata-only",
+    output_digest: hasSourceSpanContext ? "sha256:output-source-span-local-test" : "sha256:output-blocked-metadata-only",
+    gateway_decision: gatewayDecision,
+    model_class: "local_open_weight_7b",
+    model_trace: {
+      model_class: "local_open_weight_7b",
+      provider_kind: "local",
+      trace_status: hasSourceSpanContext ? "abstained" : "blocked",
+      runner_status: runnerStatus,
+      policy_request_id: "policy-request-explain-selection-local-test",
+      gateway_outcome: gatewayDecision.outcome,
+      gateway_reason_code: gatewayDecision.reason_code,
+      citation_verifier_status: citationVerifierStatus,
+      abstention_status: hasSourceSpanContext ? "abstained_no_answer_text" : "abstained_no_model_execution",
+      input_digest: hasSourceSpanContext ? "sha256:context-source-span-local-test" : "sha256:context-blocked-metadata-only",
+      output_digest: hasSourceSpanContext ? "sha256:output-source-span-local-test" : "sha256:output-blocked-metadata-only",
+      source_span_ids: sourceSpanIds,
+      output_tokens: 0,
+      gpu_seconds: 0,
+      raw_output_included: false
+    },
+    runner_status: runnerStatus,
+    raw_output_included: false,
+    cost_ledger_entry: hasSourceSpanContext ? { external_api_used: false } : null,
+    source_ids_used: sourceIdsUsed,
+    source_ids_rejected: sourceIdsRejected,
+    warnings: hasSourceSpanContext ? [] : ["missing_validated_source_span_context", "no_generated_claim"],
+    evidence_ids: [...sourceIdsUsed, ...sourceIdsRejected].map((record) => record.evidence_id),
+    no_claim: true,
+    model_routing: "none-local-deterministic-search-only"
+  };
 }
 
 function buildSearchPayload(query: string) {

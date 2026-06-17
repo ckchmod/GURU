@@ -1318,6 +1318,18 @@ dt {
   gap: var(--space-2) var(--space-3);
 }
 
+.atlas-workbench__explain-action {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+}
+
+.atlas-workbench__explain-action span {
+  min-width: 0;
+  color: var(--color-muted);
+  font-size: 0.74rem;
+  line-height: 1.4;
+}
+
 .atlas-workbench__result-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
