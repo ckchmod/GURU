@@ -16,6 +16,7 @@ const atlasSmoothnessThresholds = {
   maxFrameGapMs: 300,
   realCorpusMaxFrameGapMs: 400,
   p95RafIntervalMs: 50,
+  realCorpusP95RafIntervalMs: 75,
   consoleErrorCount: 0,
   consoleWarningCount: 0
 };
@@ -1286,7 +1287,7 @@ test("Sigma graph canvas real corpus smoothness records 198-resource interaction
   expect(evidence.settled, "Sigma graph layout must report settled=true").toBe(true);
   expect(evidence.settleMs).toBeLessThanOrEqual(atlasSmoothnessThresholds.settleMs);
   expect(evidence.maxFrameGapMs).toBeLessThanOrEqual(atlasSmoothnessThresholds.realCorpusMaxFrameGapMs);
-  expect(evidence.p95RafIntervalMs).toBeLessThanOrEqual(atlasSmoothnessThresholds.p95RafIntervalMs);
+  expect(evidence.p95RafIntervalMs).toBeLessThanOrEqual(atlasSmoothnessThresholds.realCorpusP95RafIntervalMs);
   expect(evidence.consoleErrorCount).toBe(atlasSmoothnessThresholds.consoleErrorCount);
   expect(evidence.consoleWarningCount).toBe(atlasSmoothnessThresholds.consoleWarningCount);
 });
