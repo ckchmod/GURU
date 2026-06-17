@@ -226,6 +226,62 @@ export type CorpusExplainSelectionTraceResponse = {
   model_routing: CorpusModelRouting;
 };
 
+export type CorpusConversationTurnRequest = {
+  question: string;
+  turn_id?: string;
+  source_span_id?: string;
+  selected_node_id?: string;
+  resource_id?: string;
+};
+
+export type CorpusConversationTurnStatus = "draft" | "refused" | "unavailable";
+
+export type CorpusConversationAnswerMode = "selected_context_cited_draft" | "refusal" | "unavailable";
+
+export type CorpusConversationAnswerFragment = {
+  fragment_id: string;
+  text: string;
+  source_span_ids: string[];
+  unsupported: boolean;
+};
+
+export type CorpusConversationCitation = {
+  source_span_id: string;
+  source_document_id: string;
+  stable_locator: string;
+  display_label: string;
+  quoted_span: string;
+  excerpt_digest: string;
+  answer_fragment_ids: string[];
+};
+
+export type CorpusConversationGraphLink = {
+  resource_id?: string;
+  selected_node_id?: string;
+  source_span_id: string;
+  highlight_node_ids: string[];
+};
+
+export type CorpusConversationPersistence = {
+  stored: false;
+  transcript_persisted: false;
+};
+
+export type CorpusConversationTurnResponse = {
+  status: CorpusConversationTurnStatus;
+  reason_code?: string | null;
+  answer_mode?: CorpusConversationAnswerMode;
+  answer_fragments: CorpusConversationAnswerFragment[];
+  citations: CorpusConversationCitation[];
+  graph_links: CorpusConversationGraphLink[];
+  safety_notice: string;
+  gateway_decision: CorpusWorkbenchGatewayDecision;
+  evidence_ids: string[];
+  raw_output_included: false;
+  persistence: CorpusConversationPersistence;
+  model_routing: CorpusModelRouting;
+};
+
 export type CorpusGraphNeighborhood = {
   focus_node_id: string;
   resource_node_id: string;
@@ -489,6 +545,11 @@ type LoadCorpusExplainSelectionOptions = {
   signal?: AbortSignal;
 };
 
+type LoadCorpusConversationTurnOptions = {
+  basePath?: string;
+  signal?: AbortSignal;
+};
+
 export class CorpusAtlasClientError extends Error {
   constructor(message: string, readonly status: "api_unavailable" | "http_error") {
     super(message);
@@ -535,6 +596,36 @@ export async function loadCorpusExplainSelection(
     request,
     options.signal
   );
+}
+
+export async function loadCorpusConversationTurn(
+  request: CorpusConversationTurnRequest,
+  options: LoadCorpusConversationTurnOptions = {}
+): Promise<CorpusConversationTurnResponse> {
+  const basePath = options.basePath ?? CORPUS_API_BASE_PATH;
+  const body: Required<Pick<CorpusConversationTurnRequest, "question" | "turn_id">> & Omit<CorpusConversationTurnRequest, "turn_id"> = {
+    question: request.question,
+    turn_id: request.turn_id ?? createCorpusConversationTurnId()
+  };
+
+  if (request.source_span_id !== undefined) {
+    body.source_span_id = request.source_span_id;
+  }
+  if (request.selected_node_id !== undefined) {
+    body.selected_node_id = request.selected_node_id;
+  }
+  if (request.resource_id !== undefined) {
+    body.resource_id = request.resource_id;
+  }
+
+  const response = await postJson<CorpusConversationTurnResponse>(
+    `${basePath}/workbench/conversation-turn`,
+    "corpus conversation turn",
+    body,
+    options.signal
+  );
+  assertSafeCorpusConversationTurnResponse(response);
+  return response;
 }
 
 export async function loadCorpusInterpretability(
@@ -894,4 +985,80 @@ async function postJson<T>(url: string, label: string, body: unknown, signal?: A
   }
 
   return response.json() as Promise<T>;
+}
+
+function createCorpusConversationTurnId() {
+  const randomId = globalThis.crypto?.randomUUID?.();
+  return randomId ? `turn-${randomId}` : `turn-${Date.now().toString(36)}`;
+}
+
+function assertSafeCorpusConversationTurnResponse(response: CorpusConversationTurnResponse) {
+  if (response.raw_output_included !== false) {
+    throw new CorpusAtlasClientError("Corpus conversation turn response included raw model output.", "http_error");
+  }
+  if (response.gateway_decision.external_api_used !== false) {
+    throw new CorpusAtlasClientError("Corpus conversation turn response used external API routing.", "http_error");
+  }
+  if (
+    response.persistence === null ||
+    typeof response.persistence !== "object" ||
+    response.persistence.stored !== false ||
+    response.persistence.transcript_persisted !== false
+  ) {
+    throw new CorpusAtlasClientError("Corpus conversation turn response persisted answer or transcript state.", "http_error");
+  }
+
+  const forbiddenFields = new Set([
+    "raw_model_output",
+    "answer_text",
+    "clinical_summary",
+    "suggested_treatment",
+    "dosing",
+    "diagnosis"
+  ]);
+  const visited = new Set<unknown>();
+  const visit = (candidate: unknown) => {
+    if (candidate === null || typeof candidate !== "object" || visited.has(candidate)) {
+      return;
+    }
+    visited.add(candidate);
+    if (Array.isArray(candidate)) {
+      candidate.forEach(visit);
+      return;
+    }
+    Object.entries(candidate as Record<string, unknown>).forEach(([key, value]) => {
+      if (forbiddenFields.has(key)) {
+        throw new CorpusAtlasClientError(`Corpus conversation turn response included forbidden field ${key}.`, "http_error");
+      }
+      visit(value);
+    });
+  };
+
+  visit(response);
+
+  if (response.status !== "draft") {
+    if (response.answer_fragments.length > 0 || response.citations.length > 0 || response.graph_links.length > 0) {
+      throw new CorpusAtlasClientError("Corpus conversation refusal included draft answer artifacts.", "http_error");
+    }
+    return;
+  }
+
+  if (response.answer_mode !== "selected_context_cited_draft") {
+    throw new CorpusAtlasClientError("Corpus conversation draft used an unsafe answer mode.", "http_error");
+  }
+  const citationsBySpanId = new Map(response.citations.map((citation) => [citation.source_span_id, citation]));
+  if (response.answer_fragments.length === 0) {
+    throw new CorpusAtlasClientError("Corpus conversation draft did not include cited fragments.", "http_error");
+  }
+  response.answer_fragments.forEach((fragment) => {
+    if (fragment.unsupported || fragment.source_span_ids.length === 0) {
+      throw new CorpusAtlasClientError("Corpus conversation draft included unsupported or uncited fragments.", "http_error");
+    }
+    fragment.source_span_ids.forEach((sourceSpanId) => {
+      const citation = citationsBySpanId.get(sourceSpanId);
+      if (!citation || !citation.answer_fragment_ids.includes(fragment.fragment_id)) {
+        throw new CorpusAtlasClientError("Corpus conversation draft fragment lacked matching citation support.", "http_error");
+      }
+    });
+  });
 }

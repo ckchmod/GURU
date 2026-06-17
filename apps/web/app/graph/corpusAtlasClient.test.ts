@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildCorpusAtlasModel,
+  loadCorpusConversationTurn,
   loadCorpusExplainSelection,
   loadCorpusInterpretability,
   loadCorpusWorkbenchTrace,
@@ -167,6 +168,7 @@ function sourceSpanSearchResult(): CorpusSearchSourceSpanResult {
 function expectNoGeneratedAnswerFields(value: unknown) {
   const forbiddenFields = new Set([
     "answer_text",
+    "raw_model_output",
     "output_text",
     "generated_answer",
     "generatedAnswer",
@@ -628,5 +630,269 @@ describe("corpus atlas client and adapters", () => {
     expect(trace.runner_status).toBe("dry_run_completed");
     expect(trace.evidence_ids).toEqual([sourceSpanId]);
     expectNoGeneratedAnswerFields(trace);
+  });
+
+  it("selected_context_required refuses draft answers without source-span context", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({
+        status: "refused",
+        reason_code: "selected_context_required",
+        answer_fragments: [],
+        citations: [],
+        graph_links: [],
+        safety_notice: "Select one source-backed context before asking.",
+        gateway_decision: {
+          allowed: false,
+          outcome: "blocked_before_gateway",
+          reason_code: "selected_context_required",
+          policy_request_id: "policy-request-conversation-turn-local-test",
+          external_api_used: false
+        },
+        evidence_ids: [],
+        raw_output_included: false,
+        persistence: { stored: false, transcript_persisted: false },
+        model_routing: "none-local-deterministic-search-only"
+      }), { status: 200, headers: { "Content-Type": "application/json" } })
+    );
+
+    const response = await loadCorpusConversationTurn({ question: "Summarize the selected source context.", turn_id: "turn-client-no-context" });
+
+    expect(globalThis.fetch).toHaveBeenCalledWith("/api/knowledgebase/corpus/workbench/conversation-turn", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: "Summarize the selected source context.", turn_id: "turn-client-no-context" }),
+      signal: undefined
+    });
+    expect(response.status).toBe("refused");
+    expect(response.reason_code).toBe("selected_context_required");
+    expect(response.answer_fragments).toEqual([]);
+    expect(response.citations).toEqual([]);
+    expect(response.graph_links).toEqual([]);
+    expect(response.safety_notice).toBe("Select one source-backed context before asking.");
+    expect(response.gateway_decision.external_api_used).toBe(false);
+    expect(response.evidence_ids).toEqual([]);
+    expect(response.raw_output_included).toBe(false);
+    expect(response.persistence).toEqual({ stored: false, transcript_persisted: false });
+    expectNoGeneratedAnswerFields(response);
+  });
+
+  it("draft_answer_citations_required accepts only selected-context cited draft answers", async () => {
+    const citedTurnPayload = {
+      status: "draft",
+      answer_mode: "selected_context_cited_draft",
+      answer_fragments: [
+        {
+          fragment_id: "fragment-1",
+          text: "For the selected question, the Page 1 · Span 1 source span states: \"Local deterministic parsed excerpt for search coverage.\" Local gateway trace status: executed.",
+          source_span_ids: [sourceSpanId],
+          unsupported: false
+        }
+      ],
+      citations: [
+        {
+          source_span_id: sourceSpanId,
+          source_document_id: "source-document.local-test",
+          stable_locator: "page:1;span:1",
+          display_label: "Page 1 · Span 1",
+          quoted_span: "Local deterministic parsed excerpt for search coverage.",
+          excerpt_digest: `sha256:${"0".repeat(64)}`,
+          answer_fragment_ids: ["fragment-1"]
+        }
+      ],
+      graph_links: [
+        {
+          resource_id: resourceId,
+          selected_node_id: sourceSpanId,
+          source_span_id: sourceSpanId,
+          highlight_node_ids: [`resource.${resourceId}`, sourceSpanId]
+        }
+      ],
+      safety_notice: "Draft answer for selected source context only; not medical advice.",
+      gateway_decision: {
+        allowed: true,
+        outcome: "executed",
+        reason_code: null,
+        policy_request_id: "policy-request-conversation-turn-local-test",
+        external_api_used: false
+      },
+      evidence_ids: [sourceSpanId],
+      raw_output_included: false,
+      persistence: { stored: false, transcript_persisted: false },
+      model_routing: "none-local-deterministic-search-only"
+    };
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify(citedTurnPayload), { status: 200, headers: { "Content-Type": "application/json" } })
+    );
+
+    const response = await loadCorpusConversationTurn({
+      question: "Summarize the selected source context.",
+      turn_id: "turn-client-cited-draft",
+      source_span_id: sourceSpanId,
+      selected_node_id: sourceSpanId,
+      resource_id: resourceId
+    });
+
+    const [, requestInit] = vi.mocked(globalThis.fetch).mock.calls[0];
+    const requestBody = JSON.parse(String(requestInit?.body));
+    expect(requestBody).toEqual({
+      question: "Summarize the selected source context.",
+      turn_id: "turn-client-cited-draft",
+      source_span_id: sourceSpanId,
+      selected_node_id: sourceSpanId,
+      resource_id: resourceId
+    });
+    expect(Object.keys(requestBody).filter((key) => key === "source_span_id")).toHaveLength(1);
+    expect(requestBody).not.toHaveProperty("messages");
+    expect(requestBody).not.toHaveProperty("history");
+    expect(requestBody).not.toHaveProperty("transcript");
+    expect(requestBody).not.toHaveProperty("chat_prompt");
+    expect(requestBody).not.toHaveProperty("global_corpus_chat");
+    expect(response).toEqual(citedTurnPayload);
+    expect(response.status).toBe("draft");
+    expect(response.answer_fragments).toHaveLength(1);
+    expect(response.answer_fragments[0].source_span_ids).toEqual([sourceSpanId]);
+    expect(response.citations).toHaveLength(1);
+    expect(response.citations[0].source_span_id).toBe(sourceSpanId);
+    expect(response.citations[0].display_label).toBe("Page 1 · Span 1");
+    expect(response.citations[0].quoted_span).toBe("Local deterministic parsed excerpt for search coverage.");
+    expect(response.graph_links[0].highlight_node_ids).toContain(`resource.${resourceId}`);
+    expect(response.safety_notice).toBe("Draft answer for selected source context only; not medical advice.");
+    expect(response.gateway_decision.external_api_used).toBe(false);
+    expect(response.evidence_ids).toEqual([sourceSpanId]);
+    expect(response.raw_output_included).toBe(false);
+    expect(response.persistence.stored).toBe(false);
+    expectNoGeneratedAnswerFields(response);
+  });
+
+  it("loadCorpusConversationTurn generates a client turn id without transcript fields", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({
+        status: "refused",
+        reason_code: "gateway_unavailable",
+        answer_fragments: [],
+        citations: [],
+        graph_links: [],
+        safety_notice: "Conversation turn is unavailable without widening selected context.",
+        gateway_decision: {
+          allowed: false,
+          outcome: "unavailable",
+          reason_code: "gateway_unavailable",
+          policy_request_id: "policy-request-conversation-turn-local-test",
+          external_api_used: false
+        },
+        evidence_ids: [sourceSpanId],
+        raw_output_included: false,
+        persistence: { stored: false, transcript_persisted: false },
+        model_routing: "none-local-deterministic-search-only"
+      }), { status: 200, headers: { "Content-Type": "application/json" } })
+    );
+
+    await loadCorpusConversationTurn({
+      question: "Summarize the selected source context.",
+      source_span_id: sourceSpanId
+    });
+
+    const [, requestInit] = vi.mocked(globalThis.fetch).mock.calls[0];
+    const requestBody = JSON.parse(String(requestInit?.body));
+    expect(requestBody.question).toBe("Summarize the selected source context.");
+    expect(requestBody.turn_id).toMatch(/^turn-/);
+    expect(requestBody.source_span_id).toBe(sourceSpanId);
+    expect(requestBody).not.toHaveProperty("messages");
+    expect(requestBody).not.toHaveProperty("history");
+    expect(requestBody).not.toHaveProperty("transcript");
+    expect(requestBody).not.toHaveProperty("session_id");
+    expect(requestBody).not.toHaveProperty("global_corpus_chat");
+  });
+
+  it("loadCorpusConversationTurn rejects raw output and unsafe clinical response fields", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({
+        status: "draft",
+        answer_fragments: [],
+        citations: [],
+        graph_links: [],
+        safety_notice: "Unsafe fixture must be rejected.",
+        gateway_decision: {
+          allowed: true,
+          outcome: "executed",
+          reason_code: null,
+          policy_request_id: "policy-request-conversation-turn-local-test",
+          external_api_used: false
+        },
+        evidence_ids: [sourceSpanId],
+        raw_output_included: true,
+        persistence: { stored: false, transcript_persisted: false },
+        model_routing: "none-local-deterministic-search-only",
+        raw_model_output: "unsafe raw output",
+        answer_text: "uncited answer text",
+        clinical_summary: "unsafe summary",
+        suggested_treatment: "unsafe treatment",
+        dosing: "unsafe dosing",
+        diagnosis: "unsafe diagnosis"
+      }), { status: 200, headers: { "Content-Type": "application/json" } })
+    );
+
+    await expect(loadCorpusConversationTurn({
+      question: "Summarize the selected source context.",
+      turn_id: "turn-client-unsafe-response",
+      source_span_id: sourceSpanId
+    })).rejects.toThrow(/raw model output|forbidden field/);
+  });
+
+  it("loadCorpusConversationTurn rejects missing persistence metadata", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({
+        status: "refused",
+        reason_code: "selected_context_required",
+        answer_fragments: [],
+        citations: [],
+        graph_links: [],
+        safety_notice: "Select one source-backed context before asking.",
+        gateway_decision: {
+          allowed: false,
+          outcome: "blocked_before_gateway",
+          reason_code: "selected_context_required",
+          policy_request_id: "policy-request-conversation-turn-local-test",
+          external_api_used: false
+        },
+        evidence_ids: [],
+        raw_output_included: false,
+        model_routing: "none-local-deterministic-search-only"
+      }), { status: 200, headers: { "Content-Type": "application/json" } })
+    );
+
+    await expect(loadCorpusConversationTurn({
+      question: "Summarize the selected source context.",
+      turn_id: "turn-client-missing-persistence"
+    })).rejects.toThrow(/persisted answer or transcript state/);
+  });
+
+  it("loadCorpusConversationTurn rejects persisted answer or transcript flags", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({
+        status: "refused",
+        reason_code: "selected_context_required",
+        answer_fragments: [],
+        citations: [],
+        graph_links: [],
+        safety_notice: "Select one source-backed context before asking.",
+        gateway_decision: {
+          allowed: false,
+          outcome: "blocked_before_gateway",
+          reason_code: "selected_context_required",
+          policy_request_id: "policy-request-conversation-turn-local-test",
+          external_api_used: false
+        },
+        evidence_ids: [],
+        raw_output_included: false,
+        persistence: { stored: true, transcript_persisted: true },
+        model_routing: "none-local-deterministic-search-only"
+      }), { status: 200, headers: { "Content-Type": "application/json" } })
+    );
+
+    await expect(loadCorpusConversationTurn({
+      question: "Summarize the selected source context.",
+      turn_id: "turn-client-persisted-response"
+    })).rejects.toThrow(/persisted answer or transcript state/);
   });
 });
