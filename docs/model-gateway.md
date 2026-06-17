@@ -2,7 +2,7 @@
 
 This document defines the model gateway policy for the CCA GURU Guideline Graph Workbench. It is an engineering policy, not a model-selection decision or a vendor recommendation. The gateway exists to make every model call explicit, bounded, traceable, and accountable before any token is consumed.
 
-The current Graph-RAG foundation uses the gateway for trace semantics only. Workbench traces may record a command, eval result, retrieval context, source-span IDs, gateway decision, model-class status, citation-verifier status, warnings, abstention status, and evidence IDs. They do not return generated answer text, approved guidance, patient-specific advice, generated clinical summaries, or full RAG answers. `Explain Selection` is graph-attached trace and eval infrastructure, not a chatbot, answer endpoint, approved guidance panel, or clinical recommendation workflow.
+The current Graph-RAG foundation uses the gateway for bounded trace and selected-context draft-turn semantics. `Explain Selection` traces may record a command, eval result, retrieval context, source-span IDs, gateway decision, model-class status, citation-verifier status, warnings, abstention status, and evidence IDs. `POST /knowledgebase/corpus/workbench/conversation-turn` may return concise cited draft answer fragments only when the request supplies exactly one validated `source_span_id` and every visible fragment cites that same source span. These surfaces do not provide approved guidance, patient-specific advice, generated clinical summaries, whole-corpus chat, or full RAG answers. `Explain Selection` is graph-attached trace and eval infrastructure; `conversation-turn` is a selected-context draft-answer surface. Neither is a chatbot, approved guidance panel, or clinical recommendation workflow.
 
 ## Default direction: local, open-weight, customer-owned, or private deployment
 
@@ -150,7 +150,7 @@ The dry-run path:
 - Uses mock local behavior by default for tests and CI.
 - Requires explicit environment configuration for any real local runner and may return unavailable when no runner is configured.
 
-This path supports trace evaluation for the Graph-RAG foundation. It is not a delivered chatbot, a full RAG answer product, clinical decision support, or an approved recommendation system.
+This path supports trace evaluation and selected-context cited draft turns for the Graph-RAG foundation. It is not a delivered whole-corpus chatbot, a full RAG answer product, clinical decision support, or an approved recommendation system.
 
 ## Opt-in v1 local runner
 
@@ -158,9 +158,41 @@ The opt-in v1 runner keeps real local inference behind `services/api/app/model_g
 
 Normal responses withhold raw model output by default. API payloads, UI surfaces, evidence files, and tests expose trace metadata, digests, statuses, warnings, and evidence IDs only. `raw_model_output` is allowed only when `GURU_LOCAL_DEBUG_MODEL_OUTPUT=1` and request-level debug permission are both present. Response fields named `answer_text` or `output_text` remain forbidden.
 
-The runner result is ephemeral in this milestone. The gateway does not persist a `ModelTrace`, mutate the graph, write inference trace data to a database, or store trace results in browser `localStorage` or `sessionStorage`. Any later persisted trace workflow needs a separate schema, review, and test plan.
+The runner result is ephemeral in this milestone. The gateway does not persist a `ModelTrace`, mutate the graph, write inference trace or assistant-turn data to a database, or store prompts, transcripts, raw model output, answer turns, conversation history, or trace results in browser `localStorage`, `sessionStorage`, or IndexedDB. Any later persisted trace or assistant workflow needs a separate schema, review, and test plan.
 
 Runtime context must use real public corpus metadata and validated local source spans. Synthetic typed graph fixtures exist only for tests and eval contracts; they do not stand in for all-real typed clinical graph extraction.
+
+### Local Qwen/Ollama preflight
+
+Developers can check the opt-in local runner without making CI depend on Ollama or a downloaded model:
+
+```bash
+python -m services.api.scripts.qwen_ollama_preflight
+```
+
+The preflight reports the status of `GURU_ENABLE_REAL_LOCAL_INSTRUCTION_MODEL`, `GURU_LOCAL_INSTRUCTION_PROVIDER`, `GURU_OLLAMA_BASE_URL`, and `GURU_OLLAMA_MODEL`; verifies that the Ollama URL is loopback-only; checks loopback Ollama `/api/tags`; reports whether the configured model is present; and always reports `external_api_used: false`. It does not install Ollama, start services, pull weights, call external APIs, or change gateway policy.
+
+Use this local setup when a developer explicitly wants the Qwen3 4B runner:
+
+```bash
+export GURU_ENABLE_REAL_LOCAL_INSTRUCTION_MODEL=1
+export GURU_LOCAL_INSTRUCTION_PROVIDER=ollama
+export GURU_OLLAMA_BASE_URL=http://127.0.0.1:11434
+export GURU_OLLAMA_MODEL=qwen3:4b
+ollama pull qwen3:4b
+```
+
+If Ollama is not reachable, install Ollama from the project-approved local developer path and start it with `ollama serve` if it is not already running. If `/api/tags` is reachable but `qwen3:4b` is absent, run `ollama pull qwen3:4b`. Non-loopback base URLs, including LAN or public hosts, are rejected before network I/O; the v1 runner must stay on `http://127.0.0.1:11434` or another loopback host.
+
+After the preflight reports `ready: true`, a developer may run an optional local smoke through `services/api/app/model_gateway.py`:
+
+```bash
+python -m services.api.scripts.qwen_ollama_preflight --smoke
+```
+
+The smoke path uses a bounded policy envelope with `external_api_allowed=false`, a synthetic source-span identifier and digest-only context, and the existing local gateway runner. The preflight output includes trace status, runner status, source-span IDs, output digest, `raw_output_included: false`, `raw_output_withheld: true`, and `external_api_used: false`; it withholds raw model output by default. In CI, tests mock `/api/tags` and `/api/generate`, so the baseline remains deterministic and independent of installed Ollama/Qwen.
+
+The same local-first rule applies to selected-context draft turns. If the real runner is unavailable, the API returns a gateway-unavailable state with no answer fragments rather than routing externally or pretending a dry-run is real local inference.
 
 ## Trace logging
 
@@ -201,7 +233,8 @@ This policy does not:
 - treat Qwen3 4B through Ollama as a permanent model commitment;
 - promote GPT 5.5 Pro strategy notes to implementation authority;
 - return generated answer text from the current dry-run trace path;
-- persist `ModelTrace` records, write graph mutations, or save inference trace payloads to browser storage in this milestone;
+- provide whole-corpus/open-chat answers or all-corpus RAG;
+- persist `ModelTrace` records, write graph mutations, or save inference trace, prompt, transcript, raw-output, answer-turn, or assistant-history payloads to browser storage in this milestone;
 - generate patient-specific advice or clinical recommendations;
 - route prompts, documents, or embeddings to external LLM APIs by default.
 
