@@ -8,9 +8,9 @@ GURU treats guideline resources as a structured knowledge graph: resources, dise
 
 ## What this is not
 
-- Not a generic chatbot or generated-answer RAG system.
-- Not a full 198-PDF parser or generated-answer system.
-- Not a generated clinical summary system. Generated answers remain disabled.
+- Not a generic chatbot, whole-corpus chat system, or open PDF question-answering bot.
+- Not a full 198-PDF parser or all-corpus generated-answer system.
+- Not a generated clinical summary system. Only selected-context cited draft answers are allowed, and only when grounded to one validated source span.
 - Not an approved guidance panel, full RAG answer endpoint, or clinical recommendation workflow.
 - Not a source of patient-specific treatment advice.
 - Not a source of approved clinical recommendations.
@@ -20,7 +20,7 @@ GURU treats guideline resources as a structured knowledge graph: resources, dise
 
 ## Current scaffold
 
-- **`apps/web`**: Next.js frontend with an Evidence Atlas IDE using Sigma.js and Graphology as the default real-corpus graph, plus a compact inspector, trust/provenance drawer, offline status chips, non-mutating review queue shell, and bottom metadata/source-span retrieval terminal.
+- **`apps/web`**: Next.js frontend with an Evidence Atlas IDE using Sigma.js and Graphology as the default real-corpus graph, plus resizable/dismissible graph panels, compact trust/provenance and review summaries, hidden raw IDs behind details/copy controls, citation-linked graph/source highlighting, and a selected-context assistant rail.
 - **`services/api`**: FastAPI backend with `/health`, `/knowledgebase/corpus/*` routes, and pytest tests.
 - **`packages/schemas`**: Seed graph/provenance JSON Schema and TypeScript types enforcing the "no source span, no claim" rule.
 - **`resources/registry/`**: Preserved registry metadata, including exactly 198 public AHS/GURU corpus rows and the deterministic 5-document parse subset.
@@ -77,17 +77,31 @@ The committed audit path is manifest and checksum data under `resources/manifest
 
 Only validated local source spans can back graph-linked retrieval and interpretation. The parser keeps an exact-five `--registry` gate and a separate manifest-driven parse mode; neither should be described as guaranteed all-198 parsed coverage. Recent manifest parse output accounted for download and parse states, including `download_missing=1`, `parse_failed=2`, `parsed=144`, and `partial_text=51`, while public API exposure stays bounded by safety and provenance filters.
 
-The Evidence Atlas UI uses Sigma.js and Graphology by default. Its deterministic ForceAtlas and noverlap layout is an implementation detail of the current graph surface, not a clinical feature claim. The delivered retrieval terminal is retrieval, provenance, and trace evidence only: query results can focus and highlight graph resources, source spans, path/context nodes, and provenance fields. When the graph does not contain a source-span node, source-span hits fall back to the parent resource while keeping source-span IDs, stable locators, checksum/status fields, and reviewer metadata visible where available.
+The Evidence Atlas UI uses Sigma.js and Graphology by default. Its deterministic ForceAtlas and noverlap layout is an implementation detail of the current graph surface, not a clinical feature claim. The workspace now prioritizes resizable and dismissible panels, compact provenance/review summaries, readable labels such as `Page 1 · Span 1`, raw source-span IDs/checksums/workflow IDs behind details/copy controls, and citation-linked graph/source highlighting. Retrieval and assistant turns can focus graph resources, source spans, path/context nodes, and provenance fields. When the graph does not contain a source-span node, source-span hits fall back to the parent resource while keeping source-span IDs, stable locators, checksum/status fields, and reviewer metadata visible where available.
 
 The non-mutating evidence-review shell is draft workflow metadata only unless a card is backed by validated `source_span_ids`; blocked or unbacked cards carry no claim text.
 
 Surveillance in this milestone is an offline/local manifest scaffold. It compares committed local manifest files and surfaces archive status chips; it does not crawl live sources, check live reachability, infer practice impact, or run recommendation-impact diff.
 
-Generated answers remain disabled. The current product is a graph-linked retrieval and provenance surface for guideline exploration, source-backed only where validated source spans exist.
+Selected-context conversational Graph-RAG v1 is allowed only as cited draft answers tied to one validated `source_span_id` selected by the user. `POST /knowledgebase/corpus/workbench/conversation-turn` and `loadCorpusConversationTurn()` accept allowlisted selected-context fields; selected node/resource IDs are display graph metadata and must not widen grounding. Missing context, broad source sets, whole-corpus/open-chat shapes, patient-advice prompts, uncited fragments, raw output, external routing, and gateway-unavailable states produce no answer fragments.
+
+Assistant turns are ephemeral. The browser and backend do not persist prompts, transcripts, raw model output, answer turns, conversation history, `ModelTrace` records, graph mutations, or assistant payloads in `localStorage`, `sessionStorage`, IndexedDB, a database, evidence files, or graph records. Reload/remount clears the assistant rail.
 
 `Explain Selection` is graph-attached trace-only eval infrastructure for a selected node, resource, or source span. It returns trace metadata, digests, statuses, warnings, and evidence IDs, not answer text, raw model output, approved guidance, or clinical recommendations. Results are ephemeral in this milestone: no persisted `ModelTrace`, graph mutation, database write, or browser storage trace persistence.
 
-The local instruction path stays behind `services/api/app/model_gateway.py`. The default remains the mockable dry-run. Qwen3 4B through Ollama is an opt-in v1 local runtime when explicitly enabled, not a permanent model commitment, and external LLM routing stays disabled by default.
+The local instruction path stays behind `services/api/app/model_gateway.py`. The default remains the mockable dry-run. Qwen3 4B through Ollama is an opt-in v1 local runtime when explicitly enabled, not a permanent model commitment, and external LLM routing stays disabled by default. Developers can check local readiness with:
+
+```bash
+python -m services.api.scripts.qwen_ollama_preflight
+export GURU_ENABLE_REAL_LOCAL_INSTRUCTION_MODEL=1
+export GURU_LOCAL_INSTRUCTION_PROVIDER=ollama
+export GURU_OLLAMA_BASE_URL=http://127.0.0.1:11434
+export GURU_OLLAMA_MODEL=qwen3:4b
+ollama pull qwen3:4b
+python -m services.api.scripts.qwen_ollama_preflight --smoke
+```
+
+CI uses mocked and deterministic coverage for this path; it does not require installed Ollama, downloaded Qwen weights, or a running local model.
 
 Synthetic typed graph fixtures are test and eval contracts only. Runtime context uses real public corpus metadata and validated local source spans.
 
