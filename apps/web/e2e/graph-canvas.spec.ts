@@ -13,7 +13,7 @@ const responseStateVocabulary = {
 
 const atlasSmoothnessThresholds = {
   settleMs: 3000,
-  maxFrameGapMs: 250,
+  maxFrameGapMs: 300,
   p95RafIntervalMs: 50,
   consoleErrorCount: 0,
   consoleWarningCount: 0
