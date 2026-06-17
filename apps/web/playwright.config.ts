@@ -7,12 +7,20 @@ export default defineConfig({
     baseURL: "http://127.0.0.1:3000",
     trace: "retain-on-failure"
   },
-  webServer: {
-    command: "npm run dev",
-    url: "http://127.0.0.1:3000",
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000
-  },
+  webServer: [
+    {
+      command: "npm --prefix ../.. run dev:api",
+      url: "http://127.0.0.1:8000/health",
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000
+    },
+    {
+      command: "npm run dev",
+      url: "http://127.0.0.1:3000",
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000
+    }
+  ],
   projects: [
     {
       name: "chromium",
