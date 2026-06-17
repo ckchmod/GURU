@@ -28,10 +28,29 @@ SOURCE_SPAN_COVERAGE_COUNT = 5
 MODEL_ROUTING = "none-local-deterministic-search-only"
 DETERMINISTIC_PARSER_VERSION = "none-local-deterministic-parser"
 MAX_SOURCE_SPAN_SEARCH_RESULTS = 12
+MAX_GRAPH_RAG_CONTEXT_SOURCE_SPANS = 6
+EXPLAIN_SELECTION_OUTPUT_TOKEN_LIMIT = 512
 WORKBENCH_TRACE_COMMAND_LABEL = "run-evals:corpus-workbench-trace"
+EXPLAIN_SELECTION_COMMAND_LABEL = "explain-selection"
 WORKBENCH_TRACE_TASK_ID = "66666666-6666-4666-8666-666666666666"
 REVIEW_QUEUE_ALLOWED_ACTIONS = ("inspect_source", "mark_needs_review_local", "link_source_local")
 SURVEILLANCE_REVIEW_STATES = {"changed", "checksum_mismatch", "missing", "resource_added", "resource_removed"}
+GRAPH_RAG_FORBIDDEN_CONTEXT_FIELDS = {
+    "answer_text",
+    "chunks",
+    "document_bytes",
+    "document_text",
+    "full_document",
+    "full_text",
+    "generated_answer",
+    "generated_response",
+    "generated_summary",
+    "output_text",
+    "pdf_bytes",
+    "raw_chunks",
+    "raw_pdf",
+    "raw_pdf_bytes",
+}
 COVERAGE_STATUS_VOCABULARY = {
     "source_span_ready",
     "partial_source_span",
@@ -572,6 +591,251 @@ def _safe_source_span(span: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _graph_nodes_by_id(graph: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    nodes = graph.get("nodes", [])
+    return {node["id"]: node for node in nodes if isinstance(node, dict) and isinstance(node.get("id"), str)}
+
+
+def _graph_node_type(node: dict[str, Any] | None) -> str | None:
+    if node is None:
+        return None
+    node_type = node.get("type", node.get("node_type"))
+    return node_type if isinstance(node_type, str) and node_type else None
+
+
+def _graph_edge_type(edge: dict[str, Any]) -> str | None:
+    edge_type = edge.get("type", edge.get("relation"))
+    return edge_type if isinstance(edge_type, str) and edge_type else None
+
+
+def _source_span_id_from_span(span: dict[str, Any]) -> str | None:
+    span_id = span.get("span_id", span.get("id"))
+    return span_id if isinstance(span_id, str) and span_id else None
+
+
+def _source_span_ids_from_node(node: dict[str, Any] | None) -> list[str]:
+    if node is None:
+        return []
+    values = node.get("source_span_ids")
+    if not isinstance(values, list):
+        provenance = node.get("provenance")
+        values = provenance.get("source_span_ids") if isinstance(provenance, dict) else []
+    if not isinstance(values, list):
+        values = []
+    return sorted({value for value in values if isinstance(value, str) and value})
+
+
+def _source_span_lookup(
+    *,
+    graph: dict[str, Any],
+    source_spans: list[dict[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    lookup: dict[str, dict[str, Any]] = {}
+    for span in source_spans:
+        span_id = _source_span_id_from_span(span)
+        if span_id is not None:
+            lookup[span_id] = span
+    for node in _graph_nodes_by_id(graph).values():
+        if _graph_node_type(node) == "SourceSpan":
+            span_id = _source_span_id_from_span(node)
+            if span_id is not None and span_id not in lookup:
+                lookup[span_id] = node
+    return lookup
+
+
+def _node_id_for_source_span(span_id: str, graph: dict[str, Any]) -> str | None:
+    nodes = _graph_nodes_by_id(graph)
+    if span_id in nodes:
+        return span_id
+    for node_id, node in nodes.items():
+        if _source_span_id_from_span(node) == span_id:
+            return node_id
+    return None
+
+
+def _graph_neighborhood(selected_node_id: str, graph: dict[str, Any]) -> dict[str, Any]:
+    edges = [
+        edge
+        for edge in graph.get("edges", [])
+        if isinstance(edge, dict) and (edge.get("source") == selected_node_id or edge.get("target") == selected_node_id)
+    ]
+    neighbor_node_ids = sorted(
+        {
+            edge["target"] if edge.get("source") == selected_node_id else edge["source"]
+            for edge in edges
+            if isinstance(edge.get("source"), str) and isinstance(edge.get("target"), str)
+        }
+    )
+    edge_types = sorted({edge_type for edge in edges if (edge_type := _graph_edge_type(edge)) is not None})
+    return {
+        "neighbor_node_ids": neighbor_node_ids,
+        "edge_types": edge_types,
+    }
+
+
+def _context_excerpt_digest(span: dict[str, Any]) -> str | None:
+    checksum = span.get("excerpt_checksum", span.get("checksum_sha256"))
+    if isinstance(checksum, str) and checksum:
+        return checksum if checksum.startswith("sha256:") else f"sha256:{checksum}"
+    excerpt = span.get("bounded_excerpt", span.get("quoted_text", span.get("quoted_span")))
+    if isinstance(excerpt, str) and excerpt:
+        return f"sha256:{_sha256_text(excerpt)}"
+    return None
+
+
+def _safe_graph_rag_source_span_context(span: dict[str, Any]) -> dict[str, Any] | None:
+    span_id = _source_span_id_from_span(span)
+    excerpt_digest = _context_excerpt_digest(span)
+    if span_id is None or excerpt_digest is None:
+        return None
+    context = {
+        "source_span_id": span_id,
+        "resource_id": span.get("resource_id"),
+        "source_document_id": span.get("source_document_id", span.get("document_id")),
+        "stable_locator": span.get("stable_locator"),
+        "excerpt_digest": excerpt_digest,
+        "checksum_digest": excerpt_digest,
+        "access_date": span.get("access_date"),
+        "prompt_or_model_version": span.get("prompt_or_model_version"),
+        "reviewer": span.get("reviewer"),
+        "review_status": span.get("review_status"),
+        "timestamp": span.get("timestamp"),
+        "output_status": span.get("output_status", span.get("status", "draft")),
+    }
+    quoted_span = span.get("bounded_excerpt", span.get("quoted_text", span.get("quoted_span")))
+    if isinstance(quoted_span, str) and quoted_span and not any(pattern.search(quoted_span) for pattern in PATIENT_ADVICE_LANGUAGE_PATTERNS):
+        context["quoted_span"] = quoted_span
+    return {key: value for key, value in context.items() if value is not None}
+
+
+def _selected_resource_id(selected_node: dict[str, Any] | None, span_contexts: list[dict[str, Any]]) -> str | None:
+    if selected_node is not None and isinstance(selected_node.get("resource_id"), str):
+        return selected_node["resource_id"]
+    for context in span_contexts:
+        resource_id = context.get("resource_id")
+        if isinstance(resource_id, str) and resource_id:
+            return resource_id
+    return None
+
+
+def _node_public_provenance(node: dict[str, Any] | None) -> dict[str, Any]:
+    provenance = node.get("provenance") if node is not None else None
+    return provenance if isinstance(provenance, dict) else {}
+
+
+def _context_package_digest(payload: dict[str, Any]) -> str:
+    digest_payload = {key: value for key, value in payload.items() if key != "context_package_digest"}
+    serialized = json.dumps(digest_payload, sort_keys=True, separators=(",", ":"))
+    return f"sha256:{_sha256_text(serialized)}"
+
+
+def _assert_no_forbidden_graph_rag_fields(payload: Any) -> None:
+    if isinstance(payload, dict):
+        forbidden = GRAPH_RAG_FORBIDDEN_CONTEXT_FIELDS & set(payload)
+        if forbidden:
+            raise ValueError(f"Graph-RAG context includes forbidden raw fields: {', '.join(sorted(forbidden))}")
+        for value in payload.values():
+            _assert_no_forbidden_graph_rag_fields(value)
+    elif isinstance(payload, list):
+        for value in payload:
+            _assert_no_forbidden_graph_rag_fields(value)
+
+
+def assemble_graph_rag_selection_context(
+    *,
+    selected_node_id: str | None = None,
+    source_span_id: str | None = None,
+    graph: dict[str, Any] | None = None,
+    source_spans: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    context_graph = graph if graph is not None else build_public_corpus_graph()
+    nodes_by_id = _graph_nodes_by_id(context_graph)
+    runtime_resources = {resource["resource_id"]: resource for resource in _corpus_resources()} if graph is None else {}
+    allowed_resource_ids = set(runtime_resources) if graph is None else {
+        node["resource_id"] for node in nodes_by_id.values() if isinstance(node.get("resource_id"), str)
+    }
+    span_records = (
+        _validated_source_spans_from_records(source_spans, allowed_resource_ids)
+        if source_spans is not None
+        else _validated_corpus_source_spans(allowed_resource_ids)
+        if graph is None
+        else []
+    )
+    span_lookup = _source_span_lookup(graph=context_graph, source_spans=span_records)
+
+    selected_node = nodes_by_id.get(selected_node_id) if selected_node_id is not None else None
+    selected_graph_node_id = selected_node_id if selected_node is not None else None
+    if source_span_id is not None:
+        span_node_id = _node_id_for_source_span(source_span_id, context_graph)
+        if selected_node is None and span_node_id is not None:
+            selected_node = nodes_by_id[span_node_id]
+            selected_graph_node_id = span_node_id
+        elif selected_node is None and source_span_id in span_lookup:
+            selected_node = {**span_lookup[source_span_id], "id": source_span_id, "type": "SourceSpan"}
+            selected_graph_node_id = source_span_id
+    if selected_node is None and selected_node_id is not None and selected_node_id.startswith("resource."):
+        resource_id = selected_node_id.removeprefix("resource.")
+        if resource_id in runtime_resources:
+            selected_node = {**runtime_resources[resource_id], "id": selected_node_id, "type": "resource"}
+            selected_graph_node_id = selected_node_id
+    if selected_node is None:
+        raise HTTPException(status_code=404, detail=f"graph selection not found: {selected_node_id or source_span_id}")
+
+    selected_type = _graph_node_type(selected_node) or "unknown"
+    neighborhood_node_id = selected_graph_node_id or selected_node.get("id", "")
+    if selected_type == "SourceSpan" and graph is None and isinstance(selected_node.get("resource_id"), str):
+        resource = runtime_resources.get(selected_node["resource_id"])
+        if resource is not None:
+            neighborhood_node_id = resource["node_id"]
+    neighborhood = _graph_neighborhood(neighborhood_node_id, context_graph)
+    selected_span_ids = set(_source_span_ids_from_node(selected_node))
+    if source_span_id is not None:
+        selected_span_ids.add(source_span_id)
+    if selected_type == "resource":
+        node_resource_id = selected_node.get("resource_id")
+        selected_span_ids.update(
+            span_id
+            for span_id, span in span_lookup.items()
+            if isinstance(node_resource_id, str) and span.get("resource_id") == node_resource_id
+        )
+
+    safe_span_contexts = [
+        context
+        for span_id in sorted(selected_span_ids)[:MAX_GRAPH_RAG_CONTEXT_SOURCE_SPANS]
+        if (span := span_lookup.get(span_id)) is not None
+        if (context := _safe_graph_rag_source_span_context(span)) is not None
+    ]
+    source_span_ids = [context["source_span_id"] for context in safe_span_contexts]
+    status = "context_ready" if source_span_ids else "insufficient_source_span_context"
+    payload = {
+        "status": status,
+        "refusal_ready": status != "context_ready",
+        "selected_node_id": selected_graph_node_id or selected_node.get("id"),
+        "selected_node_type": selected_type,
+        "resource_id": _selected_resource_id(selected_node, safe_span_contexts),
+        "neighbor_node_ids": neighborhood["neighbor_node_ids"],
+        "edge_types": neighborhood["edge_types"],
+        "source_span_ids": source_span_ids,
+        "source_span_contexts": safe_span_contexts,
+        "stable_locators": [context["stable_locator"] for context in safe_span_contexts if isinstance(context.get("stable_locator"), str)],
+        "excerpt_digests": [context["excerpt_digest"] for context in safe_span_contexts],
+        "checksum_digests": [context["checksum_digest"] for context in safe_span_contexts],
+        "provenance": {
+            "selected_node_provenance": _node_public_provenance(selected_node),
+            "source_span_context_count": len(safe_span_contexts),
+            "model_routing": MODEL_ROUTING,
+            "output_status": selected_node.get("output_status", selected_node.get("status", "draft")),
+            "review_status": _node_public_provenance(selected_node).get("review_status", selected_node.get("review_status", "unreviewed")),
+        },
+        "warnings": [] if status == "context_ready" else ["missing_validated_source_span_context"],
+        "model_routing": MODEL_ROUTING,
+        "no_claim": True,
+    }
+    payload["context_package_digest"] = _context_package_digest(payload)
+    _assert_no_forbidden_graph_rag_fields(payload)
+    return payload
+
+
 def _source_span_hit(span: dict[str, Any], resource: dict[str, Any]) -> dict[str, Any]:
     safe_span = _safe_source_span(span)
     fields = _resource_interpretability_fields(resource, [span])
@@ -728,6 +992,12 @@ def _gateway_policy_envelope(command_label: str, query: str) -> dict[str, Any]:
     }
 
 
+def _explain_selection_gateway_policy_envelope(context_digest: str) -> dict[str, Any]:
+    envelope = _gateway_policy_envelope(EXPLAIN_SELECTION_COMMAND_LABEL, context_digest)
+    envelope["output_token_limit"] = EXPLAIN_SELECTION_OUTPUT_TOKEN_LIMIT
+    return envelope
+
+
 def _source_span_contexts_for_gateway(source_span_results: list[dict[str, Any]]) -> list[dict[str, str]]:
     contexts: list[dict[str, str]] = []
     for result in source_span_results[:MAX_SOURCE_SPAN_SEARCH_RESULTS]:
@@ -772,6 +1042,156 @@ def _blocked_model_trace(reason: str, request_id: str) -> dict[str, Any]:
         "reason_code": reason,
         "output_tokens": 0,
         "gpu_seconds": 0.0,
+    }
+
+
+def _explain_selection_identifier(payload: dict[str, Any]) -> tuple[str | None, str | None]:
+    source_span_id = payload.get("source_span_id")
+    if isinstance(source_span_id, str) and source_span_id.strip():
+        return None, source_span_id.strip()
+    selected_node_id = payload.get("selected_node_id")
+    if isinstance(selected_node_id, str) and selected_node_id.strip():
+        return selected_node_id.strip(), None
+    resource_id = payload.get("resource_id")
+    if isinstance(resource_id, str) and resource_id.strip():
+        return f"resource.{resource_id.strip()}", None
+    raise HTTPException(status_code=400, detail="explain-selection requires selected_node_id, source_span_id, or resource_id")
+
+
+def _contains_advice_like_text(value: Any) -> bool:
+    if isinstance(value, str):
+        return _is_advice_like_query(value)
+    if isinstance(value, dict):
+        return any(_contains_advice_like_text(item) for item in value.values())
+    if isinstance(value, list):
+        return any(_contains_advice_like_text(item) for item in value)
+    return False
+
+
+def _contains_generic_chat_prompt(payload: dict[str, Any]) -> bool:
+    return any(key in payload for key in ("prompt", "chat_prompt", "message", "messages", "query", "q"))
+
+
+def _selection_contexts_for_gateway(context_package: dict[str, Any]) -> list[dict[str, str]]:
+    contexts: list[dict[str, str]] = []
+    for source_context in context_package.get("source_span_contexts", []):
+        if not isinstance(source_context, dict):
+            continue
+        source_span_id = source_context.get("source_span_id")
+        excerpt_digest = source_context.get("excerpt_digest")
+        if not isinstance(source_span_id, str) or not isinstance(excerpt_digest, str):
+            continue
+        context = {"source_span_id": source_span_id, "excerpt_digest": excerpt_digest}
+        for optional_field in ("source_document_id", "source_document_digest", "stable_locator"):
+            field_value = source_context.get(optional_field)
+            if isinstance(field_value, str) and field_value:
+                context[optional_field] = field_value
+        contexts.append(context)
+    return contexts
+
+
+def _selection_source_id_records(context_package: dict[str, Any], status: str) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for source_context in context_package.get("source_span_contexts", []):
+        if not isinstance(source_context, dict) or not isinstance(source_context.get("source_span_id"), str):
+            continue
+        records.append(
+            {
+                "source_span_id": source_context["source_span_id"],
+                "resource_id": context_package.get("resource_id"),
+                "source_document_id": source_context.get("source_document_id"),
+                "stable_locator": source_context.get("stable_locator"),
+                "status": status,
+                "evidence_id": source_context["source_span_id"],
+            }
+        )
+    return records
+
+
+def _selection_rejection_records(context_package: dict[str, Any], reason: str) -> list[dict[str, Any]]:
+    evidence_id = context_package.get("resource_id") or context_package.get("selected_node_id") or "selection"
+    return [
+        {
+            "selected_node_id": context_package.get("selected_node_id"),
+            "resource_id": context_package.get("resource_id"),
+            "status": "rejected",
+            "reason": reason,
+            "evidence_id": evidence_id,
+        }
+    ]
+
+
+def _digest_for_blocked_selection(reason: str, request_id: str) -> str:
+    return f"sha256:{_sha256_text(json.dumps({'reason': reason, 'request_id': request_id}, sort_keys=True, separators=(',', ':')))}"
+
+
+def _explain_selection_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    selected_node_id, source_span_id = _explain_selection_identifier(payload)
+    context_package = assemble_graph_rag_selection_context(selected_node_id=selected_node_id, source_span_id=source_span_id)
+    envelope = _explain_selection_gateway_policy_envelope(context_package["context_package_digest"])
+    source_contexts = _selection_contexts_for_gateway(context_package)
+    source_ids_used = _selection_source_id_records(context_package, "used")
+    source_ids_rejected: list[dict[str, Any]] = []
+    warnings = list(context_package.get("warnings", []))
+
+    block_reason = None
+    if _contains_advice_like_text(
+        {
+            "selected_node_id": payload.get("selected_node_id"),
+            "source_span_id": payload.get("source_span_id"),
+            "resource_id": payload.get("resource_id"),
+            "command_metadata": payload.get("command_metadata", {}),
+        }
+    ):
+        block_reason = "unsupported_advice_like_prompt"
+    elif _contains_generic_chat_prompt(payload):
+        block_reason = "generic_chat_prompt_not_supported"
+    elif context_package["status"] != "context_ready" or not source_contexts:
+        block_reason = "missing_validated_source_span_context"
+
+    if block_reason is not None:
+        if block_reason not in warnings:
+            warnings.append(block_reason)
+        source_ids_used = []
+        source_ids_rejected = _selection_rejection_records(context_package, block_reason)
+        gateway_decision = _blocked_gateway_decision(block_reason, envelope["request_id"])
+        model_trace = _blocked_model_trace(block_reason, envelope["request_id"])
+        ledger_entry = None
+        output_digest = _digest_for_blocked_selection(block_reason, envelope["request_id"])
+    else:
+        dry_run = run_local_open_weight_7b_dry_run(envelope, source_contexts)
+        gateway_decision = {
+            "allowed": dry_run.decision.allowed,
+            "outcome": dry_run.decision.outcome,
+            "reason_code": dry_run.decision.reason_code,
+            "policy_request_id": envelope["request_id"],
+            "external_api_used": dry_run.ledger_entry["external_api_used"],
+        }
+        model_trace = dry_run.trace
+        ledger_entry = dry_run.ledger_entry
+        output_digest = model_trace["output_digest"]
+
+    evidence_ids = [record["evidence_id"] for record in source_ids_used] + [record["evidence_id"] for record in source_ids_rejected]
+    return {
+        "command_label": EXPLAIN_SELECTION_COMMAND_LABEL,
+        "selected_node_id": context_package["selected_node_id"],
+        "selected_node_type": context_package["selected_node_type"],
+        "resource_id": context_package.get("resource_id"),
+        "source_span_ids": context_package["source_span_ids"],
+        "context_digest": context_package["context_package_digest"],
+        "output_digest": output_digest,
+        "gateway_decision": gateway_decision,
+        "model_class": LOCAL_OPEN_WEIGHT_7B_MODEL_CLASS,
+        "model_trace": model_trace,
+        "runner_status": model_trace["runner_status"],
+        "raw_output_included": model_trace.get("raw_output_included", False),
+        "cost_ledger_entry": ledger_entry,
+        "source_ids_used": source_ids_used,
+        "source_ids_rejected": source_ids_rejected,
+        "warnings": sorted(set(warnings), key=warnings.index),
+        "evidence_ids": evidence_ids,
+        "no_claim": True,
+        "model_routing": MODEL_ROUTING,
     }
 
 
@@ -1113,6 +1533,11 @@ def search_corpus(
 @router.get("/corpus/workbench/trace")
 def get_workbench_trace(q: str = "", command_label: str = WORKBENCH_TRACE_COMMAND_LABEL) -> dict[str, Any]:
     return _workbench_trace_payload(q=q, command_label=command_label)
+
+
+@router.post("/corpus/workbench/explain-selection")
+def post_workbench_explain_selection(payload: dict[str, Any]) -> dict[str, Any]:
+    return _explain_selection_payload(payload)
 
 
 @router.get("/corpus/interpretability")
