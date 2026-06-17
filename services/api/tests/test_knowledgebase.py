@@ -95,6 +95,11 @@ def assert_no_forbidden_graph_rag_context_fields(payload: Any) -> None:
             assert_no_forbidden_graph_rag_context_fields(value)
 
 
+def assert_conversation_turn_non_persistence(payload: dict[str, Any]) -> None:
+    assert payload["persistence"] == {"stored": False, "transcript_persisted": False}
+    assert "persistence_record" not in payload
+
+
 def valid_corpus_span(resource_id: str, excerpt: str = "Local deterministic parsed excerpt for search coverage.") -> dict[str, Any]:
     checksum = hashlib.sha256(excerpt.encode("utf-8")).hexdigest()
     return {
@@ -840,4 +845,321 @@ def test_corpus_workbench_explain_selection_blocks_advice_like_metadata_before_r
     assert payload["raw_output_included"] is False
     assert payload["no_claim"] is True
     assert "what should someone choose" not in str(payload)
+    assert_no_generated_answer_or_clinical_claim_fields(payload)
+
+
+def test_conversational_graph_rag_selected_context_required(monkeypatch: Any) -> None:
+    span = valid_corpus_span(PILOT_RESOURCE_ID)
+    runner_calls: list[Any] = []
+    monkeypatch.setattr(knowledgebase, "_load_corpus_source_spans", lambda: [span])
+    monkeypatch.setattr(knowledgebase, "run_local_open_weight_7b_dry_run", lambda *args, **kwargs: runner_calls.append(args))
+
+    response = client.post(
+        "/knowledgebase/corpus/workbench/conversation-turn",
+        json={"question": "Summarize the selected source context.", "turn_id": "turn-selected-context-required"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert runner_calls == []
+    assert payload["status"] == "refused"
+    assert payload["reason_code"] == "selected_context_required"
+    assert payload["answer_mode"] == "refusal"
+    assert payload["answer_fragments"] == []
+    assert payload["citations"] == []
+    assert payload["graph_links"] == []
+    assert payload["safety_notice"]
+    assert payload["gateway_decision"]["allowed"] is False
+    assert payload["gateway_decision"]["outcome"] == "blocked_before_gateway"
+    assert payload["gateway_decision"]["external_api_used"] is False
+    assert payload["evidence_ids"] == []
+    assert payload["raw_output_included"] is False
+    assert_conversation_turn_non_persistence(payload)
+    assert "raw_model_output" not in str(payload)
+    assert_no_generated_answer_or_clinical_claim_fields(payload)
+
+
+def test_conversational_graph_rag_metadata_only_selection_refusals_have_no_fragments(monkeypatch: Any) -> None:
+    runner_calls: list[Any] = []
+    monkeypatch.setattr(knowledgebase, "_load_corpus_source_spans", lambda: [])
+    monkeypatch.setattr(knowledgebase, "run_local_open_weight_7b_dry_run", lambda *args, **kwargs: runner_calls.append(args))
+
+    refusal_payloads = [
+        {"question": "Summarize this selected source.", "turn_id": "turn-selected-node-only", "selected_node_id": f"resource.{PILOT_RESOURCE_ID}"},
+        {"question": "Summarize this selected source.", "turn_id": "turn-resource-only", "resource_id": PILOT_RESOURCE_ID},
+        {
+            "question": "Summarize this selected source.",
+            "turn_id": "turn-metadata-only-selection",
+            "source_span_id": f"source-span.{PILOT_RESOURCE_ID}.metadata-only",
+            "selected_node_id": f"resource.{PILOT_RESOURCE_ID}",
+            "resource_id": PILOT_RESOURCE_ID,
+        },
+    ]
+
+    for request_payload in refusal_payloads:
+        response = client.post("/knowledgebase/corpus/workbench/conversation-turn", json=request_payload)
+
+        assert response.status_code == 200
+        payload = response.json()
+        assert payload["status"] == "refused"
+        assert payload["reason_code"] in {"selected_context_required", "missing_validated_source_span_context"}
+        assert payload["answer_mode"] == "refusal"
+        assert payload["answer_fragments"] == []
+        assert payload["citations"] == []
+        assert payload["graph_links"] == []
+        assert payload["gateway_decision"]["allowed"] is False
+        assert payload["gateway_decision"]["external_api_used"] is False
+        assert payload["evidence_ids"] == []
+        assert payload["raw_output_included"] is False
+        assert_conversation_turn_non_persistence(payload)
+        assert "raw_model_output" not in str(payload)
+        assert_no_generated_answer_or_clinical_claim_fields(payload)
+
+    assert runner_calls == []
+
+
+def test_conversational_graph_rag_draft_answer_citations_required(monkeypatch: Any) -> None:
+    span = valid_corpus_span(PILOT_RESOURCE_ID)
+    monkeypatch.setattr(knowledgebase, "_load_corpus_source_spans", lambda: [span])
+
+    def fake_runner(envelope: dict[str, Any], source_contexts: list[dict[str, Any]], **kwargs: Any) -> SimpleNamespace:
+        assert kwargs == {}
+        assert envelope["external_api_allowed"] is False
+        assert envelope["output_token_limit"] <= 512
+        assert source_contexts == [
+            {
+                "source_span_id": span["span_id"],
+                "excerpt_digest": f"sha256:{span['excerpt_checksum']}",
+                "source_document_id": span["source_document_id"],
+                "stable_locator": span["stable_locator"],
+            }
+        ]
+        decision = SimpleNamespace(allowed=True, outcome="executed", reason_code=None)
+        trace = {
+            "model_class": "local_open_weight_7b",
+            "provider_kind": "local",
+            "trace_status": "executed",
+            "runner_status": "mocked_local_runner",
+            "policy_request_id": envelope["request_id"],
+            "gateway_outcome": "executed",
+            "gateway_reason_code": None,
+            "citation_verifier_status": "pass",
+            "abstention_status": "answered_with_citations",
+            "input_digest": "sha256:mock-input",
+            "output_digest": "sha256:mock-output",
+            "source_span_ids": [span["span_id"]],
+            "input_tokens": 1,
+            "output_tokens": 12,
+            "gpu_seconds": 0.0,
+            "raw_output_included": False,
+            "input_summary": {"source_span_contexts": source_contexts},
+        }
+        return SimpleNamespace(decision=decision, trace=trace, ledger_entry={"external_api_used": False, "outcome": "executed"})
+
+    monkeypatch.setattr(knowledgebase, "run_local_open_weight_7b_dry_run", fake_runner)
+
+    response = client.post(
+        "/knowledgebase/corpus/workbench/conversation-turn",
+        json={
+            "question": "Summarize the selected source context.",
+            "turn_id": "turn-cited-answer",
+            "source_span_id": span["span_id"],
+            "selected_node_id": span["span_id"],
+            "resource_id": PILOT_RESOURCE_ID,
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "draft"
+    assert payload["answer_mode"] == "selected_context_cited_draft"
+    assert payload["safety_notice"] == "Draft answer for selected source context only; not medical advice."
+    assert len(payload["answer_fragments"]) == 1
+    answer_fragment = payload["answer_fragments"][0]
+    assert answer_fragment["fragment_id"] == "fragment-1"
+    assert answer_fragment["source_span_ids"] == [span["span_id"]]
+    assert answer_fragment["unsupported"] is False
+    assert answer_fragment["text"] != "Selected context draft answer."
+    assert "Local deterministic parsed excerpt for search coverage." in answer_fragment["text"]
+    assert "Page 1" in answer_fragment["text"]
+    assert "executed" in answer_fragment["text"]
+    assert payload["citations"] == [
+        {
+            "source_span_id": span["span_id"],
+            "source_document_id": span["source_document_id"],
+            "stable_locator": "page:1;span:1",
+            "display_label": "Page 1 · Span 1",
+            "quoted_span": "Local deterministic parsed excerpt for search coverage.",
+            "excerpt_digest": f"sha256:{span['excerpt_checksum']}",
+            "answer_fragment_ids": ["fragment-1"],
+        }
+    ]
+    assert payload["graph_links"] == [
+        {
+            "resource_id": PILOT_RESOURCE_ID,
+            "selected_node_id": span["span_id"],
+            "source_span_id": span["span_id"],
+            "highlight_node_ids": [f"resource.{PILOT_RESOURCE_ID}", span["span_id"]],
+        }
+    ]
+    assert payload["evidence_ids"] == [span["span_id"]]
+    assert payload["answer_fragments"][0]["source_span_ids"] == [payload["citations"][0]["source_span_id"]]
+    assert payload["gateway_decision"]["allowed"] is True
+    assert payload["gateway_decision"]["external_api_used"] is False
+    assert payload["raw_output_included"] is False
+    assert_conversation_turn_non_persistence(payload)
+    assert "raw_model_output" not in str(payload)
+
+
+def test_conversational_graph_rag_patient_advice_refusal(monkeypatch: Any) -> None:
+    span = valid_corpus_span(PILOT_RESOURCE_ID)
+    runner_calls: list[Any] = []
+    monkeypatch.setattr(knowledgebase, "_load_corpus_source_spans", lambda: [span])
+    monkeypatch.setattr(knowledgebase, "run_local_open_weight_7b_dry_run", lambda *args, **kwargs: runner_calls.append(args))
+
+    response = client.post(
+        "/knowledgebase/corpus/workbench/conversation-turn",
+        json={"question": "what should someone choose for treatment", "turn_id": "turn-patient-advice-refusal", "source_span_id": span["span_id"]},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert runner_calls == []
+    assert payload["status"] == "refused"
+    assert payload["reason_code"] == "unsupported_advice_like_prompt"
+    assert payload["answer_mode"] == "refusal"
+    assert payload["answer_fragments"] == []
+    assert payload["citations"] == []
+    assert payload["graph_links"] == []
+    assert payload["gateway_decision"]["allowed"] is False
+    assert payload["gateway_decision"]["external_api_used"] is False
+    assert payload["evidence_ids"] == []
+    assert payload["raw_output_included"] is False
+    assert_conversation_turn_non_persistence(payload)
+    assert "what should someone choose" not in str(payload)
+    assert_no_generated_answer_or_clinical_claim_fields(payload)
+
+
+def test_conversational_graph_rag_model_gateway_denial_returns_graceful_refusal(monkeypatch: Any) -> None:
+    span = valid_corpus_span(PILOT_RESOURCE_ID)
+    monkeypatch.setattr(knowledgebase, "_load_corpus_source_spans", lambda: [span])
+
+    def fake_denied_runner(envelope: dict[str, Any], source_contexts: list[dict[str, Any]], **kwargs: Any) -> SimpleNamespace:
+        decision = SimpleNamespace(allowed=False, outcome="rejected", reason_code="source_permission_denied")
+        trace = {
+            "model_class": "local_open_weight_7b",
+            "provider_kind": "local",
+            "trace_status": "rejected",
+            "runner_status": "not_invoked",
+            "policy_request_id": envelope["request_id"],
+            "gateway_outcome": "rejected",
+            "gateway_reason_code": "source_permission_denied",
+            "citation_verifier_status": "not_run",
+            "abstention_status": "abstained_no_model_execution",
+            "input_digest": "sha256:mock-input",
+            "output_digest": "sha256:mock-output",
+            "source_span_ids": [],
+            "output_tokens": 0,
+            "gpu_seconds": 0.0,
+            "raw_output_included": False,
+        }
+        return SimpleNamespace(decision=decision, trace=trace, ledger_entry={"external_api_used": False, "outcome": "rejected"})
+
+    monkeypatch.setattr(knowledgebase, "run_local_open_weight_7b_dry_run", fake_denied_runner)
+
+    response = client.post(
+        "/knowledgebase/corpus/workbench/conversation-turn",
+        json={"question": "Summarize the selected source context.", "turn_id": "turn-gateway-denied", "source_span_id": span["span_id"]},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "refused"
+    assert payload["reason_code"] == "model_gateway_denied"
+    assert payload["answer_mode"] == "refusal"
+    assert payload["answer_fragments"] == []
+    assert payload["citations"] == []
+    assert payload["graph_links"] == []
+    assert payload["gateway_decision"]["allowed"] is False
+    assert payload["gateway_decision"]["reason_code"] == "source_permission_denied"
+    assert payload["gateway_decision"]["external_api_used"] is False
+    assert payload["evidence_ids"] == [span["span_id"]]
+    assert payload["raw_output_included"] is False
+    assert_conversation_turn_non_persistence(payload)
+    assert "raw_model_output" not in str(payload)
+
+
+def test_conversation_turn_refuses_broad_or_multiple_source_span_sets(monkeypatch: Any) -> None:
+    span = valid_corpus_span(PILOT_RESOURCE_ID)
+    runner_calls: list[Any] = []
+    monkeypatch.setattr(knowledgebase, "_load_corpus_source_spans", lambda: [span])
+    monkeypatch.setattr(knowledgebase, "run_local_open_weight_7b_dry_run", lambda *args, **kwargs: runner_calls.append(args))
+
+    response = client.post(
+        "/knowledgebase/corpus/workbench/conversation-turn",
+        json={
+            "question": "Summarize the selected source context.",
+            "turn_id": "turn-broad-source-set",
+            "source_span_ids": [span["span_id"], "source-span.extra"],
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert runner_calls == []
+    assert payload["status"] == "refused"
+    assert payload["reason_code"] == "broad_source_span_set_not_supported"
+    assert payload["answer_mode"] == "refusal"
+    assert payload["answer_fragments"] == []
+    assert payload["citations"] == []
+    assert payload["evidence_ids"] == []
+    assert payload["raw_output_included"] is False
+    assert_conversation_turn_non_persistence(payload)
+    assert_no_generated_answer_or_clinical_claim_fields(payload)
+
+
+def test_conversation_turn_model_gateway_unavailable_keeps_selected_context_visible(monkeypatch: Any) -> None:
+    span = valid_corpus_span(PILOT_RESOURCE_ID)
+    monkeypatch.setattr(knowledgebase, "_load_corpus_source_spans", lambda: [span])
+
+    def fake_unavailable_runner(envelope: dict[str, Any], source_contexts: list[dict[str, Any]], **kwargs: Any) -> SimpleNamespace:
+        decision = SimpleNamespace(allowed=True, outcome="executed", reason_code=None)
+        trace = {
+            "model_class": "local_open_weight_7b",
+            "provider_kind": "local",
+            "trace_status": "unavailable",
+            "runner_status": "LOCAL_QWEN_RUNNER_REQUIRED",
+            "policy_request_id": envelope["request_id"],
+            "gateway_outcome": "executed",
+            "gateway_reason_code": None,
+            "citation_verifier_status": "pass",
+            "abstention_status": "abstained_no_answer_text",
+            "input_digest": "sha256:mock-input",
+            "output_digest": "sha256:mock-output",
+            "source_span_ids": [span["span_id"]],
+            "output_tokens": 0,
+            "gpu_seconds": 0.0,
+            "raw_output_included": False,
+        }
+        return SimpleNamespace(decision=decision, trace=trace, ledger_entry={"external_api_used": False, "outcome": "executed"})
+
+    monkeypatch.setattr(knowledgebase, "run_local_open_weight_7b_dry_run", fake_unavailable_runner)
+
+    response = client.post(
+        "/knowledgebase/corpus/workbench/conversation-turn",
+        json={"question": "Summarize the selected source context.", "turn_id": "turn-gateway-unavailable", "source_span_id": span["span_id"]},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "unavailable"
+    assert payload["reason_code"] == "model_gateway_unavailable"
+    assert payload["answer_mode"] == "unavailable"
+    assert payload["answer_fragments"] == []
+    assert payload["citations"] == []
+    assert payload["selected_source_context"]["source_span_id"] == span["span_id"]
+    assert payload["selected_source_context"]["quoted_span"] == span["quoted_span"]
+    assert payload["evidence_ids"] == [span["span_id"]]
+    assert payload["raw_output_included"] is False
+    assert_conversation_turn_non_persistence(payload)
     assert_no_generated_answer_or_clinical_claim_fields(payload)

@@ -30,8 +30,10 @@ DETERMINISTIC_PARSER_VERSION = "none-local-deterministic-parser"
 MAX_SOURCE_SPAN_SEARCH_RESULTS = 12
 MAX_GRAPH_RAG_CONTEXT_SOURCE_SPANS = 6
 EXPLAIN_SELECTION_OUTPUT_TOKEN_LIMIT = 512
+CONVERSATION_TURN_OUTPUT_TOKEN_LIMIT = 256
 WORKBENCH_TRACE_COMMAND_LABEL = "run-evals:corpus-workbench-trace"
 EXPLAIN_SELECTION_COMMAND_LABEL = "explain-selection"
+CONVERSATION_TURN_COMMAND_LABEL = "conversation-turn"
 WORKBENCH_TRACE_TASK_ID = "66666666-6666-4666-8666-666666666666"
 REVIEW_QUEUE_ALLOWED_ACTIONS = ("inspect_source", "mark_needs_review_local", "link_source_local")
 SURVEILLANCE_REVIEW_STATES = {"changed", "checksum_mismatch", "missing", "resource_added", "resource_removed"}
@@ -998,6 +1000,12 @@ def _explain_selection_gateway_policy_envelope(context_digest: str) -> dict[str,
     return envelope
 
 
+def _conversation_turn_gateway_policy_envelope(context_digest: str) -> dict[str, Any]:
+    envelope = _gateway_policy_envelope(CONVERSATION_TURN_COMMAND_LABEL, context_digest)
+    envelope["output_token_limit"] = CONVERSATION_TURN_OUTPUT_TOKEN_LIMIT
+    return envelope
+
+
 def _source_span_contexts_for_gateway(source_span_results: list[dict[str, Any]]) -> list[dict[str, str]]:
     contexts: list[dict[str, str]] = []
     for result in source_span_results[:MAX_SOURCE_SPAN_SEARCH_RESULTS]:
@@ -1191,6 +1199,233 @@ def _explain_selection_payload(payload: dict[str, Any]) -> dict[str, Any]:
         "warnings": sorted(set(warnings), key=warnings.index),
         "evidence_ids": evidence_ids,
         "no_claim": True,
+        "model_routing": MODEL_ROUTING,
+    }
+
+
+def _conversation_turn_source_span_id(payload: dict[str, Any]) -> tuple[str | None, str | None]:
+    if any(key in payload for key in ("source_span_ids", "source_spans", "selected_source_span_ids")):
+        return None, "broad_source_span_set_not_supported"
+    source_span_id = payload.get("source_span_id")
+    if not isinstance(source_span_id, str) or not source_span_id.strip():
+        return None, "selected_context_required"
+    return source_span_id.strip(), None
+
+
+def _selected_context_summary(context_package: dict[str, Any]) -> dict[str, Any] | None:
+    contexts = context_package.get("source_span_contexts", [])
+    if not contexts or not isinstance(contexts[0], dict):
+        return None
+    source_context = contexts[0]
+    return {
+        "source_span_id": source_context.get("source_span_id"),
+        "resource_id": context_package.get("resource_id"),
+        "source_document_id": source_context.get("source_document_id"),
+        "stable_locator": source_context.get("stable_locator"),
+        "quoted_span": source_context.get("quoted_span"),
+        "excerpt_digest": source_context.get("excerpt_digest"),
+    }
+
+
+def _display_label_for_stable_locator(stable_locator: Any) -> str | None:
+    if not isinstance(stable_locator, str) or not stable_locator:
+        return None
+    page_match = re.search(r"page:(\d+)", stable_locator)
+    span_match = re.search(r"span:(\d+)", stable_locator)
+    if page_match and span_match:
+        return f"Page {page_match.group(1)} · Span {span_match.group(1)}"
+    return stable_locator
+
+
+def _conversation_turn_gateway_decision(dry_run: Any, request_id: str) -> dict[str, Any]:
+    return {
+        "allowed": dry_run.decision.allowed,
+        "outcome": dry_run.decision.outcome,
+        "reason_code": dry_run.decision.reason_code,
+        "policy_request_id": request_id,
+        "external_api_used": dry_run.ledger_entry["external_api_used"],
+    }
+
+
+def _conversation_turn_persistence() -> dict[str, bool]:
+    return {"stored": False, "transcript_persisted": False}
+
+
+def _conversation_turn_answer_mode(status: str) -> str:
+    if status == "unavailable":
+        return "unavailable"
+    return "refusal"
+
+
+def _conversation_turn_refusal(
+    *,
+    payload: dict[str, Any],
+    reason_code: str,
+    request_id: str,
+    gateway_decision: dict[str, Any] | None = None,
+    model_trace: dict[str, Any] | None = None,
+    selected_context: dict[str, Any] | None = None,
+    evidence_ids: list[str] | None = None,
+    status: str = "refused",
+) -> dict[str, Any]:
+    decision = gateway_decision or _blocked_gateway_decision(reason_code, request_id)
+    trace = model_trace or _blocked_model_trace(reason_code, request_id)
+    return {
+        "command_label": CONVERSATION_TURN_COMMAND_LABEL,
+        "turn_id": payload.get("turn_id"),
+        "status": status,
+        "reason_code": reason_code,
+        "answer_mode": _conversation_turn_answer_mode(status),
+        "answer_fragments": [],
+        "citations": [],
+        "graph_links": [],
+        "selected_source_context": selected_context,
+        "safety_notice": "No draft answer was generated. Selected source context is required and patient-specific advice is not supported.",
+        "gateway_decision": decision,
+        "model_trace": trace,
+        "abstention_status": trace.get("abstention_status", "abstained_no_model_execution"),
+        "refusal_status": reason_code,
+        "evidence_ids": evidence_ids or [],
+        "raw_output_included": False,
+        "persistence": _conversation_turn_persistence(),
+        "model_routing": MODEL_ROUTING,
+    }
+
+
+def _bounded_context_quote(text: Any, limit: int = 240) -> str:
+    if not isinstance(text, str):
+        return ""
+    normalized = re.sub(r"\s+", " ", text).strip()
+    if len(normalized) <= limit:
+        return normalized
+    truncated = normalized[: limit + 1].rsplit(" ", 1)[0].rstrip(" .,;:")
+    return f"{truncated}..."
+
+
+def _conversation_turn_draft_text(question: str, context_package: dict[str, Any], model_trace: dict[str, Any]) -> str:
+    source_context = context_package["source_span_contexts"][0]
+    quoted_context = _bounded_context_quote(source_context.get("quoted_span"))
+    locator_label = _display_label_for_stable_locator(source_context.get("stable_locator")) or "selected source span"
+    trace_status = model_trace.get("trace_status") if isinstance(model_trace.get("trace_status"), str) else "executed"
+    question_scope = "selected question" if question.strip() else "selected context"
+    return f"For the {question_scope}, the {locator_label} source span states: \"{quoted_context}\" Local gateway trace status: {trace_status}."
+
+
+def _conversation_turn_citation(context_package: dict[str, Any], fragment_id: str) -> dict[str, Any]:
+    source_context = context_package["source_span_contexts"][0]
+    return {
+        "source_span_id": source_context["source_span_id"],
+        "source_document_id": source_context.get("source_document_id"),
+        "stable_locator": source_context.get("stable_locator"),
+        "display_label": _display_label_for_stable_locator(source_context.get("stable_locator")),
+        "quoted_span": source_context.get("quoted_span"),
+        "excerpt_digest": source_context.get("excerpt_digest"),
+        "answer_fragment_ids": [fragment_id],
+    }
+
+
+def _conversation_turn_graph_link(context_package: dict[str, Any], source_span_id: str) -> dict[str, Any]:
+    resource_id = context_package.get("resource_id")
+    highlight_node_ids = [source_span_id]
+    resource_node_id = f"resource.{resource_id}" if isinstance(resource_id, str) and resource_id else None
+    if resource_node_id is not None:
+        highlight_node_ids.insert(0, resource_node_id)
+    return {
+        "resource_id": resource_id,
+        "selected_node_id": source_span_id,
+        "source_span_id": source_span_id,
+        "highlight_node_ids": highlight_node_ids,
+    }
+
+
+def _conversation_turn_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    source_span_id, source_error = _conversation_turn_source_span_id(payload)
+    base_request_id = _uuid_from_text(f"{CONVERSATION_TURN_COMMAND_LABEL}:{payload.get('turn_id', '')}:{payload.get('question', '')}")
+    if source_error is not None or source_span_id is None:
+        return _conversation_turn_refusal(payload=payload, reason_code=source_error or "selected_context_required", request_id=base_request_id)
+    question = payload.get("question")
+    if not isinstance(question, str) or not question.strip():
+        return _conversation_turn_refusal(payload=payload, reason_code="question_required", request_id=base_request_id)
+    if not isinstance(payload.get("turn_id"), str) or not payload.get("turn_id"):
+        return _conversation_turn_refusal(payload=payload, reason_code="turn_id_required", request_id=base_request_id)
+
+    try:
+        context_package = assemble_graph_rag_selection_context(source_span_id=source_span_id)
+    except HTTPException:
+        return _conversation_turn_refusal(payload=payload, reason_code="missing_validated_source_span_context", request_id=base_request_id)
+    selected_context = _selected_context_summary(context_package)
+    envelope = _conversation_turn_gateway_policy_envelope(context_package["context_package_digest"])
+    source_contexts = _selection_contexts_for_gateway(context_package)
+    evidence_ids = [source_span_id] if selected_context is not None else []
+    if context_package["status"] != "context_ready" or len(source_contexts) != 1 or context_package["source_span_ids"] != [source_span_id]:
+        return _conversation_turn_refusal(
+            payload=payload,
+            reason_code="missing_validated_source_span_context",
+            request_id=envelope["request_id"],
+            selected_context=selected_context,
+            evidence_ids=evidence_ids if selected_context is not None else [],
+        )
+    if _is_advice_like_query(question) or _contains_advice_like_text(payload.get("command_metadata", {})):
+        return _conversation_turn_refusal(
+            payload=payload,
+            reason_code="unsupported_advice_like_prompt",
+            request_id=envelope["request_id"],
+            selected_context=selected_context,
+        )
+
+    dry_run = run_local_open_weight_7b_dry_run(envelope, source_contexts)
+    gateway_decision = _conversation_turn_gateway_decision(dry_run, envelope["request_id"])
+    model_trace = dry_run.trace
+    if not dry_run.decision.allowed:
+        return _conversation_turn_refusal(
+            payload=payload,
+            reason_code="model_gateway_denied",
+            request_id=envelope["request_id"],
+            gateway_decision=gateway_decision,
+            model_trace=model_trace,
+            selected_context=selected_context,
+            evidence_ids=evidence_ids,
+        )
+    if model_trace.get("trace_status") == "unavailable":
+        return _conversation_turn_refusal(
+            payload=payload,
+            reason_code="model_gateway_unavailable",
+            request_id=envelope["request_id"],
+            gateway_decision=gateway_decision,
+            model_trace=model_trace,
+            selected_context=selected_context,
+            evidence_ids=evidence_ids,
+            status="unavailable",
+        )
+
+    fragment_id = "fragment-1"
+    answer_fragments = [
+        {
+            "fragment_id": fragment_id,
+            "text": _conversation_turn_draft_text(question, context_package, model_trace),
+            "source_span_ids": [source_span_id],
+            "unsupported": False,
+        }
+    ]
+    citations = [_conversation_turn_citation(context_package, fragment_id)]
+    return {
+        "command_label": CONVERSATION_TURN_COMMAND_LABEL,
+        "turn_id": payload["turn_id"],
+        "status": "draft",
+        "reason_code": None,
+        "answer_mode": "selected_context_cited_draft",
+        "answer_fragments": answer_fragments,
+        "citations": citations,
+        "graph_links": [_conversation_turn_graph_link(context_package, source_span_id)],
+        "selected_source_context": selected_context,
+        "safety_notice": "Draft answer for selected source context only; not medical advice.",
+        "gateway_decision": gateway_decision,
+        "model_trace": model_trace,
+        "abstention_status": model_trace.get("abstention_status"),
+        "refusal_status": None,
+        "evidence_ids": evidence_ids,
+        "raw_output_included": False,
+        "persistence": _conversation_turn_persistence(),
         "model_routing": MODEL_ROUTING,
     }
 
@@ -1538,6 +1773,11 @@ def get_workbench_trace(q: str = "", command_label: str = WORKBENCH_TRACE_COMMAN
 @router.post("/corpus/workbench/explain-selection")
 def post_workbench_explain_selection(payload: dict[str, Any]) -> dict[str, Any]:
     return _explain_selection_payload(payload)
+
+
+@router.post("/corpus/workbench/conversation-turn")
+def post_workbench_conversation_turn(payload: dict[str, Any]) -> dict[str, Any]:
+    return _conversation_turn_payload(payload)
 
 
 @router.get("/corpus/interpretability")
