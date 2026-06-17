@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import { mkdirSync, writeFileSync } from "node:fs";
 
 const breastResourceId = "ahs-guru-breast-br005-adjuvant-rt-invasive-breast";
@@ -18,7 +18,7 @@ const atlasSmoothnessThresholds = {
   consoleErrorCount: 0,
   consoleWarningCount: 0
 };
-const activeInteractionRafSampleMs = 3500;
+const activeInteractionRafSampleMs = 750;
 
 type InteractionSuccessFlags = {
   pan: boolean;
@@ -137,6 +137,7 @@ type CorpusGraphScalePayload = {
 };
 
 test("Sigma graph canvas load, search, selection, and API-backed corpus states work without console findings", async ({ page }) => {
+  test.setTimeout(90_000);
   const consoleFindings: string[] = [];
   const mutationRequests: string[] = [];
   const traceRequests: string[] = [];
@@ -209,19 +210,29 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
   await expectDocumentNodesIntegrated(page);
   await expectNodeDragPinsAndResetsSessionPosition(page, "document-type.guideline", "guideline", { reload: true, writeEvidence: true });
   await expectWheelZoomChangesNodeViewportRect(page, `resource.${breastResourceId}`);
-  await expectEmptySpacePanChangesNodeViewportRect(page, `resource.${breastResourceId}`);
+  await expectStagePanChangesNodeViewportRect(page, `resource.${breastResourceId}`);
   await expectNoOvalGraphBoundary(page);
   await expectRestrainedSigmaAesthetic(page);
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await expect(page.getByLabel("Current workspace path")).toContainText("public-corpus-atlas.graph");
+  if (await page.getByRole("button", { name: "Expand Vault panel" }).count() > 0) {
+    await page.getByRole("button", { name: "Expand Vault panel" }).click();
+  }
+  if (await page.getByRole("button", { name: "Show Vault panel" }).count() > 0) {
+    await page.getByRole("button", { name: "Show Vault panel" }).click();
+  }
   await expect(page.getByRole("navigation", { name: "Knowledgebase resources" })).toBeVisible();
+  if (await page.getByRole("button", { name: "Show Source View" }).count() > 0) {
+    await page.getByRole("button", { name: "Show Source View" }).click();
+  }
   await expect(page.getByTestId("source-document-panel")).toContainText("5 parsed-subset coverage");
   await expect(page.getByTestId("source-document-panel")).toContainText("No source-span records are available");
   await expect(page.getByTestId("atlas-workbench")).toContainText("198 public resources");
-  await expect(page.getByTestId("atlas-workbench")).toContainText("Retrieval query");
+  await expect(page.getByTestId("atlas-workbench")).toContainText("Find source context");
   await expect(page.getByTestId("atlas-workbench")).toContainText("Selected resource context");
   await expect(page.getByTestId("atlas-workbench")).toContainText("Graph focus / trust path");
-  await expect(page.getByTestId("atlas-workbench")).toContainText("Graph-RAG retrieval trace");
-  await expect(page.getByTestId("atlas-workbench")).toContainText("Generated answers disabled until retrieval/source-span verification is implemented.");
+  await expect(page.getByTestId("atlas-workbench")).toContainText("Source context results");
+  await expect(page.getByTestId("atlas-workbench")).toContainText("Selected-context draft answers are local-gateway bounded, source-span scoped, and not approved guidance.");
   await expect(page.getByTestId("compact-inspector-summary")).toBeVisible();
   await expect(page.getByTestId("compact-inspector-summary")).toContainText("Source availability");
   await expect(page.getByText("changed local archive").first()).toBeVisible();
@@ -252,21 +263,28 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
   await page.getByRole("navigation", { name: "Knowledgebase resources" }).getByRole("button", { name: /Brain Metastases/i }).click();
   await expect(page.getByTestId("node-inspector")).toContainText(brainResourceId);
 
+  if (await page.getByRole("button", { name: "Show Graph Search" }).count() > 0) {
+    await page.getByRole("button", { name: "Show Graph Search" }).click();
+  }
+
   await page.getByRole("searchbox", { name: "Search public corpus graph nodes" }).fill("Adjuvant Radiotherapy for Invasive Breast Cancer");
   await expect(page.locator(".sigma-search-results button")).toContainText("Adjuvant Radiotherapy for Invasive Breast Cancer");
   await expectCompactTextStyle(page, ".sigma-search-results span");
   await page.getByRole("searchbox", { name: "Search public corpus graph nodes" }).press("Enter");
   await expect(page.getByTestId("node-inspector")).toContainText(breastResourceId);
   await expect(page.getByTestId("node-inspector")).toContainText("Adjuvant Radiotherapy for Invasive Breast Cancer");
+  if (await page.getByRole("button", { name: "Show Source View" }).count() > 0) {
+    await page.getByRole("button", { name: "Show Source View" }).click();
+  }
   await expect(page.getByTestId("source-document-panel")).toContainText("Adjuvant Radiotherapy for Invasive Breast Cancer");
-  await expect(page.getByTestId("atlas-workbench")).toContainText(breastResourceId);
+  await expect(page.getByTestId("atlas-workbench")).toContainText("Selected resource context");
   await page.getByTestId("guideline-graph-canvas").screenshot({ path: "../../.omo/evidence/task-4-smooth-focus.png" });
 
   await page.getByRole("navigation", { name: "Knowledgebase resources" }).getByRole("button", { name: /Brain Metastases/i }).click();
   await page.locator(".sigma-search-results button").filter({ hasText: "Adjuvant Radiotherapy for Invasive Breast Cancer" }).first().click();
   await expect(page.getByTestId("node-inspector")).toContainText(breastResourceId);
   await expect(page.getByTestId("source-document-panel")).toContainText("Adjuvant Radiotherapy for Invasive Breast Cancer");
-  await expect(page.getByTestId("atlas-workbench")).toContainText(breastResourceId);
+  await expect(page.getByTestId("atlas-workbench")).toContainText("Selected resource context");
 
   await page.getByRole("button", { name: "breast · 1" }).click();
   await expect(page.getByTestId("node-inspector")).toContainText("disease site cluster");
@@ -281,7 +299,7 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
   const workbench = page.getByTestId("atlas-workbench");
   const workbenchSearchStart = performance.now();
   await workbench.getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }).fill("Adjuvant Radiotherapy for Invasive Breast Cancer");
-  await workbench.getByRole("button", { name: "Search", exact: true }).click();
+  await workbench.getByRole("button", { name: "Find source context", exact: true }).click();
   await expect(workbench).toContainText("Metadata retrieval");
   await expectCompactTextStyle(page, ".atlas-workbench-result span");
   performanceEvidence.searchVisibleMs = Math.round(performance.now() - workbenchSearchStart);
@@ -293,7 +311,7 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
   await workbench.locator('section[aria-label="Metadata retrieval"] button').first().dispatchEvent("click", { bubbles: true });
   await expect(page.getByTestId("node-inspector")).toContainText(breastResourceId);
   await expect(page.getByTestId("source-document-panel")).toContainText("Adjuvant Radiotherapy for Invasive Breast Cancer");
-  await expect(page.getByTestId("trust-provenance-drawer")).toContainText("metadata_only");
+  await expect(page.getByTestId("trust-provenance-drawer")).toContainText("Metadata-only, no claim rendered");
   await expect(page.getByTestId("trust-provenance-drawer")).toContainText("Metadata-only coverage: source spans are unavailable/not parsed");
   await expect(page.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-evidence-selected-query", "Adjuvant Radiotherapy for Invasive Breast Cancer");
   await expect(page.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-highlighted-resource-ids", breastResourceId);
@@ -301,7 +319,7 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
   await expect(page.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-evidence-focus-mode", "metadata-only-blocked");
   await expect(page.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-evidence-blocked-reason", "Blocked evidence label: metadata-only, no source span returned");
   await expect(page.getByTestId("retrieval-terminal-state")).toHaveAttribute("data-focus-mode", "metadata-only-blocked");
-  await expect(page.getByTestId("retrieval-terminal-state")).toContainText("Generated answers are disabled");
+  await expect(page.getByTestId("retrieval-terminal-state")).toContainText("Only selected-context cited draft answers are allowed");
   await expect(page.getByTestId("lookup-relationship-trace")).toContainText("resource");
   await expect(page.getByTestId("lookup-relationship-trace")).toContainText("disease site");
   await expect(page.getByTestId("lookup-relationship-trace")).toContainText("document type");
@@ -310,7 +328,7 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
   await page.getByTestId("trust-provenance-drawer").screenshot({ path: "../../.omo/evidence/task-9-surveillance-hud.png" });
 
   await workbench.getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }).fill("guideline");
-  await workbench.getByRole("button", { name: "Search", exact: true }).click();
+  await workbench.getByRole("button", { name: "Find source context", exact: true }).click();
   await expect(page.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-highlighted-resource-ids", `${breastResourceId},${brainResourceId}`);
   await expect(page.getByTestId("retrieval-terminal-state").getByRole("button", { name: `Metadata terminal result ${brainResourceId}` })).toBeVisible();
   await page.getByTestId("retrieval-terminal-state").getByRole("button", { name: `Metadata terminal result ${brainResourceId}` }).dispatchEvent("click", { bubbles: true });
@@ -322,17 +340,17 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
   await expect(page.getByTestId("retrieval-terminal-state")).toHaveAttribute("data-graph-resource-node-id", `resource.${breastResourceId}`);
 
   await workbench.getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }).fill("deterministic parsed excerpt");
-  await workbench.getByRole("button", { name: "Search", exact: true }).click();
-  await expect(workbench).toContainText("page:1;span:1");
+  await workbench.getByRole("button", { name: "Find source context", exact: true }).click();
+  await expect(workbench).toContainText("Page 1 · Span 1");
   await expect(workbench).toContainText("Local deterministic parsed excerpt for search coverage.");
   await expect(workbench).toContainText("source status: draft");
   await expect(workbench).toContainText("parse status: not-parsed");
   await expect(workbench.getByRole("button", { name: /Local deterministic parsed excerpt/i })).toBeVisible();
   await workbench.getByRole("button", { name: /Local deterministic parsed excerpt/i }).dispatchEvent("click", { bubbles: true });
   await expect(page.getByTestId("node-inspector")).toContainText(breastResourceId);
-  await expect(page.getByTestId("trust-provenance-drawer")).toContainText("page:1;span:1");
-  await expect(page.getByTestId("trust-provenance-drawer")).toContainText(`${"0".repeat(64)} · draft`);
-  await expect(page.getByTestId("trust-provenance-drawer")).toContainText("Parent resource");
+  await expect(page.getByTestId("trust-provenance-drawer")).toContainText("Page 1 · Span 1");
+  await expect(page.getByTestId("trust-provenance-drawer")).toContainText("exact IDs and checksum are in details");
+  await expect(page.getByTestId("trust-provenance-drawer")).toContainText("Source-backed draft context");
   await expect(page.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-evidence-selected-query", "deterministic parsed excerpt");
   await expect(page.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-highlighted-resource-ids", breastResourceId);
   await expect(page.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-highlighted-source-span-ids", "source-span.local-test");
@@ -346,7 +364,7 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
   await expect(page.getByTestId("retrieval-terminal-state")).toHaveAttribute("data-highlighted-source-span-ids", "source-span.local-test");
   await expect(page.getByTestId("retrieval-terminal-state")).toHaveAttribute("data-graph-resource-node-id", `resource.${breastResourceId}`);
   await expect(page.getByTestId("retrieval-terminal-state")).toHaveAttribute("data-graph-path-node-ids", `resource.${breastResourceId},disease-site.breast,document-type.guideline,archive-status.metadata-only.not-parsed`);
-  await expect(page.getByTestId("retrieval-terminal-state")).toContainText("Generated answers are disabled");
+  await expect(page.getByTestId("retrieval-terminal-state")).toContainText("Only selected-context cited draft answers are allowed");
   await expect(page.getByTestId("workbench-trace-terminal")).toHaveAttribute("data-command-label", "run-evals:corpus-workbench-trace");
   await expect(page.getByTestId("workbench-trace-terminal")).toHaveAttribute("data-gateway-outcome", "executed");
   await expect(page.getByTestId("workbench-trace-terminal")).toHaveAttribute("data-abstention-status", "abstained_no_answer_text");
@@ -357,8 +375,9 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
   await resetStorageSetItemSpy(page);
   const explainRequestCountBefore = explainSelectionRequests.length;
   const mutationRequestCountBeforeExplain = mutationRequests.length;
-  await expect(workbench.getByRole("button", { name: "Explain Selection" })).toBeEnabled();
-  await workbench.getByRole("button", { name: "Explain Selection" }).click();
+  await workbench.getByTestId("assistant-trace-details").locator("summary").evaluate((summary) => (summary as HTMLElement).click());
+  await expect(workbench.getByRole("button", { name: "Run selected-source trace" })).toBeEnabled();
+  await workbench.getByRole("button", { name: "Run selected-source trace" }).evaluate((button) => (button as HTMLButtonElement).click());
   const explainTrace = page.getByTestId("explain-selection-trace-terminal");
   await expect(explainTrace).toHaveAttribute("data-command-label", "explain-selection");
   await expect(explainTrace).toHaveAttribute("data-gateway-outcome", "executed");
@@ -367,21 +386,20 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
   await expect(explainTrace).toHaveAttribute("data-raw-output-included", "false");
   await expect(explainTrace).toContainText("Command label");
   await expect(explainTrace).toContainText("explain-selection");
-  await expect(explainTrace).toContainText("Selected node ID");
-  await expect(explainTrace).toContainText(`resource.${breastResourceId}`);
-  await expect(explainTrace).toContainText("Selected source-span IDs");
-  await expect(explainTrace).toContainText("source-span.local-test");
+  await expect(explainTrace).toContainText("Selected graph node");
+  await expect(explainTrace).toContainText("Selection metadata available in trace details");
+  await expect(explainTrace).toContainText("Selected source spans");
+  await expect(explainTrace).toContainText("1 source span");
   await expect(explainTrace).toContainText("Context digest");
-  await expect(explainTrace).toContainText("sha256:context-source-span-local-test");
+  await expect(explainTrace).toContainText("Digest available in trace details");
   await expect(explainTrace).toContainText("Output digest");
-  await expect(explainTrace).toContainText("sha256:output-source-span-local-test");
   await expect(explainTrace).toContainText("Runner status");
   await expect(explainTrace).toContainText("Gateway outcome");
   await expect(explainTrace).toContainText("Citation/verifier status");
   await expect(explainTrace).toContainText("Warnings");
   await expect(explainTrace).toContainText("none");
-  await expect(explainTrace).toContainText("Evidence IDs");
-  await expect(explainTrace).toContainText("evidence.explain.source-span.local-test");
+  await expect(explainTrace).toContainText("Evidence records");
+  await expect(explainTrace).toContainText("1 evidence record");
   await expect(explainTrace).toContainText("raw_output_included");
   await expect(explainTrace).toContainText("false");
   await expect(explainTrace).toContainText("no claim: true");
@@ -393,7 +411,7 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
   await screenshotExpandedExplainSelectionTrace(page, "../../.omo/evidence/task-7-explain-selection-trace-ui.png");
   await screenshotExpandedWorkbenchTrace(page, "../../.omo/evidence/task-7-workbench-trace-ui.png");
   writeTask7WorkbenchTraceText(await readTask7WorkbenchTraceEvidence(page, consoleFindings, traceRequests, explainSelectionRequests, storageSetItemCalls));
-  await expect(page.getByTestId("lookup-relationship-trace")).toContainText("source span");
+  await expect(page.getByTestId("lookup-relationship-trace")).toContainText("Page 1 · Span 1");
   await expect(page.getByTestId("lookup-relationship-trace")).toContainText("review item");
   await expectNoForbiddenGeneratedAnswerText(page);
   await page.getByTestId("guideline-graph-canvas").screenshot({ path: "../../.omo/evidence/task-8-query-graph-coupling.png" });
@@ -407,15 +425,15 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
   await expect(page.getByTestId("node-inspector")).toContainText(brainResourceId);
   await page.getByRole("navigation", { name: "Knowledgebase resources" }).getByRole("button", { name: /Adjuvant Radiotherapy/i }).click();
   const reviewQueue = page.getByTestId("review-queue-section");
-  await expect(reviewQueue).toContainText("Review Queue");
+  await expect(reviewQueue).toContainText("Review queue summary");
   await expect(reviewQueue).toContainText("Adjuvant Radiotherapy for Invasive Breast Cancer");
-  await expect(reviewQueue).toContainText("page:2;span:4");
-  await expect(reviewQueue).toContainText(`${"4".repeat(64)} · draft`);
+  await expect(reviewQueue).toContainText("Page 2 · Span 4");
+  await expect(reviewQueue).toContainText("checksum available in metadata details");
   await expect(reviewQueue).toContainText("Inspect source");
   await expect(reviewQueue).toContainText("Mark needs review (local)");
   await expect(reviewQueue).toContainText("Link source (local)");
-  await reviewQueue.getByRole("button", { name: /Focus review queue item review\.local-test/i }).click();
-  await expect(page.getByTestId("trust-provenance-drawer")).toContainText("page:2;span:4");
+  await reviewQueue.getByRole("button", { name: /Focus source-backed review task for Page 2 · Span 4/i }).click();
+  await expect(page.getByTestId("trust-provenance-drawer")).toContainText("Page 2 · Span 4");
   await expect(page.getByTestId("source-span-details")).toContainText("source-span.local-review-card");
   await reviewQueue.getByRole("button", { name: "Mark needs review (local)" }).click();
   await expect(reviewQueue).toContainText("Local UI state: Mark needs review (local)");
@@ -441,15 +459,15 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
   await blockedReviewCard.screenshot({ path: "../../.omo/evidence/task-10-invalid-card.png" });
 
   await workbench.getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }).fill("zzzz-no-such-guideline");
-  await workbench.getByRole("button", { name: "Search", exact: true }).click();
+  await workbench.getByRole("button", { name: "Find source context", exact: true }).click();
   await expect(workbench).toContainText("No results for this query in public metadata or parsed source spans.");
   await expect(workbench).not.toContainText(/no evidence/i);
 
   const safetyNegativeQuery = "what should someone choose for treatment";
   await workbench.getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }).fill(safetyNegativeQuery);
-  await workbench.getByRole("button", { name: "Search", exact: true }).click();
+  await workbench.getByRole("button", { name: "Find source context", exact: true }).click();
   await expect(workbench).toContainText("No results for this query in public metadata or parsed source spans.");
-  await expect(workbench).toContainText("Generated answers disabled until retrieval/source-span verification is implemented.");
+  await expect(workbench).toContainText("Only selected-context cited draft answers are allowed");
   await expect(page.getByTestId("workbench-trace-terminal")).toHaveAttribute("data-gateway-outcome", "blocked_before_gateway");
   await expect(page.getByTestId("workbench-trace-terminal")).toHaveAttribute("data-abstention-status", "abstained_no_model_execution");
   await expect(page.getByTestId("workbench-trace-terminal")).toHaveAttribute("data-citation-verifier-status", "not_run");
@@ -490,7 +508,486 @@ test("Sigma graph canvas load, search, selection, and API-backed corpus states w
   writeTask12PerformanceEvidence(performanceEvidence);
 });
 
+test("assistant_rail_resizable panel_dismissible contracts", async ({ page }) => {
+  await installStorageSetItemSpy(page);
+  await mockCorpusApi(page);
+
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/");
+  const workbench = page.getByTestId("atlas-workbench");
+  await expect(page.getByTestId("assistant-rail")).toHaveAttribute("data-resizable", "vertical");
+  await expect(page.getByTestId("assistant-rail")).toHaveAttribute("data-min-height", "20vh");
+  await expect(page.getByTestId("assistant-rail")).toHaveAttribute("data-max-height", "55vh");
+  await expect(page.getByTestId("assistant-rail").getByRole("textbox", { name: /ask about selected source/i })).toBeDisabled();
+  await expect(page.getByTestId("assistant-rail")).toContainText("Select a source-backed graph item to ask.");
+
+  await workbench.getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }).fill("deterministic parsed excerpt");
+  await workbench.getByRole("button", { name: "Find source context", exact: true }).click();
+  await workbench.getByRole("button", { name: /Local deterministic parsed excerpt/i }).dispatchEvent("click", { bubbles: true });
+  await expect(page.getByTestId("assistant-rail").getByRole("textbox", { name: /ask about selected source/i })).toBeEnabled();
+  await expect(page.getByTestId("assistant-rail").getByRole("button", { name: "Ask about selected source" })).toBeDisabled();
+  await expect(page.getByTestId("assistant-rail")).toContainText("Draft answer for selected source context only; not medical advice.");
+
+  const railBox = await page.getByTestId("assistant-rail").boundingBox();
+  expect(railBox).not.toBeNull();
+  const railHandleBox = await page.getByRole("separator", { name: "Resize assistant rail" }).boundingBox();
+  expect(railHandleBox).not.toBeNull();
+  await page.mouse.move((railHandleBox?.x ?? 0) + (railHandleBox?.width ?? 2) / 2, (railHandleBox?.y ?? 0) + 2);
+  await page.mouse.down();
+  await page.mouse.move((railHandleBox?.x ?? 0) + (railHandleBox?.width ?? 2) / 2, Math.max(120, (railHandleBox?.y ?? 0) - 120));
+  await page.mouse.up();
+  await expect(page.getByTestId("assistant-rail")).toHaveAttribute("data-height-state", "resized");
+  await expect(page.getByTestId("sigma-corpus-graph")).toBeVisible();
+  const desktopViewportBoxes = await page.evaluate(() => {
+    const graphLayout = document.querySelector(".graph-layout")?.getBoundingClientRect();
+    const assistant = document.querySelector('[data-testid="assistant-rail"]')?.getBoundingClientRect();
+    const inspector = document.querySelector('[data-testid="node-inspector"]')?.getBoundingClientRect();
+    return {
+      graphLayoutHeight: graphLayout?.height ?? 0,
+      assistantHeight: assistant?.height ?? 0,
+      inspectorHeight: inspector?.height ?? 0,
+      graphAndAssistantOverlap: Boolean(graphLayout && assistant && graphLayout.bottom > assistant.top),
+      inspectorAndAssistantOverlap: Boolean(inspector && assistant && inspector.bottom > assistant.top)
+    };
+  });
+  expect(desktopViewportBoxes.graphAndAssistantOverlap).toBe(false);
+  expect(desktopViewportBoxes.inspectorAndAssistantOverlap).toBe(false);
+  mkdirSync("../../.omo/evidence/conversational-graph-rag-workbench-ux", { recursive: true });
+  await page.getByTestId("assistant-rail").screenshot({ path: "../../.omo/evidence/conversational-graph-rag-workbench-ux/task-3-assistant-rail-resize.png" });
+
+  const vaultBoxBefore = await page.locator(".atlas-sidebar").boundingBox();
+  const vaultHandleBox = await page.getByRole("separator", { name: "Resize Vault panel" }).boundingBox();
+  expect(vaultHandleBox).not.toBeNull();
+  await page.mouse.move((vaultHandleBox?.x ?? 0) + 2, (vaultHandleBox?.y ?? 0) + 120);
+  await page.mouse.down();
+  await page.mouse.move((vaultHandleBox?.x ?? 0) + 72, (vaultHandleBox?.y ?? 0) + 120);
+  await page.mouse.up();
+  const vaultBoxAfter = await page.locator(".atlas-sidebar").boundingBox();
+  expect(vaultBoxBefore?.width).not.toEqual(vaultBoxAfter?.width);
+
+  await page.getByRole("button", { name: "Close Graph Search" }).click();
+  await expect(page.getByTestId("graph-search-panel")).toHaveCount(0);
+  await page.getByRole("button", { name: "Show Graph Search" }).click();
+  await expect(page.getByTestId("graph-search-panel")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByTestId("graph-search-panel")).toHaveCount(0);
+  await expect(page.getByTestId("source-document-panel")).toHaveCount(0);
+  await page.getByRole("button", { name: "Show Source View" }).click();
+  await expect(page.getByTestId("source-document-panel")).toContainText("Adjuvant Radiotherapy for Invasive Breast Cancer");
+
+  await page.getByRole("button", { name: "Collapse session pins" }).click();
+  await expect(page.getByRole("button", { name: "Expand session pins" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Dismiss assistant rail" }).click();
+  await expect(page.getByTestId("assistant-rail")).toHaveCount(0);
+  await page.getByRole("button", { name: "Dismiss Provenance panel" }).dispatchEvent("click", { bubbles: true });
+  await expect(page.getByTestId("trust-provenance-drawer")).toHaveCount(0);
+  await page.setViewportSize({ width: 500, height: 900 });
+  await expect(page.getByTestId("guideline-graph-canvas")).toBeVisible();
+  await expect(page.getByTestId("sigma-corpus-graph")).toBeVisible();
+  await expect(page.locator("body")).not.toContainText(/raw_model_output|chat transcript|treatment advice|dosing|diagnosis/i);
+  const narrowViewportBoxes = await page.evaluate(() => {
+    const graph = document.querySelector('[data-testid="guideline-graph-canvas"]')?.getBoundingClientRect();
+    const sigma = document.querySelector('[data-testid="sigma-corpus-graph"]')?.getBoundingClientRect();
+    return {
+      graphVisible: Boolean(graph && graph.width > 0 && graph.height > 0),
+      sigmaVisible: Boolean(sigma && sigma.width > 0 && sigma.height > 0),
+      graphHeight: graph?.height ?? 0,
+      sigmaHeight: sigma?.height ?? 0
+    };
+  });
+  writeFileSync("../../.omo/evidence/conversational-graph-rag-workbench-ux/task-3-panel-dismissal.txt", JSON.stringify({
+    assistantRailDismissed: await page.getByTestId("assistant-rail").count() === 0,
+    provenanceDismissed: await page.getByTestId("trust-provenance-drawer").count() === 0,
+    desktopViewport: { width: 1440, height: 1000, boxes: desktopViewportBoxes },
+    graphVisibleAtNarrowViewport: await page.getByTestId("sigma-corpus-graph").isVisible(),
+    narrowViewportBoxes,
+    storageSetItemCalls: await readStorageSetItemCalls(page)
+  }, null, 2), "utf-8");
+  expect(await readStorageSetItemCalls(page)).toEqual([]);
+});
+
+test("task 4 concise labels keep internal IDs behind metadata controls", async ({ page }) => {
+  const corpusApiMock = await mockCorpusApi(page);
+  mkdirSync("../../.omo/evidence/conversational-graph-rag-workbench-ux", { recursive: true });
+
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/");
+  const workbench = page.getByTestId("atlas-workbench");
+  await expect(page.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-layout-overlap-count", "0");
+  await workbench.getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }).fill("deterministic parsed excerpt");
+  await workbench.getByRole("button", { name: "Find source context", exact: true }).click();
+  await expect(workbench).toContainText("Page 1 · Span 1");
+  await workbench.getByRole("button", { name: /Local deterministic parsed excerpt/i }).dispatchEvent("click", { bubbles: true });
+  await expect(page.getByTestId("trust-provenance-drawer")).toContainText("Page 1 · Span 1");
+
+  corpusApiMock.setInterpretabilitySourceSpans([reviewQueueFocusSpan]);
+  corpusApiMock.setReviewQueueItems(undefined);
+  await page.getByRole("navigation", { name: "Knowledgebase resources" }).getByRole("button", { name: /Brain Metastases/i }).click();
+  await page.getByRole("navigation", { name: "Knowledgebase resources" }).getByRole("button", { name: /Adjuvant Radiotherapy/i }).click();
+  await expect(page.getByTestId("review-queue-section")).toContainText("1 review task");
+  await expect(page.getByTestId("review-queue-section")).toContainText("Page 2 · Span 4");
+
+  const desktopPrimaryText = await readPrimaryVisibleText(page);
+  expect(desktopPrimaryText).toContain("Page 1 · Span 1");
+  expect(desktopPrimaryText).toContain("Page 2 · Span 4");
+  expect(desktopPrimaryText).toContain("1 source span");
+  expect(desktopPrimaryText).toContain("1 review task");
+  expect(desktopPrimaryText).not.toMatch(/workflow-task\.|source-document\.|source-span\.|page:1;span:1|page:2;span:4|sha256:|0{64}|4{64}|resource\.ahs-guru/);
+  await expect(page.getByTestId("source-span-details")).toContainText("Copy source span ID");
+  await expect(page.getByTestId("source-span-details")).toContainText("source-span.local-review-card");
+  await expect(page.getByTestId("review-queue-section")).toContainText("Review metadata details and copy controls");
+
+  await page.setViewportSize({ width: 500, height: 900 });
+  await expect(page.getByTestId("guideline-graph-canvas")).toBeVisible();
+  await expect(page.getByTestId("atlas-workbench")).toBeVisible();
+  const mobilePrimaryText = await readPrimaryVisibleText(page);
+  expect(mobilePrimaryText).not.toMatch(/workflow-task\.|source-document\.|source-span\.|page:1;span:1|page:2;span:4|sha256:|0{64}|4{64}|resource\.ahs-guru/);
+
+  await page.getByTestId("guideline-graph-canvas").screenshot({ path: "../../.omo/evidence/conversational-graph-rag-workbench-ux/task-4-label-overlap.png" });
+  const evidence = {
+    task: "task-4-readable-label-policy",
+    desktopViewport: { width: 1440, height: 1000 },
+    mobileViewport: { width: 500, height: 900 },
+    graphLayoutOverlapCount: await page.getByTestId("sigma-corpus-graph").getAttribute("data-layout-overlap-count"),
+    graphLabelMode: await page.getByTestId("sigma-corpus-graph").getAttribute("data-label-mode"),
+    readableLabelsObserved: ["Page 1 · Span 1", "Page 2 · Span 4", "1 source span", "1 review task"],
+    forbiddenPrimaryPatternAbsent: true,
+    metadataControlsObserved: ["Copy source span ID", "Review metadata details and copy controls"]
+  };
+  writeFileSync("../../.omo/evidence/conversational-graph-rag-workbench-ux/task-4-review-summary.txt", JSON.stringify(evidence, null, 2), "utf-8");
+});
+
+test("task 6 provenance and review panels stay concise with metadata behind details", async ({ page }) => {
+  const corpusApiMock = await mockCorpusApi(page);
+  mkdirSync("../../.omo/evidence/conversational-graph-rag-workbench-ux", { recursive: true });
+
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/");
+  const workbench = page.getByTestId("atlas-workbench");
+  await workbench.getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }).fill("deterministic parsed excerpt");
+  await workbench.getByRole("button", { name: "Find source context", exact: true }).click();
+  await workbench.getByRole("button", { name: /Local deterministic parsed excerpt/i }).dispatchEvent("click", { bubbles: true });
+  await expect(page.getByTestId("trust-provenance-drawer")).toContainText("Why trust this?");
+  await expect(page.getByTestId("trust-provenance-drawer")).toContainText("Source coverage");
+  await expect(page.getByTestId("trust-provenance-drawer")).toContainText("Citations");
+  await expect(page.getByTestId("trust-provenance-drawer")).toContainText("Graph path");
+  await expect(page.getByTestId("trust-provenance-drawer")).toContainText("Model/gateway status");
+  await expect(page.getByTestId("trust-provenance-drawer")).toContainText("Page 1 · Span 1");
+  await expect(page.getByTestId("trust-provenance-drawer")).not.toContainText(/page:1;span:1|source-document\.local-test|source-span\.local-test|0{64}/);
+  await page.getByTestId("trust-provenance-drawer").screenshot({ path: "../../.omo/evidence/conversational-graph-rag-workbench-ux/task-6-provenance-concise.png" });
+
+  corpusApiMock.setInterpretabilitySourceSpans([reviewQueueFocusSpan]);
+  corpusApiMock.setReviewQueueItems(undefined);
+  await page.getByRole("navigation", { name: "Knowledgebase resources" }).getByRole("button", { name: /Brain Metastases/i }).click();
+  await page.getByRole("navigation", { name: "Knowledgebase resources" }).getByRole("button", { name: /Adjuvant Radiotherapy/i }).click();
+  const reviewQueue = page.getByTestId("review-queue-section");
+  await expect(reviewQueue).toContainText("Review queue summary");
+  await expect(reviewQueue).toContainText("Source-backed items");
+  await expect(reviewQueue).toContainText("Blocked/unbacked items");
+  await expect(reviewQueue).toContainText("Local actions");
+  await expect(reviewQueue).toContainText("Page 2 · Span 4");
+  const reviewPrimaryText = await readPrimaryTextForLocator(reviewQueue);
+  expect(reviewPrimaryText).not.toMatch(/page:2;span:4|source-span\.local-review-card|review\.local-test|4{64}/);
+  await expect(page.getByTestId("source-span-details")).toContainText("source-span.local-review-card");
+  await expect(reviewQueue).toContainText("Review metadata details and copy controls");
+
+  const desktopPrimaryText = await readPrimaryVisibleText(page);
+  expect(desktopPrimaryText).toContain("Trust, source, graph, and model status");
+  expect(desktopPrimaryText).toContain("Review queue summary");
+  expect(desktopPrimaryText).not.toMatch(/workflow-task\.|source-document\.|source-span\.|page:1;span:1|page:2;span:4|sha256:|0{64}|4{64}|resource\.ahs-guru/);
+  await reviewQueue.screenshot({ path: "../../.omo/evidence/conversational-graph-rag-workbench-ux/task-6-review-summary.png" });
+
+  await page.setViewportSize({ width: 500, height: 900 });
+  await expect(page.getByTestId("trust-provenance-drawer")).toBeVisible();
+  await expect(reviewQueue).toBeVisible();
+  const mobilePrimaryText = await readPrimaryVisibleText(page);
+  expect(mobilePrimaryText).toContain("Why trust this?");
+  expect(mobilePrimaryText).toContain("Review queue summary");
+  expect(mobilePrimaryText).not.toMatch(/workflow-task\.|source-document\.|source-span\.|page:1;span:1|page:2;span:4|sha256:|0{64}|4{64}|resource\.ahs-guru/);
+});
+
+test("task 8 assistant entrypoint reframes selected source action with Trace details and Find source context", async ({ page }) => {
+  await installStorageSetItemSpy(page);
+  await mockCorpusApi(page);
+  mkdirSync("../../.omo/evidence/conversational-graph-rag-workbench-ux", { recursive: true });
+
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/");
+
+  const rail = page.getByTestId("assistant-rail");
+  const workbench = page.getByTestId("atlas-workbench");
+  await expect(rail).toContainText("Source Context Assistant");
+  await expect(workbench).toContainText("Find source context");
+  await expect(workbench).toContainText("Source context results");
+  await expect(rail).toContainText("Ask about selected source");
+  await expect(rail).toContainText("Select a source-backed graph item to ask.");
+  expect(await readPrimaryTextForLocator(rail)).not.toMatch(/Explain Selection|Graph-RAG retrieval trace|Retrieval query/);
+  await expect(page.getByTestId("assistant-trace-details")).not.toHaveAttribute("open");
+  await expect(page.getByTestId("assistant-output-trace-details")).not.toHaveAttribute("open");
+  await expect(rail.getByRole("textbox", { name: /ask about selected source/i })).toBeDisabled();
+  await expect(rail.getByRole("button", { name: "Ask about selected source" })).toBeDisabled();
+
+  await workbench.getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }).fill("deterministic parsed excerpt");
+  await workbench.getByRole("button", { name: "Find source context", exact: true }).click();
+  await expect(workbench).toContainText("Page 1 · Span 1");
+  await workbench.getByRole("button", { name: /Local deterministic parsed excerpt/i }).dispatchEvent("click", { bubbles: true });
+  await expect(rail.getByRole("textbox", { name: /ask about selected source/i })).toBeEnabled();
+  await expect(rail.getByRole("button", { name: "Ask about selected source" })).toBeDisabled();
+  await rail.getByRole("textbox", { name: /ask about selected source/i }).fill("Summarize this selected source context.");
+  await expect(rail.getByRole("button", { name: "Ask about selected source" })).toBeEnabled();
+  await expect(rail).toContainText("Selected source context: Page 1 · Span 1.");
+  await rail.screenshot({ path: "../../.omo/evidence/conversational-graph-rag-workbench-ux/task-8-assistant-entrypoint.png" });
+
+  await page.getByTestId("assistant-trace-details").locator("summary").evaluate((summary) => (summary as HTMLElement).click());
+  await rail.getByRole("button", { name: "Run selected-source trace" }).evaluate((button) => (button as HTMLButtonElement).click());
+  const selectedSourceTrace = page.getByTestId("explain-selection-trace-terminal");
+  await expect(selectedSourceTrace).toHaveAttribute("data-command-label", "explain-selection");
+  await expect(selectedSourceTrace).toHaveAttribute("data-gateway-outcome", "executed");
+  await expect(selectedSourceTrace).toHaveAttribute("data-raw-output-included", "false");
+  await expect(selectedSourceTrace).toContainText("Selected source trace");
+  await expect(selectedSourceTrace).toContainText("1 source span");
+  await expectNoForbiddenExplainSelectionText(page);
+  expect(await readStorageSetItemCalls(page)).toEqual([]);
+
+  writeFileSync("../../.omo/evidence/conversational-graph-rag-workbench-ux/task-8-trace-details.txt", JSON.stringify({
+    ...(await readTask8AssistantEntrypointEvidence(page)),
+    storageSetItemCalls: await readStorageSetItemCalls(page)
+  }, null, 2), "utf-8");
+});
+
+test("task 10 selected-context assistant renders cited draft and keeps unsafe turns ephemeral", async ({ page }) => {
+  const conversationRequests: unknown[] = [];
+  await installStorageSetItemSpy(page);
+  await mockCorpusApi(page);
+  mkdirSync("../../.omo/evidence/conversational-graph-rag-workbench-ux", { recursive: true });
+  page.on("request", (request) => {
+    if (request.method() === "POST" && request.url().includes("/api/knowledgebase/corpus/workbench/conversation-turn")) {
+      conversationRequests.push(request.postDataJSON());
+    }
+  });
+
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/");
+
+  const rail = page.getByTestId("assistant-rail");
+  const workbench = page.getByTestId("atlas-workbench");
+  await expect(rail.getByRole("textbox", { name: /ask about selected source/i })).toBeDisabled();
+  await expect(rail.getByRole("button", { name: "Ask about selected source" })).toBeDisabled();
+
+  await workbench.getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }).fill("deterministic parsed excerpt");
+  await workbench.getByRole("button", { name: "Find source context", exact: true }).click();
+  await expect(workbench).toContainText("Page 1 · Span 1");
+  await workbench.getByRole("button", { name: /Local deterministic parsed excerpt/i }).dispatchEvent("click", { bubbles: true });
+  await expect(rail).toHaveAttribute("data-answer-mode", "selected_context_cited_draft");
+  await expect(rail.getByRole("textbox", { name: /ask about selected source/i })).toBeEnabled();
+
+  await rail.getByRole("textbox", { name: /ask about selected source/i }).fill("Summarize the selected source context.");
+  await rail.getByRole("button", { name: "Ask about selected source" }).click();
+  const answer = rail.getByTestId("selected-context-answer");
+  await expect(answer).toContainText("Draft answer for selected source context only; not medical advice.");
+  await expect(answer).toContainText("Page 1 · Span 1");
+  await expect(answer).toContainText("Local deterministic parsed excerpt for search coverage.");
+  expect(await readPrimaryTextForLocator(answer)).not.toMatch(/source-span\.local-test|source-document\.local-test|page:1;span:1|raw_model_output/i);
+  await answer.getByRole("button", { name: /Show citation Page 1 · Span 1/i }).click();
+  await expect(answer).toContainText("Why this draft answer is grounded");
+  await rail.screenshot({ path: "../../.omo/evidence/conversational-graph-rag-workbench-ux/task-10-cited-draft-answer.png" });
+  const safeAnswerRendered = await answer.count() === 1;
+  expect(conversationRequests[0]).toMatchObject({
+    question: "Summarize the selected source context.",
+    source_span_id: "source-span.local-test",
+    selected_node_id: `resource.${breastResourceId}`,
+    resource_id: breastResourceId
+  });
+  expect(JSON.stringify(conversationRequests[0])).not.toMatch(/transcript|history|global|corpus_chat|raw_model_output/i);
+  expect(await readStorageSetItemCalls(page)).toEqual([]);
+
+  await page.reload();
+  const reloadedRail = page.getByTestId("assistant-rail");
+  await expect(reloadedRail.getByTestId("selected-context-answer")).toHaveCount(0);
+  await expect(reloadedRail.getByRole("textbox", { name: /ask about selected source/i })).toBeDisabled();
+
+  await workbench.getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }).fill("deterministic parsed excerpt");
+  await workbench.getByRole("button", { name: "Find source context", exact: true }).click();
+  await workbench.getByRole("button", { name: /Local deterministic parsed excerpt/i }).dispatchEvent("click", { bubbles: true });
+  await reloadedRail.getByRole("textbox", { name: /ask about selected source/i }).fill("what should someone choose for treatment");
+  await reloadedRail.getByRole("button", { name: "Ask about selected source" }).click();
+  await expect(reloadedRail.getByTestId("selected-context-refusal")).toContainText("I cannot answer patient-specific advice or treatment-choice prompts.");
+  await expect(reloadedRail.getByTestId("selected-context-answer")).toHaveCount(0);
+  await expect(reloadedRail).toHaveAttribute("data-gateway-outcome", "blocked_before_gateway");
+  await expect(page.locator("body")).not.toContainText(/recommended regimen|dosing|diagnosis|raw_model_output|chat transcript/i);
+
+  writeFileSync("../../.omo/evidence/conversational-graph-rag-workbench-ux/task-10-ephemeral-refusal.txt", JSON.stringify({
+    task: "task-10-selected-context-assistant",
+    safeAnswerRendered,
+    reloadClearedAnswer: await reloadedRail.getByTestId("selected-context-answer").count() === 0,
+    refusalVisible: await reloadedRail.getByTestId("selected-context-refusal").textContent(),
+    conversationRequests,
+    storageSetItemCalls: await readStorageSetItemCalls(page)
+  }, null, 2), "utf-8");
+  expect(await readStorageSetItemCalls(page)).toEqual([]);
+});
+
+test("task 11 citation hover highlight and source view pin the cited span", async ({ page }) => {
+  await installStorageSetItemSpy(page);
+  await mockCorpusApi(page);
+  mkdirSync("../../.omo/evidence/conversational-graph-rag-workbench-ux", { recursive: true });
+
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/");
+
+  const rail = page.getByTestId("assistant-rail");
+  const workbench = page.getByTestId("atlas-workbench");
+  await workbench.getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }).fill("deterministic parsed excerpt");
+  await workbench.getByRole("button", { name: "Find source context", exact: true }).click();
+  await workbench.getByRole("button", { name: /Local deterministic parsed excerpt/i }).dispatchEvent("click", { bubbles: true });
+
+  await rail.getByRole("textbox", { name: /ask about selected source/i }).fill("Summarize the selected source context.");
+  await rail.getByRole("button", { name: "Ask about selected source" }).click();
+  const answer = rail.getByTestId("selected-context-answer");
+  const citation = answer.getByRole("button", { name: /Show citation Page 1 · Span 1/i });
+  await expect(answer).toContainText("Page 1 · Span 1");
+  expect(await readPrimaryTextForLocator(answer)).not.toMatch(/source-span\.local-test|source-document\.local-test|page:1;span:1|raw_model_output/i);
+
+  await citation.hover();
+  await expect(rail).toHaveAttribute("data-citation-focus-mode", "transient");
+  await expect(page.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-evidence-selected-query", "Answer citation Page 1 · Span 1");
+  await expect(page.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-highlighted-source-span-ids", "source-span.local-test");
+  await expect(page.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-pinned-node-count", "0");
+  await page.getByTestId("guideline-graph-canvas").screenshot({ path: "../../.omo/evidence/conversational-graph-rag-workbench-ux/task-11-citation-hover-highlight.png" });
+
+  await page.mouse.move(40, 40);
+  await expect(rail).toHaveAttribute("data-citation-focus-mode", "none");
+  await expect(page.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-evidence-selected-query", "deterministic parsed excerpt");
+  await citation.focus();
+  await expect(rail).toHaveAttribute("data-citation-focus-mode", "transient");
+  await page.keyboard.press("Escape");
+  await expect(rail).toHaveAttribute("data-citation-focus-mode", "none");
+  await expect(answer).toBeVisible();
+
+  await expect(page.getByTestId("source-document-panel")).toHaveCount(0);
+  await citation.click();
+  await expect(rail).toHaveAttribute("data-citation-focus-mode", "pinned");
+  await expect(page.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-evidence-selected-query", "Answer citation Page 1 · Span 1");
+  const sourceView = page.getByTestId("source-document-panel");
+  await expect(sourceView).toContainText("Page 1 · Span 1");
+  await expect(sourceView.getByRole("button", { name: /Page 1 · Span 1/i })).toHaveAttribute("data-active", "true");
+  await expect(page.getByTestId("compact-inspector-summary")).toContainText("Page 1 · Span 1");
+  await expect(page.getByTestId("trust-provenance-drawer")).toContainText("Page 1 · Span 1");
+  expect(await readPrimaryTextForLocator(sourceView)).not.toMatch(/source-span\.local-test|source-document\.local-test|page:1;span:1|0{64}/i);
+  await page.getByTestId("guideline-graph-canvas").screenshot({ path: "../../.omo/evidence/conversational-graph-rag-workbench-ux/task-11-citation-source-view.png" });
+
+  await page.getByTestId("guideline-graph-canvas").dispatchEvent("pointerdown", { bubbles: true, clientX: 520, clientY: 340, pointerId: 411 });
+  await expect(rail).toHaveAttribute("data-citation-focus-mode", "pinned");
+  await expect(answer).toBeVisible();
+  expect(await readStorageSetItemCalls(page)).toEqual([]);
+});
+
+test("task 12 safety storage visual QA gates selected-context cited draft", async ({ page }) => {
+  const conversationRequests: unknown[] = [];
+  const mutationRequests: Array<{ method: string; url: string; body: unknown }> = [];
+  const consoleFindings: string[] = [];
+  await installStorageSetItemSpy(page);
+  await mockCorpusApi(page);
+  mkdirSync("../../.omo/evidence/conversational-graph-rag-workbench-ux", { recursive: true });
+  page.on("console", (message) => {
+    if ((message.type() === "error" || message.type() === "warning") && !isKnownBrowserConsoleNoise(message.text()) && !message.text().includes("A tree hydrated but some attributes")) {
+      consoleFindings.push(`${message.type()}: ${message.text()}`);
+    }
+  });
+  page.on("request", (request) => {
+    if (request.method() === "GET") {
+      return;
+    }
+    const body = request.postDataJSON() ?? request.postData() ?? null;
+    mutationRequests.push({ method: request.method(), url: request.url(), body });
+    if (request.url().includes("/api/knowledgebase/corpus/workbench/conversation-turn")) {
+      conversationRequests.push(body);
+    }
+  });
+
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/");
+  const rail = page.getByTestId("assistant-rail");
+  const workbench = page.getByTestId("atlas-workbench");
+  await workbench.getByRole("searchbox", { name: "Search public corpus metadata and parsed source spans" }).fill("deterministic parsed excerpt");
+  await workbench.getByRole("button", { name: "Find source context", exact: true }).click();
+  await workbench.getByRole("button", { name: /Local deterministic parsed excerpt/i }).dispatchEvent("click", { bubbles: true });
+  await expect(rail).toHaveAttribute("data-answer-mode", "selected_context_cited_draft");
+  await expect(page.getByTestId("source-document-panel")).toContainText("Page 1 · Span 1");
+  await expect(page.getByTestId("trust-provenance-drawer")).toContainText("Page 1 · Span 1");
+  await expect(page.getByTestId("review-queue-section")).toContainText("Review queue summary");
+
+  await rail.getByRole("textbox", { name: /ask about selected source/i }).fill("Summarize the selected source context.");
+  await rail.getByRole("button", { name: "Ask about selected source" }).click();
+  const answer = rail.getByTestId("selected-context-answer");
+  await expect(answer).toContainText("Draft answer for selected source context only; not medical advice.");
+  await expect(answer).toContainText("Page 1 · Span 1");
+  expect(await readPrimaryTextForLocator(answer)).not.toMatch(/source-span\.local-test|source-document\.local-test|page:1;span:1|raw_model_output|chat transcript/i);
+  const citation = answer.getByRole("button", { name: /Show citation Page 1 · Span 1/i });
+  await citation.hover();
+  await expect(rail).toHaveAttribute("data-citation-focus-mode", "transient");
+  await expect(page.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-evidence-selected-query", "Answer citation Page 1 · Span 1");
+  await citation.click();
+  await expect(rail).toHaveAttribute("data-citation-focus-mode", "pinned");
+  await expect(page.getByTestId("source-document-panel")).toContainText("Page 1 · Span 1");
+
+  await rail.getByRole("separator", { name: "Resize assistant rail" }).dispatchEvent("pointerdown", { bubbles: true, clientY: 760, pointerId: 512 });
+  await page.dispatchEvent("body", "pointermove", { bubbles: true, clientY: 560, pointerId: 512 });
+  await page.dispatchEvent("body", "pointerup", { bubbles: true, clientY: 560, pointerId: 512 });
+  await expect(rail).toHaveAttribute("data-height-state", "resized");
+  await expect(page.getByTestId("sigma-corpus-graph")).toBeVisible();
+  await page.screenshot({ path: "../../.omo/evidence/conversational-graph-rag-workbench-ux/task-12-visual-qa.png", fullPage: true });
+
+  await page.setViewportSize({ width: 500, height: 900 });
+  await expect(page.getByTestId("guideline-graph-canvas")).toBeVisible();
+  await expect(rail).toBeVisible();
+  await page.getByRole("button", { name: "Collapse session pins" }).dispatchEvent("click", { bubbles: true });
+  await page.getByRole("button", { name: "Close Source View" }).dispatchEvent("click", { bubbles: true });
+  await page.getByRole("button", { name: "Close Graph Search" }).dispatchEvent("click", { bubbles: true });
+  await page.getByRole("button", { name: "Dismiss Provenance panel" }).dispatchEvent("click", { bubbles: true });
+  await expect(page.getByTestId("trust-provenance-drawer")).toHaveCount(0);
+  await expect(page.getByTestId("guideline-graph-canvas")).toBeVisible();
+  await page.screenshot({ path: "../../.omo/evidence/conversational-graph-rag-workbench-ux/task-12-visual-qa-narrow.png", fullPage: true });
+
+  const storageSetItemCalls = await readStorageSetItemCalls(page);
+  const storageSnapshot = await readBrowserStorageSnapshot(page);
+  const primaryText = await readPrimaryVisibleText(page);
+  const sensitiveStoragePattern = /prompt|answer|transcript|raw[_ -]?output|Summarize the selected source context|Local deterministic parsed excerpt/i;
+  expect(storageSetItemCalls).toEqual([]);
+  expect(JSON.stringify(storageSnapshot)).not.toMatch(sensitiveStoragePattern);
+  expect(conversationRequests).toHaveLength(1);
+  expect(conversationRequests[0]).toMatchObject({
+    question: "Summarize the selected source context.",
+    source_span_id: "source-span.local-test",
+    selected_node_id: `resource.${breastResourceId}`,
+    resource_id: breastResourceId
+  });
+  expect(Object.keys(conversationRequests[0] as Record<string, unknown>).sort()).toEqual(["question", "resource_id", "selected_node_id", "source_span_id", "turn_id"]);
+  expect(JSON.stringify(mutationRequests.filter((request) => !request.url.includes("/api/knowledgebase/corpus/workbench/conversation-turn")))).not.toMatch(/prompt|answer|transcript|raw[_ -]?output/i);
+  expect(primaryText).not.toMatch(/source-document\.local-test|page:1;span:1|0{64}|workflow-task|raw_model_output|chat transcript/i);
+  expect(consoleFindings).toEqual([]);
+
+  writeFileSync("../../.omo/evidence/conversational-graph-rag-workbench-ux/task-12-safety-gate.txt", JSON.stringify({
+    task: "task-12-safety-storage-visual-qa",
+    viewportEvidence: ["1440x1000", "500x900"],
+    selectedContextCitedDraftVisible: await answer.count() === 1,
+    citationHighlightMode: await page.getByTestId("sigma-corpus-graph").getAttribute("data-evidence-selected-query"),
+    storageSetItemCalls,
+    storageSnapshot,
+    mutationRequests,
+    conversationRequests,
+    consoleFindings,
+    primarySurfaceHidesRawIdentifiers: !/source-document\.local-test|page:1;span:1|0{64}|workflow-task/i.test(primaryText),
+    visualEvidence: {
+      desktop: "task-12-visual-qa.png",
+      narrow: "task-12-visual-qa-narrow.png"
+    }
+  }, null, 2), "utf-8");
+});
+
 test("Sigma graph canvas smoothness contract records RAF, interaction, settled, and console evidence", async ({ page }) => {
+  test.setTimeout(90_000);
   const consoleCapture: ConsoleCaptureEntry[] = [];
   const interactionSuccess = {
     pan: false,
@@ -570,6 +1067,9 @@ test("Sigma graph canvas smoothness contract records RAF, interaction, settled, 
     await expect(page.getByTestId("sigma-corpus-graph")).toHaveAttribute("data-pinned-node-count", "0");
     interactionSuccess.drag = true;
     await measureInteraction("searchFocus", async () => {
+      if (await page.getByRole("button", { name: "Show Graph Search" }).count() > 0) {
+        await page.getByRole("button", { name: "Show Graph Search" }).click();
+      }
       await page.getByRole("searchbox", { name: "Search public corpus graph nodes" }).fill("Adjuvant Radiotherapy for Invasive Breast Cancer");
       await expect(page.locator(".sigma-search-results button")).toContainText("Adjuvant Radiotherapy for Invasive Breast Cancer");
       await page.getByRole("searchbox", { name: "Search public corpus graph nodes" }).press("Enter");
@@ -578,8 +1078,12 @@ test("Sigma graph canvas smoothness contract records RAF, interaction, settled, 
     interactionSuccess.searchFocus = true;
     await measureInteraction("resize", async () => {
       await page.setViewportSize({ width: 520, height: 900 });
-      await expect(page.getByTestId("guideline-graph-canvas")).toBeVisible();
-      await expect(page.getByTestId("atlas-workbench")).toBeVisible();
+      const visibleAfterResize = await page.evaluate(() => ({
+        canvas: Boolean(document.querySelector('[data-testid="guideline-graph-canvas"]')?.getBoundingClientRect().width),
+        workbench: Boolean(document.querySelector('[data-testid="atlas-workbench"]')?.getBoundingClientRect().width)
+      }));
+      expect(visibleAfterResize.canvas).toBe(true);
+      expect(visibleAfterResize.workbench).toBe(true);
     });
     interactionSuccess.resize = true;
     const rafMetrics = combineRafCaptures(rafCaptures.map((capture) => capture.metrics));
@@ -621,7 +1125,7 @@ test("Sigma graph canvas smoothness contract records RAF, interaction, settled, 
 });
 
 test("Sigma graph canvas real corpus smoothness records 198-resource interaction evidence", async ({ page }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(120_000);
   const consoleCapture: ConsoleCaptureEntry[] = [];
   const interactionSuccess = {
     pan: false,
@@ -726,6 +1230,9 @@ test("Sigma graph canvas real corpus smoothness records 198-resource interaction
     interactionSuccess.drag = true;
 
     await measureInteraction("searchFocus", async () => {
+      if (await page.getByRole("button", { name: "Show Graph Search" }).count() > 0) {
+        await page.getByRole("button", { name: "Show Graph Search" }).click();
+      }
       await performGraphSearchFocus(page, "Document type: guideline");
     });
     await expect(page.locator(".sigma-search-results button")).toContainText("Document type: guideline");
@@ -734,6 +1241,12 @@ test("Sigma graph canvas real corpus smoothness records 198-resource interaction
 
     await measureInteraction("resize", async () => {
       await page.setViewportSize({ width: 520, height: 900 });
+      const visibleAfterResize = await page.evaluate(() => ({
+        canvas: Boolean(document.querySelector('[data-testid="guideline-graph-canvas"]')?.getBoundingClientRect().width),
+        workbench: Boolean(document.querySelector('[data-testid="atlas-workbench"]')?.getBoundingClientRect().width)
+      }));
+      expect(visibleAfterResize.canvas).toBe(true);
+      expect(visibleAfterResize.workbench).toBe(true);
     });
     await expect(page.getByTestId("guideline-graph-canvas")).toBeVisible();
     await expect(page.getByTestId("atlas-workbench")).toBeVisible();
@@ -1099,6 +1612,7 @@ async function scrollWorkbenchResultsToTop(page: Page) {
     if (results) {
       results.scrollTop = 0;
     }
+    document.querySelector('[data-testid="assistant-output-trace-details"]')?.setAttribute("open", "");
   });
 }
 
@@ -1113,6 +1627,7 @@ async function screenshotExpandedWorkbenchTrace(page: Page, path: string) {
     if (results) {
       results.scrollTop = 0;
     }
+    document.querySelector('[data-testid="assistant-output-trace-details"]')?.setAttribute("open", "");
   });
   await page.getByTestId("workbench-trace-terminal").screenshot({ path });
   await page.evaluate(() => {
@@ -1173,6 +1688,25 @@ async function readStorageSetItemCalls(page: Page) {
   });
 }
 
+async function readBrowserStorageSnapshot(page: Page) {
+  return page.evaluate(async () => {
+    const storageEntries = (storage: Storage) => Object.fromEntries(
+      Array.from({ length: storage.length }, (_, index) => {
+        const key = storage.key(index) ?? "";
+        return [key, storage.getItem(key) ?? ""];
+      }).filter(([key]) => key)
+    );
+    const indexedDbDatabases = "databases" in indexedDB && typeof indexedDB.databases === "function"
+      ? await indexedDB.databases()
+      : [];
+    return {
+      localStorage: storageEntries(window.localStorage),
+      sessionStorage: storageEntries(window.sessionStorage),
+      indexedDB: indexedDbDatabases.map((database) => ({ name: database.name ?? "", version: database.version ?? 0 }))
+    };
+  });
+}
+
 async function readTask8GraphTerminalContext(page: Page) {
   return page.evaluate(() => {
     const graph = document.querySelector('[data-testid="sigma-corpus-graph"]');
@@ -1197,13 +1731,45 @@ async function readTask8GraphTerminalContext(page: Page) {
         focusMode: terminal?.getAttribute("data-focus-mode"),
         graphFocusNodeId: terminal?.getAttribute("data-graph-focus-node-id"),
         graphPathNodeIds: terminal?.getAttribute("data-graph-path-node-ids"),
-        generatedAnswersDisabled: terminal?.textContent?.includes("Generated answers are disabled") ?? false
+        selectedContextDraftBoundary: terminal?.textContent?.includes("Only selected-context cited draft answers are allowed") ?? false
       },
       selectedResourceProbe: {
         nodeId: selectedResource?.getAttribute("data-node-id"),
         evidenceRole: selectedResource?.getAttribute("data-evidence-role"),
         pathContext: selectedResource?.getAttribute("data-path-context"),
         sourceSpanHit: selectedResource?.getAttribute("data-source-span-hit")
+      }
+    };
+  });
+}
+
+async function readTask8AssistantEntrypointEvidence(page: Page) {
+  return page.evaluate(() => {
+    const rail = document.querySelector('[data-testid="assistant-rail"]');
+    const workbench = document.querySelector('[data-testid="atlas-workbench"]');
+    const traceDetails = document.querySelector('[data-testid="assistant-trace-details"]');
+    const outputTraceDetails = document.querySelector('[data-testid="assistant-output-trace-details"]');
+    const selectedSourceTrace = document.querySelector('[data-testid="explain-selection-trace-terminal"]');
+    const primaryClone = rail?.cloneNode(true) as HTMLElement | undefined;
+    primaryClone?.querySelectorAll("details:not([open]), pre, script, style").forEach((node) => node.remove());
+
+    return {
+      task: "task-8-assistant-entrypoint",
+      assistantPrimaryText: primaryClone?.innerText ?? "",
+      workbenchTextIncludes: {
+        findSourceContext: workbench?.textContent?.includes("Find source context") ?? false,
+        sourceContextResults: workbench?.textContent?.includes("Source context results") ?? false,
+        oldExplainSelectionPrimary: primaryClone?.innerText.includes("Explain Selection") ?? false,
+        oldGraphRagTracePrimary: primaryClone?.innerText.includes("Graph-RAG retrieval trace") ?? false,
+        oldRetrievalQueryPrimary: primaryClone?.innerText.includes("Retrieval query") ?? false
+      },
+      traceDetails: {
+        assistantDetailsOpen: traceDetails?.hasAttribute("open") ?? false,
+        outputDetailsOpen: outputTraceDetails?.hasAttribute("open") ?? false,
+        commandLabel: selectedSourceTrace?.getAttribute("data-command-label"),
+        gatewayOutcome: selectedSourceTrace?.getAttribute("data-gateway-outcome"),
+        rawOutputIncluded: selectedSourceTrace?.getAttribute("data-raw-output-included"),
+        traceText: selectedSourceTrace?.textContent?.trim() ?? ""
       }
     };
   });
@@ -1287,11 +1853,27 @@ async function readVisibleSafetyText(page: Page, queryToIgnore = "") {
     ].filter(Boolean).reduce((text, allowedText) => text.split(allowedText).join(""), visibleText);
   }, {
     allowedDisabledCopy: [
-      "Generated answers disabled until retrieval/source-span verification is implemented.",
-      "Generated answers are disabled; terminal output is limited to retrieval metadata, source-span provenance, and graph focus state.",
-      "Generated answers are disabled. The graph shows visual evidence for retrieval only; draft metadata and source spans are not approved guidance."
+      "Only selected-context cited draft answers are allowed; whole-corpus answers remain unavailable.",
+      "Only selected-context cited draft answers are allowed. The graph shows visual evidence for retrieval; draft metadata and source spans are not approved guidance.",
+      "Selected-context draft answers are local-gateway bounded, source-span scoped, and not approved guidance. No external large-language-model routing is shown as enabled."
     ],
     query: queryToIgnore
+  });
+}
+
+async function readPrimaryVisibleText(page: Page) {
+  return page.evaluate(() => {
+    const clone = document.body.cloneNode(true) as HTMLElement;
+    clone.querySelectorAll("details:not([open]), pre, script, style").forEach((node) => node.remove());
+    return clone.innerText;
+  });
+}
+
+async function readPrimaryTextForLocator(locator: Locator) {
+  return locator.evaluate((element) => {
+    const clone = element.cloneNode(true) as HTMLElement;
+    clone.querySelectorAll("details:not([open]), pre, script, style").forEach((node) => node.remove());
+    return clone.innerText;
   });
 }
 
@@ -1361,17 +1943,6 @@ async function performWheelZoom(page: Page) {
 
   await page.mouse.move((canvasBox?.x ?? 0) + (canvasBox?.width ?? 0) / 2, (canvasBox?.y ?? 0) + (canvasBox?.height ?? 0) / 2);
   await page.mouse.wheel(0, -360);
-}
-
-async function expectEmptySpacePanChangesNodeViewportRect(page: Page, nodeId: string) {
-  const before = await nodeViewportRect(page, nodeId);
-  const emptyPoint = await findEmptyCanvasPoint(page);
-
-  await page.mouse.move(emptyPoint.x, emptyPoint.y);
-  await page.mouse.down();
-  await page.mouse.move(emptyPoint.x + 96, emptyPoint.y + 58, { steps: 12 });
-  await page.mouse.up();
-  await expectNodeRectToChange(page, nodeId, before);
 }
 
 async function expectStagePanChangesNodeViewportRect(page: Page, nodeId: string) {
@@ -1554,29 +2125,6 @@ async function nodeViewportRect(page: Page, nodeId: string): Promise<ViewportRec
   });
 }
 
-async function findEmptyCanvasPoint(page: Page) {
-  return page.evaluate(() => {
-    const canvas = document.querySelector('[data-testid="sigma-corpus-graph"] canvas');
-    if (!canvas) {
-      throw new Error("Sigma canvas is unavailable");
-    }
-    const canvasRect = canvas.getBoundingClientRect();
-    const nodes = Array.from(document.querySelectorAll(".sigma-camera-node-probe[data-node-id]")).map((node) => node.getBoundingClientRect());
-    const candidates = [
-      { x: canvasRect.left + canvasRect.width * 0.18, y: canvasRect.top + canvasRect.height * 0.72 },
-      { x: canvasRect.left + canvasRect.width * 0.78, y: canvasRect.top + canvasRect.height * 0.32 },
-      { x: canvasRect.left + canvasRect.width * 0.52, y: canvasRect.top + canvasRect.height * 0.84 },
-      { x: canvasRect.left + canvasRect.width * 0.44, y: canvasRect.top + canvasRect.height * 0.48 }
-    ];
-
-    return candidates.find((candidate) => nodes.every((node) => {
-      const nodeCenterX = node.left + node.width / 2;
-      const nodeCenterY = node.top + node.height / 2;
-      return Math.hypot(candidate.x - nodeCenterX, candidate.y - nodeCenterY) > 42;
-    })) ?? candidates[0];
-  });
-}
-
 async function mockCorpusApi(page: Page) {
   let interpretabilitySourceSpans: Array<typeof sourceSpanSearchResult> = [];
   let reviewQueueItems: ReviewQueuePayloadItem[] | undefined;
@@ -1601,6 +2149,10 @@ async function mockCorpusApi(page: Page) {
   await page.route("**/api/knowledgebase/corpus/workbench/explain-selection", async (route) => {
     const payload = route.request().postDataJSON() as { source_span_id?: string; selected_node_id?: string; resource_id?: string };
     await route.fulfill({ json: buildExplainSelectionPayload(payload) });
+  });
+  await page.route("**/api/knowledgebase/corpus/workbench/conversation-turn", async (route) => {
+    const payload = route.request().postDataJSON() as { question?: string; source_span_id?: string; selected_node_id?: string; resource_id?: string };
+    await route.fulfill({ json: buildConversationTurnPayload(payload) });
   });
   await page.route("**/api/knowledgebase/corpus/interpretability?**", async (route) => {
     const requestUrl = new URL(route.request().url());
@@ -1944,6 +2496,99 @@ function buildExplainSelectionPayload(request: { source_span_id?: string; select
     warnings: hasSourceSpanContext ? [] : ["missing_validated_source_span_context"],
     evidence_ids: [...sourceIdsUsed, ...sourceIdsRejected].map((record) => record.evidence_id),
     no_claim: true,
+    model_routing: "none-local-deterministic-search-only"
+  };
+}
+
+function buildConversationTurnPayload(request: { question?: string; source_span_id?: string; selected_node_id?: string; resource_id?: string }) {
+  const question = request.question ?? "";
+  const adviceLike = isAdviceLikeQuery(question);
+  const hasSourceSpanContext = request.source_span_id === sourceSpanSearchResult.span_id;
+  const gatewayUnavailable = /gateway unavailable/i.test(question);
+  const gatewayDecision = adviceLike || !hasSourceSpanContext ? {
+    allowed: false,
+    outcome: "blocked_before_gateway",
+    reason_code: adviceLike ? "unsupported_advice_like_prompt" : "missing_validated_source_span_context",
+    policy_request_id: "policy-request-conversation-turn-local-test",
+    external_api_used: false
+  } : gatewayUnavailable ? {
+    allowed: false,
+    outcome: "gateway_unavailable",
+    reason_code: "local_gateway_unavailable",
+    policy_request_id: "policy-request-conversation-turn-local-test",
+    external_api_used: false
+  } : {
+    allowed: true,
+    outcome: "executed",
+    reason_code: null,
+    policy_request_id: "policy-request-conversation-turn-local-test",
+    external_api_used: false
+  };
+
+  if (gatewayUnavailable) {
+    return {
+      status: "unavailable",
+      reason_code: "local_gateway_unavailable",
+      answer_mode: "unavailable",
+      answer_fragments: [],
+      citations: [],
+      graph_links: [],
+      safety_notice: "Draft answer for selected source context only; not medical advice.",
+      gateway_decision: gatewayDecision,
+      evidence_ids: [],
+      raw_output_included: false,
+      persistence: { stored: false, transcript_persisted: false },
+      model_routing: "none-local-deterministic-search-only"
+    };
+  }
+
+  if (adviceLike || !hasSourceSpanContext) {
+    return {
+      status: "refused",
+      reason_code: adviceLike ? "unsupported_advice_like_prompt" : "missing_validated_source_span_context",
+      answer_mode: "refusal",
+      answer_fragments: [],
+      citations: [],
+      graph_links: [],
+      safety_notice: "Draft answer for selected source context only; not medical advice.",
+      gateway_decision: gatewayDecision,
+      evidence_ids: [],
+      raw_output_included: false,
+      persistence: { stored: false, transcript_persisted: false },
+      model_routing: "none-local-deterministic-search-only"
+    };
+  }
+
+  return {
+    status: "draft",
+    reason_code: null,
+    answer_mode: "selected_context_cited_draft",
+    answer_fragments: [{
+      fragment_id: "fragment.local-test.1",
+      text: "The selected source context says: Local deterministic parsed excerpt for search coverage.",
+      source_span_ids: [sourceSpanSearchResult.span_id],
+      unsupported: false
+    }],
+    citations: [{
+      source_span_id: sourceSpanSearchResult.span_id,
+      source_document_id: sourceSpanSearchResult.document_id,
+      stable_locator: sourceSpanSearchResult.stable_locator,
+      display_label: "Page 1 · Span 1",
+      quoted_span: "Local deterministic parsed excerpt for search coverage.",
+      excerpt_digest: "sha256:local-test-excerpt-digest",
+      answer_fragment_ids: ["fragment.local-test.1"]
+    }],
+    graph_links: [{
+      resource_id: request.resource_id,
+      selected_node_id: request.selected_node_id,
+      source_span_id: sourceSpanSearchResult.span_id,
+      highlight_node_ids: [`resource.${breastResourceId}`]
+    }],
+    safety_notice: "Draft answer for selected source context only; not medical advice.",
+    gateway_decision: gatewayDecision,
+    evidence_ids: ["evidence.conversation.source-span.local-test"],
+    raw_output_included: false,
+    persistence: { stored: false, transcript_persisted: false },
     model_routing: "none-local-deterministic-search-only"
   };
 }

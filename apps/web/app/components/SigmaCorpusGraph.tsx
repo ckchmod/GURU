@@ -14,7 +14,7 @@ import {
 } from "@react-sigma/core";
 import type { CorpusAtlasModel } from "../../lib/corpusAtlas";
 import { buildAtlasGraph, computeDeterministicForceAtlasLayout, type AtlasForceLayoutMetrics } from "../graph/atlasGraphAdapter";
-import type { AtlasNodeView, RetrievalGraphEvidenceState } from "./GuidelineGraphCanvas";
+import type { AtlasNodeView, RetrievalGraphEvidenceState } from "./GraphWorkbenchTypes";
 
 export type SigmaCorpusGraphProps = {
   model: CorpusAtlasModel;
@@ -89,6 +89,7 @@ export function SigmaCorpusGraph({
 }: SigmaCorpusGraphProps) {
   const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
   const [pinnedNodePositions, setPinnedNodePositions] = useState<Record<string, AtlasLayoutPoint>>({});
+  const [pinControlsCollapsed, setPinControlsCollapsed] = useState(false);
   const atlasLayout = useMemo(() => computeForceAtlasLayoutState(model, nodeViews), [model, nodeViews]);
   const atlasGraph = useMemo(
     () => buildSigmaGraph(model, nodeViews, atlasLayout.positions),
@@ -177,14 +178,25 @@ export function SigmaCorpusGraph({
         />
         <ControlsContainer className="atlas-controls" position="bottom-left">
           <ZoomControl labels={{ zoomIn: "Zoom In", zoomOut: "Zoom Out", reset: "Fit View" }} />
-          <section aria-label="Session pin controls">
-            <span>Session pins: {pinnedNodeIds.length === 0 ? "none" : `${pinnedNodeIds.length} pinned`}</span>
-            <button type="button" onClick={handleReleasePinnedNode} disabled={!selectedPinnedNodeId}>
-              Release focus pin
-            </button>
-            <button type="button" onClick={handleResetPinnedNodes} disabled={pinnedNodeIds.length === 0}>
-              Reset session pins
-            </button>
+          <section aria-label="Session pin controls" data-collapsed={pinControlsCollapsed ? "true" : "false"}>
+            {pinControlsCollapsed ? (
+              <button type="button" aria-label="Expand session pins" onClick={() => setPinControlsCollapsed(false)}>
+                Pins {pinnedNodeIds.length}
+              </button>
+            ) : (
+              <>
+                <span>Session pins: {pinnedNodeIds.length === 0 ? "none" : `${pinnedNodeIds.length} pinned`}</span>
+                <button type="button" onClick={() => setPinControlsCollapsed(true)}>
+                  Collapse session pins
+                </button>
+                <button type="button" onClick={handleReleasePinnedNode} disabled={!selectedPinnedNodeId}>
+                  Release focus pin
+                </button>
+                <button type="button" onClick={handleResetPinnedNodes} disabled={pinnedNodeIds.length === 0}>
+                  Reset session pins
+                </button>
+              </>
+            )}
           </section>
         </ControlsContainer>
       </SigmaContainer>
@@ -1100,7 +1112,7 @@ function roundedRect(context: CanvasRenderingContext2D, x: number, y: number, wi
   context.closePath();
 }
 
-export function truncateLabel(label: string, maxGraphemes = 44) {
+export function truncateLabel(label: string, maxGraphemes = 32) {
   const graphemes = segmentGraphemes(label);
   if (graphemes.length <= maxGraphemes) {
     return label;
