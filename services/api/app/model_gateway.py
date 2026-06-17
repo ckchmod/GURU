@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 import hashlib
+import ipaddress
 import json
 import os
 import re
+import time
+import urllib.error
+import urllib.request
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any, Mapping, Sequence
+from urllib.parse import urlparse
 
 
 PROVIDER_KINDS = {"local", "private_hosted", "external"}
@@ -17,8 +22,31 @@ LOCAL_OPEN_WEIGHT_7B_MODEL_CLASS = "local_open_weight_7b"
 LOCAL_OPEN_WEIGHT_7B_MOCK_VERSION = "local-open-weight-7b-dry-run-mock-v1"
 LOCAL_OPEN_WEIGHT_7B_REAL_RUNNER_ENV = "GURU_ENABLE_REAL_LOCAL_OPEN_WEIGHT_7B"
 LOCAL_OPEN_WEIGHT_7B_REAL_RUNNER_PATH_ENV = "GURU_LOCAL_OPEN_WEIGHT_7B_RUNNER"
+LOCAL_INSTRUCTION_REAL_RUNNER_ENV = "GURU_ENABLE_REAL_LOCAL_INSTRUCTION_MODEL"
+LOCAL_INSTRUCTION_PROVIDER_ENV = "GURU_LOCAL_INSTRUCTION_PROVIDER"
+OLLAMA_BASE_URL_ENV = "GURU_OLLAMA_BASE_URL"
+OLLAMA_MODEL_ENV = "GURU_OLLAMA_MODEL"
+LOCAL_DEBUG_MODEL_OUTPUT_ENV = "GURU_LOCAL_DEBUG_MODEL_OUTPUT"
+OLLAMA_PROVIDER = "ollama"
+OLLAMA_DEFAULT_BASE_URL = "http://127.0.0.1:11434"
+OLLAMA_DEFAULT_MODEL = "qwen3:4b"
+OLLAMA_REQUEST_TIMEOUT_SECONDS = 10.0
+LOCAL_QWEN_RUNNER_REQUIRED = "LOCAL_QWEN_RUNNER_REQUIRED"
+LOCAL_QWEN_MODEL_MISSING = "LOCAL_QWEN_MODEL_MISSING"
+LOCAL_QWEN_TIMEOUT = "LOCAL_QWEN_TIMEOUT"
+LOCAL_QWEN_MALFORMED_RESPONSE = "LOCAL_QWEN_MALFORMED_RESPONSE"
+LOCAL_QWEN_NON_LOOPBACK_BASE_URL = "LOCAL_QWEN_NON_LOOPBACK_BASE_URL"
 LOCAL_TRACE_STATUSES = {"executed", "rejected", "approval_pending", "quota_exceeded", "abstained", "unavailable"}
-LOCAL_RUNNER_STATUSES = {"mock_dry_run", "real_runner_unavailable"}
+LOCAL_RUNNER_STATUSES = {
+    "mock_dry_run",
+    "real_runner_unavailable",
+    "ollama_qwen_executed",
+    LOCAL_QWEN_RUNNER_REQUIRED,
+    LOCAL_QWEN_MODEL_MISSING,
+    LOCAL_QWEN_TIMEOUT,
+    LOCAL_QWEN_MALFORMED_RESPONSE,
+    LOCAL_QWEN_NON_LOOPBACK_BASE_URL,
+}
 SOURCE_CONTEXT_REQUIRED_FIELDS = {"source_span_id", "excerpt_digest"}
 SOURCE_CONTEXT_OPTIONAL_FIELDS = {"source_document_id", "source_document_digest", "stable_locator"}
 SOURCE_CONTEXT_FORBIDDEN_FIELDS = {
@@ -163,8 +191,10 @@ def run_local_open_weight_7b_dry_run(
     *,
     source_permission_status: str = "cleared",
     approval_id: str | None = None,
+    include_debug_model_output: bool = False,
 ) -> LocalModelDryRunResult:
     bounded_contexts = _normalize_source_span_contexts(source_span_contexts)
+    real_instruction_enabled = _real_local_instruction_model_enabled()
     context_digest = _digest_mapping(
         {
             "request_id": envelope.get("request_id"),
@@ -176,13 +206,24 @@ def run_local_open_weight_7b_dry_run(
         model_class=LOCAL_OPEN_WEIGHT_7B_MODEL_CLASS,
         provider_kind="local",
         input_tokens=len(bounded_contexts),
-        requested_output_tokens=0,
+        requested_output_tokens=_local_instruction_output_token_budget(envelope) if real_instruction_enabled else 0,
         gpu_seconds=0.0,
         estimated_cost=0.0,
         source_permission_status=source_permission_status,
         approval_id=approval_id,
     )
     decision = evaluate_model_gateway_policy(envelope, request)
+    if decision.allowed and real_instruction_enabled:
+        trace, ledger_entry = _run_local_instruction_model(
+            envelope=envelope,
+            decision=decision,
+            bounded_contexts=bounded_contexts,
+            context_digest=context_digest,
+            requested_output_tokens=request.requested_output_tokens,
+            include_debug_model_output=include_debug_model_output,
+        )
+        return LocalModelDryRunResult(decision=decision, trace=trace, ledger_entry=ledger_entry)
+
     trace = _local_trace(
         envelope=envelope,
         decision=decision,
@@ -329,6 +370,199 @@ def _source_context_payload(context: Mapping[str, Any] | LocalSourceSpanContext)
     return context
 
 
+def _real_local_instruction_model_enabled() -> bool:
+    return os.environ.get(LOCAL_INSTRUCTION_REAL_RUNNER_ENV) == "1"
+
+
+def _local_instruction_output_token_budget(envelope: Mapping[str, Any]) -> int:
+    output_limit = envelope["output_token_limit"]
+    if output_limit <= 0:
+        return 0
+    return min(output_limit, 512)
+
+
+def _run_local_instruction_model(
+    *,
+    envelope: Mapping[str, Any],
+    decision: GatewayDecision,
+    bounded_contexts: list[dict[str, str]],
+    context_digest: str,
+    requested_output_tokens: int,
+    include_debug_model_output: bool,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    provider = os.environ.get(LOCAL_INSTRUCTION_PROVIDER_ENV, "")
+    model_name = os.environ.get(OLLAMA_MODEL_ENV, OLLAMA_DEFAULT_MODEL)
+    base_url = os.environ.get(OLLAMA_BASE_URL_ENV, OLLAMA_DEFAULT_BASE_URL)
+    if provider != OLLAMA_PROVIDER:
+        return _local_instruction_unavailable_trace(
+            envelope=envelope,
+            decision=decision,
+            bounded_contexts=bounded_contexts,
+            context_digest=context_digest,
+            runner_status=LOCAL_QWEN_RUNNER_REQUIRED,
+            model_name=model_name,
+        )
+    if not _is_loopback_http_url(base_url):
+        return _local_instruction_unavailable_trace(
+            envelope=envelope,
+            decision=decision,
+            bounded_contexts=bounded_contexts,
+            context_digest=context_digest,
+            runner_status=LOCAL_QWEN_NON_LOOPBACK_BASE_URL,
+            model_name=model_name,
+        )
+
+    prompt = _ollama_prompt(envelope, bounded_contexts, context_digest)
+    request_body = json.dumps(
+        {
+            "model": model_name,
+            "prompt": prompt,
+            "stream": False,
+            "options": {"num_predict": requested_output_tokens},
+        },
+        sort_keys=True,
+    ).encode("utf-8")
+    request = urllib.request.Request(
+        _ollama_generate_url(base_url),
+        data=request_body,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    started = time.monotonic()
+    try:
+        with urllib.request.urlopen(request, timeout=OLLAMA_REQUEST_TIMEOUT_SECONDS) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except TimeoutError:
+        return _local_instruction_unavailable_trace(
+            envelope=envelope,
+            decision=decision,
+            bounded_contexts=bounded_contexts,
+            context_digest=context_digest,
+            runner_status=LOCAL_QWEN_TIMEOUT,
+            model_name=model_name,
+        )
+    except urllib.error.HTTPError as error:
+        return _local_instruction_unavailable_trace(
+            envelope=envelope,
+            decision=decision,
+            bounded_contexts=bounded_contexts,
+            context_digest=context_digest,
+            runner_status=LOCAL_QWEN_MODEL_MISSING if error.code == 404 else LOCAL_QWEN_RUNNER_REQUIRED,
+            model_name=model_name,
+        )
+    except urllib.error.URLError as error:
+        status = LOCAL_QWEN_TIMEOUT if isinstance(error.reason, TimeoutError) else LOCAL_QWEN_RUNNER_REQUIRED
+        return _local_instruction_unavailable_trace(
+            envelope=envelope,
+            decision=decision,
+            bounded_contexts=bounded_contexts,
+            context_digest=context_digest,
+            runner_status=status,
+            model_name=model_name,
+        )
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return _local_instruction_unavailable_trace(
+            envelope=envelope,
+            decision=decision,
+            bounded_contexts=bounded_contexts,
+            context_digest=context_digest,
+            runner_status=LOCAL_QWEN_MALFORMED_RESPONSE,
+            model_name=model_name,
+        )
+
+    raw_output = payload.get("response")
+    if not isinstance(raw_output, str):
+        return _local_instruction_unavailable_trace(
+            envelope=envelope,
+            decision=decision,
+            bounded_contexts=bounded_contexts,
+            context_digest=context_digest,
+            runner_status=LOCAL_QWEN_MALFORMED_RESPONSE,
+            model_name=model_name,
+        )
+    gpu_seconds = max(time.monotonic() - started, 0.0)
+    output_tokens = _count_output_tokens(raw_output)
+    ledger_entry = dict(decision.ledger_entry)
+    ledger_entry["output_tokens"] = output_tokens
+    ledger_entry["gpu_seconds"] = gpu_seconds
+    validate_cost_ledger_entry(ledger_entry)
+    trace = _local_trace(
+        envelope=envelope,
+        decision=decision,
+        bounded_contexts=bounded_contexts,
+        context_digest=context_digest,
+        runner_status="ollama_qwen_executed",
+        model_name="ollama/qwen3",
+        model_version=model_name,
+        output_digest=_digest_mapping({"model": model_name, "response": raw_output}),
+        output_tokens=output_tokens,
+        gpu_seconds=gpu_seconds,
+        raw_output=raw_output if include_debug_model_output else None,
+    )
+    return trace, ledger_entry
+
+
+def _local_instruction_unavailable_trace(
+    *,
+    envelope: Mapping[str, Any],
+    decision: GatewayDecision,
+    bounded_contexts: list[dict[str, str]],
+    context_digest: str,
+    runner_status: str,
+    model_name: str,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    ledger_entry = dict(decision.ledger_entry)
+    ledger_entry["output_tokens"] = 0
+    ledger_entry["gpu_seconds"] = 0.0
+    validate_cost_ledger_entry(ledger_entry)
+    trace = _local_trace(
+        envelope=envelope,
+        decision=decision,
+        bounded_contexts=bounded_contexts,
+        context_digest=context_digest,
+        runner_status=runner_status,
+        model_name="ollama/qwen3",
+        model_version=model_name,
+        output_tokens=0,
+        gpu_seconds=0.0,
+    )
+    return trace, ledger_entry
+
+
+def _is_loopback_http_url(base_url: str) -> bool:
+    parsed = urlparse(base_url)
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+        return False
+    if parsed.username or parsed.password or parsed.params or parsed.query or parsed.fragment:
+        return False
+    hostname = parsed.hostname.lower()
+    if hostname == "localhost":
+        return True
+    try:
+        return ipaddress.ip_address(hostname).is_loopback
+    except ValueError:
+        return False
+
+
+def _ollama_generate_url(base_url: str) -> str:
+    return base_url.rstrip("/") + "/api/generate"
+
+
+def _ollama_prompt(envelope: Mapping[str, Any], bounded_contexts: list[dict[str, str]], context_digest: str) -> str:
+    prompt_payload = {
+        "task_type": envelope["task_type"],
+        "request_id": envelope["request_id"],
+        "context_digest": context_digest,
+        "source_span_contexts": bounded_contexts,
+        "instruction": "Return internal trace-only analysis. Do not produce clinical advice or a patient-specific answer.",
+    }
+    return json.dumps(prompt_payload, sort_keys=True, separators=(",", ":"))
+
+
+def _count_output_tokens(output: str) -> int:
+    return len(output.split())
+
+
 def _local_runner_status(decision: GatewayDecision) -> str:
     if not decision.allowed:
         return "mock_dry_run"
@@ -346,11 +580,17 @@ def _local_trace(
     bounded_contexts: list[dict[str, str]],
     context_digest: str,
     runner_status: str,
+    model_name: str = "local-open-weight-7b-dry-run",
+    model_version: str = LOCAL_OPEN_WEIGHT_7B_MOCK_VERSION,
+    output_digest: str | None = None,
+    output_tokens: int | None = None,
+    gpu_seconds: float | None = None,
+    raw_output: str | None = None,
 ) -> dict[str, Any]:
     if runner_status not in LOCAL_RUNNER_STATUSES:
         raise GatewayPolicyError(REASON_VALIDATION_FAILED, "local runner status is not allowed")
     trace_status = _trace_status(decision, runner_status)
-    output_digest = _digest_mapping(
+    resolved_output_digest = output_digest or _digest_mapping(
         {
             "trace_status": trace_status,
             "abstention_status": "abstained_no_answer_text",
@@ -359,8 +599,8 @@ def _local_trace(
         }
     )
     trace: dict[str, Any] = {
-        "model_name": "local-open-weight-7b-dry-run",
-        "model_version": LOCAL_OPEN_WEIGHT_7B_MOCK_VERSION,
+        "model_name": model_name,
+        "model_version": model_version,
         "model_class": LOCAL_OPEN_WEIGHT_7B_MODEL_CLASS,
         "provider_kind": "local",
         "trace_status": trace_status,
@@ -371,20 +611,28 @@ def _local_trace(
         "citation_verifier_status": "pass",
         "abstention_status": "abstained_no_answer_text",
         "input_digest": context_digest,
-        "output_digest": output_digest,
+        "output_digest": resolved_output_digest,
         "source_span_ids": [context["source_span_id"] for context in bounded_contexts],
         "input_tokens": decision.ledger_entry["input_tokens"],
-        "output_tokens": decision.ledger_entry["output_tokens"],
-        "gpu_seconds": decision.ledger_entry["gpu_seconds"],
+        "output_tokens": decision.ledger_entry["output_tokens"] if output_tokens is None else output_tokens,
+        "gpu_seconds": decision.ledger_entry["gpu_seconds"] if gpu_seconds is None else gpu_seconds,
+        "raw_output_included": False,
         "input_summary": {"source_span_contexts": bounded_contexts},
         "timestamp_utc": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
     }
+    if raw_output is not None and os.environ.get(LOCAL_DEBUG_MODEL_OUTPUT_ENV) == "1":
+        trace["raw_output_included"] = True
+        trace["raw_model_output"] = raw_output
     validate_local_model_trace(trace)
     return trace
 
 
 def _trace_status(decision: GatewayDecision, runner_status: str) -> str:
+    if runner_status == "ollama_qwen_executed" and decision.allowed:
+        return "executed"
     if runner_status == "real_runner_unavailable" and decision.allowed:
+        return "unavailable"
+    if runner_status.startswith("LOCAL_QWEN_") and decision.allowed:
         return "unavailable"
     if decision.outcome == "executed":
         return "abstained"
